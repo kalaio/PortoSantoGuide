@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    container_name: stayfinder-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: stayfinder
+    ports:
+      - "5432:5432"
+    volumes:
+      - stayfinder_pgdata:/var/lib/postgresql/data
+
+volumes:
+  stayfinder_pgdata:

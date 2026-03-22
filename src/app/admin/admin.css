@@ -1,0 +1,108 @@
+.adminRoute {
+  --admin-bg: linear-gradient(180deg, #f8f4ea 0%, #f3efe4 100%);
+  --admin-surface: rgba(255, 255, 255, 0.88);
+  --admin-border: rgba(15, 23, 42, 0.08);
+  --admin-text: #163847;
+  --admin-muted: #5d7480;
+  --admin-accent: #0f766e;
+  --admin-accent-soft: rgba(15, 118, 110, 0.1);
+  --admin-font-size-base: 1rem;
+  min-height: 100vh;
+  background: var(--admin-bg);
+  color: var(--admin-text);
+  font-size: var(--admin-font-size-base);
+  line-height: 1.5;
+}
+
+.adminRoute button,
+.adminRoute input,
+.adminRoute select,
+.adminRoute textarea {
+  font: inherit;
+}
+
+.adminRoute p,
+.adminRoute li,
+.adminRoute label,
+.adminRoute small {
+  font-size: var(--admin-font-size-base);
+  line-height: 1.5;
+}
+
+.adminRoute small {
+  font-size: 0.875rem;
+}
+
+.adminRoute .muted {
+  margin: 0;
+  color: var(--admin-muted);
+}
+
+.adminRoute .adminCheckboxList {
+  gap: 10px;
+}
+
+
+.adminRoute .adminDataTable {
+  min-width: 0;
+}
+
+.adminRoute .adminDataTableTable {
+  min-width: 860px;
+}
+
+.adminRoute .adminCategoriesDataTableTable {
+  min-width: 980px;
+}
+
+.adminRoute .adminSchemasDataTableTable {
+  min-width: 860px;
+}
+
+.adminRoute .adminUsersDataTableTable {
+  min-width: 860px;
+}
+
+.adminRoute .adminDataTableHeadCell {
+  font-size: 0.77rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--admin-muted);
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.adminRoute .adminDataTableCell {
+  vertical-align: middle;
+  border-bottom: 1px solid var(--admin-border);
+  transition: background-color 160ms ease;
+}
+
+.adminRoute .adminDataTableRow {
+  cursor: pointer;
+}
+
+.adminRoute .adminDataTableRow:hover .adminDataTableCell,
+.adminRoute .adminDataTableRow[data-hover="true"] .adminDataTableCell {
+  background: rgba(15, 118, 110, 0.05);
+}
+
+.adminRoute .adminDataTableRow[data-last="true"] .adminDataTableCell {
+  border-bottom: none;
+}
+
+.adminRoute .adminListingPrimaryCell {
+  display: grid;
+  gap: 4px;
+}
+
+.adminRoute .adminListingStatusCell {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+}
+
+@media (max-width: 960px) {
+}
+
+@media (max-width: 640px) {
+}

@@ -1,0 +1,48 @@
+{
+  "name": "porto-santo-guide",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build --webpack",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma db push",
+    "db:backfill-listing-revisions": "node prisma/backfill-listing-revisions.mjs",
+    "db:verify-listing-revisions": "node prisma/verify-listing-revisions.mjs",
+    "verify:listing-states": "node scripts/verify-listing-state-flow.mjs",
+    "db:studio": "prisma studio",
+    "db:seed": "node prisma/seed.mjs"
+  },
+  "dependencies": {
+    "@heroui/date-input": "^2.3.32",
+    "@heroui/react": "^2.8.10",
+    "@heroui/styles": "^3.0.0-beta.3",
+    "@internationalized/date": "^3.12.0",
+    "@prisma/client": "^6.6.0",
+    "@tailwindcss/postcss": "^4.2.1",
+    "autoprefixer": "^10.4.27",
+    "bcryptjs": "^2.4.3",
+    "framer-motion": "^12.38.0",
+    "jose": "^5.9.6",
+    "maplibre-gl": "^5.4.0",
+    "next": "^16.1.7",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "sharp": "^0.34.5",
+    "tailwindcss": "^4.2.1",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^22.13.13",
+    "@types/react": "^19.0.12",
+    "@types/react-dom": "^19.0.4",
+    "eslint": "^9.39.1",
+    "eslint-config-next": "^16.1.7",
+    "prisma": "^6.6.0",
+    "typescript": "^5.8.2"
+  }
+}

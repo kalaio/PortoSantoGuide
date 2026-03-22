@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="280" height="240" viewBox="0 0 280 240" fill="none">
+  <rect width="280" height="240" rx="28" fill="#076D70"/>
+  <path d="M54 54h172c0 38.66-31.34 70-70 70H124c-38.66 0-70-31.34-70-70Z" fill="#E7D9A8"/>
+  <path d="M82 158c15.333-17.333 33.333-26 54-26 20.667 0 38.667 8.667 54 26" stroke="#E7D9A8" stroke-width="14" stroke-linecap="round"/>
+  <circle cx="108" cy="98" r="12" fill="#076D70"/>
+  <circle cx="172" cy="98" r="12" fill="#076D70"/>
+  <text x="140" y="196" text-anchor="middle" fill="white" font-family="Plus Jakarta Sans, Arial, sans-serif" font-size="26" font-weight="700">Porto Santo</text>
+  <text x="140" y="222" text-anchor="middle" fill="white" font-family="Plus Jakarta Sans, Arial, sans-serif" font-size="26" font-weight="700">Guide</text>
+</svg>

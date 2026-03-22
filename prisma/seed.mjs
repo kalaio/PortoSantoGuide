@@ -213,6 +213,98 @@ function getCategoryBySlug(categoryMap, slug) {
   return category;
 }
 
+async function ensureListingCurrentRevisions() {
+  const listings = await prisma.listing.findMany({
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      description: true,
+      status: true,
+      latitude: true,
+      longitude: true,
+      details: true,
+      primaryCategoryId: true,
+      ownerId: true,
+      currentPublishedRevisionId: true,
+      currentDraftRevisionId: true,
+      categories: {
+        select: {
+          categoryId: true
+        }
+      }
+    }
+  });
+
+  for (const listing of listings) {
+    if ((listing.status === "PUBLISHED" || listing.status === "ARCHIVED") && !listing.currentPublishedRevisionId) {
+      const publishedRevision = await prisma.listingRevision.create({
+        data: {
+          listingId: listing.id,
+          slug: listing.slug,
+          title: listing.title,
+          description: listing.description,
+          status: "PUBLISHED",
+          latitude: listing.latitude,
+          longitude: listing.longitude,
+          details: listing.details,
+          primaryCategoryId: listing.primaryCategoryId,
+          createdById: listing.ownerId,
+          updatedById: listing.ownerId,
+          categories: {
+            create: listing.categories.map((item) => ({
+              categoryId: item.categoryId
+            }))
+          }
+        },
+        select: {
+          id: true
+        }
+      });
+
+      await prisma.listing.update({
+        where: { id: listing.id },
+        data: {
+          currentPublishedRevisionId: publishedRevision.id
+        }
+      });
+    }
+
+    if (listing.status === "DRAFT" && !listing.currentDraftRevisionId) {
+      const draftRevision = await prisma.listingRevision.create({
+        data: {
+          listingId: listing.id,
+          slug: listing.slug,
+          title: listing.title,
+          description: listing.description,
+          status: "DRAFT",
+          latitude: listing.latitude,
+          longitude: listing.longitude,
+          details: listing.details,
+          primaryCategoryId: listing.primaryCategoryId,
+          createdById: listing.ownerId,
+          updatedById: listing.ownerId,
+          categories: {
+            create: listing.categories.map((item) => ({
+              categoryId: item.categoryId
+            }))
+          }
+        },
+        select: {
+          id: true
+        }
+      });
+
+      await prisma.listing.update({
+        where: { id: listing.id },
+        data: {
+          currentDraftRevisionId: draftRevision.id
+        }
+      });
+    }
+  }
+}
+
 async function main() {
   const adminPasswordHash = await bcrypt.hash("admin123", 10);
   const ownerPasswordHash = await bcrypt.hash("owner123", 10);
@@ -495,6 +587,8 @@ async function main() {
       isActive: true
     }
   });
+
+  await ensureListingCurrentRevisions();
 }
 
 main()

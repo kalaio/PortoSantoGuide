@@ -1,13 +1,7 @@
 import { cloneElement, isValidElement, useId, type ReactElement, type ReactNode } from "react";
-import {
-  ADMIN_FIELD_CLASS,
-  ADMIN_FIELD_FULL_CLASS,
-  ADMIN_FIELD_HINT_CLASS,
-  ADMIN_FIELD_LABEL_CLASS,
-  ADMIN_FIELD_LABEL_ROW_CLASS,
-  ADMIN_FIELD_REQUIRED_CLASS,
-  joinAdminClassNames
-} from "@/components/admin/admin-tailwind";
+import { HintText } from "@/components/base/input/hint-text";
+import { Label } from "@/components/base/input/label";
+import { cx } from "@/utils/cx";
 
 function joinIds(...values: Array<string | undefined>) {
   return values.filter(Boolean).join(" ") || undefined;
@@ -26,7 +20,6 @@ export default function Field({ label, hint, required, fullWidth = false, classN
   const fieldId = useId();
   const labelId = `${fieldId}-label`;
   const hintId = hint ? `${fieldId}-hint` : undefined;
-  const classNames = joinAdminClassNames("uiField", ADMIN_FIELD_CLASS, fullWidth && ADMIN_FIELD_FULL_CLASS, className ?? "");
   const childProps = isValidElement(children)
     ? (children.props as {
         "aria-labelledby"?: string;
@@ -45,22 +38,17 @@ export default function Field({ label, hint, required, fullWidth = false, classN
     : children;
 
   return (
-    <div className={classNames}>
-      <span className={joinAdminClassNames("uiLabelRow", ADMIN_FIELD_LABEL_ROW_CLASS)}>
-        <span id={labelId} className={joinAdminClassNames("uiLabel", ADMIN_FIELD_LABEL_CLASS)}>
+    <div className={cx("grid gap-2", fullWidth && "col-span-full", className)}>
+      <div className="grid gap-1">
+        <Label id={labelId} isRequired={isRequired} className="text-sm font-medium text-secondary">
           {label}
-          {isRequired ? (
-            <span className={joinAdminClassNames("uiRequiredMarker", ADMIN_FIELD_REQUIRED_CLASS)} aria-hidden="true">
-              {" "}*
-            </span>
-          ) : null}
-        </span>
+        </Label>
         {hint ? (
-          <span id={hintId} className={joinAdminClassNames("uiHint", ADMIN_FIELD_HINT_CLASS)}>
+          <HintText id={hintId} className="text-sm text-tertiary">
             {hint}
-          </span>
+          </HintText>
         ) : null}
-      </span>
+      </div>
       {content}
     </div>
   );

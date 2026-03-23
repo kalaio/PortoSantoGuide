@@ -44,7 +44,7 @@ function renderSchemaField(
         <Field key={field.fieldKey} label="Description">
           <TextArea
             value={form.description}
-            onChange={(event) => onFormChange((previous) => ({ ...previous, description: event.target.value }))}
+            onChange={(value) => onFormChange((previous) => ({ ...previous, description: value }))}
             rows={4}
             minLength={field.isRequired ? 10 : undefined}
             isInvalid={Boolean(validationErrors.description)}
@@ -58,7 +58,7 @@ function renderSchemaField(
         <Field key={field.fieldKey} label="Notes">
           <TextArea
             value={draft.notes}
-            onChange={(event) => onChange({ ...draft, notes: event.target.value })}
+            onChange={(value) => onChange({ ...draft, notes: value })}
             rows={3}
             isInvalid={Boolean(validationErrors.notes)}
             errorMessage={validationErrors.notes}
@@ -135,7 +135,7 @@ function renderSchemaField(
             type="number"
             min="0"
             value={draft.priceFrom}
-            onChange={(event) => onChange({ ...draft, priceFrom: event.target.value })}
+            onChange={(value) => onChange({ ...draft, priceFrom: value })}
             isInvalid={Boolean(validationErrors.priceFrom)}
             errorMessage={validationErrors.priceFrom}
             required={field.isRequired}
@@ -158,7 +158,7 @@ function renderSchemaField(
             type="number"
             min="1"
             value={draft.durationMinutes}
-            onChange={(event) => onChange({ ...draft, durationMinutes: event.target.value })}
+            onChange={(value) => onChange({ ...draft, durationMinutes: value })}
             isInvalid={Boolean(validationErrors.durationMinutes)}
             errorMessage={validationErrors.durationMinutes}
             required={field.isRequired}
@@ -248,7 +248,7 @@ function renderSchemaField(
             type="number"
             min="0"
             value={draft.hikeMinutes}
-            onChange={(event) => onChange({ ...draft, hikeMinutes: event.target.value })}
+            onChange={(value) => onChange({ ...draft, hikeMinutes: value })}
             isInvalid={Boolean(validationErrors.hikeMinutes)}
             errorMessage={validationErrors.hikeMinutes}
             required={field.isRequired}
@@ -262,7 +262,7 @@ function renderSchemaField(
             type="number"
             min="0"
             value={draft.entryFee}
-            onChange={(event) => onChange({ ...draft, entryFee: event.target.value })}
+            onChange={(value) => onChange({ ...draft, entryFee: value })}
             isInvalid={Boolean(validationErrors.entryFee)}
             errorMessage={validationErrors.entryFee}
             required={field.isRequired}

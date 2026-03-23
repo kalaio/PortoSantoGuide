@@ -182,9 +182,6 @@ export const ADMIN_SELECT_VALUE_CLASS = "text-[color:var(--admin-text)]";
 export const ADMIN_NATIVE_HIDDEN_CLASS =
   "absolute m-[-1px] h-px w-px overflow-hidden whitespace-nowrap border-0 p-0 [clip:rect(0,0,0,0)]";
 
-export const ADMIN_CHECKBOX_FIELD_CLASS =
-  "m-0 inline-flex max-w-full items-center rounded-2xl border border-[rgba(15,23,42,0.08)] bg-[rgba(255,255,255,0.7)] px-3 py-2.5";
-
 export const ADMIN_CHECKBOX_LABEL_CLASS = "inline-flex items-center gap-0.5 flex-wrap";
 
 export const ADMIN_BUTTON_BASE_CLASS =

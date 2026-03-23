@@ -1,5 +1,6 @@
 import type { ListingStatus } from "@prisma/client";
 import type { ListingDetails } from "@/lib/listing-details";
+import type { UiIconId } from "@/lib/ui-icons";
 
 export type ListingSchemaFieldSummary = {
   fieldKey: string;
@@ -11,7 +12,7 @@ export type ListingSchemaFieldSummary = {
 export type ListingCategorySummary = {
   slug: string;
   label: string;
-  iconName: string | null;
+  iconName: UiIconId | null;
   sectionSlug: string;
   sectionLabel: string;
   schema: {

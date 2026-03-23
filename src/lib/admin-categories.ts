@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import type { AuthUser } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
+import { normalizeUiIconName } from "@/lib/ui-icons";
 
 export type AdminCategoryRow = {
   id: string;
@@ -115,7 +116,7 @@ function toAdminCategoryRow(row: {
     id: row.id,
     slug: row.slug,
     label: row.label,
-    iconName: row.iconName,
+    iconName: normalizeUiIconName(row.iconName),
     sortOrder: row.sortOrder,
     isActive: row.isActive,
     updatedAt: row.updatedAt.toISOString(),
@@ -185,7 +186,7 @@ export async function getAdminCategoryOptions(user: AuthUser): Promise<AdminCate
   }
 
   try {
-    return await prisma.listingCategory.findMany({
+    const categories = await prisma.listingCategory.findMany({
       orderBy: [
         {
           section: {
@@ -229,6 +230,11 @@ export async function getAdminCategoryOptions(user: AuthUser): Promise<AdminCate
         }
       }
     });
+
+    return categories.map((category) => ({
+      ...category,
+      iconName: normalizeUiIconName(category.iconName)
+    }));
   } catch {
     return [];
   }

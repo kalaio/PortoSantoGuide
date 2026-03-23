@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Button } from "@/components/ui";
+import { Button } from "@/components/base/buttons/button";
 
 export default function AdminLogoutButton() {
   const router = useRouter();
@@ -11,13 +11,12 @@ export default function AdminLogoutButton() {
   async function onLogout() {
     setIsLoading(true);
     await fetch("/api/admin/logout", { method: "POST" });
-    setIsLoading(false);
     router.push("/admin/login");
     router.refresh();
   }
 
   return (
-    <Button fullWidth variant="secondary" type="button" onClick={onLogout} disabled={isLoading}>
+    <Button className="w-full justify-center" color="secondary" size="md" type="button" onClick={onLogout} isDisabled={isLoading} isLoading={isLoading}>
       Logout
     </Button>
   );

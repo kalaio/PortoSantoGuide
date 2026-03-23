@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/base/buttons/button";
 import {
   ADMIN_ACTIONS_CLASS,
   ADMIN_FORM_CLASS,
@@ -11,7 +12,7 @@ import {
   ADMIN_LOGIN_PAGE_CLASS,
   ADMIN_PAGE_CLASS
 } from "@/components/admin/admin-tailwind";
-import { Button, Card, Field, FormSection, TextInput } from "@/components/ui";
+import { Card, Field, FormSection, TextInput } from "@/components/ui";
 
 const DEFAULT_ADMIN_REDIRECT_PATH = "/admin/listings";
 
@@ -71,18 +72,18 @@ export default function AdminLoginPage() {
         <FormSection title="Credentials" className={ADMIN_FORM_SECTION_TIGHT_CLASS}>
           <form className={ADMIN_FORM_CLASS} onSubmit={onSubmit}>
             <Field label="Username">
-              <TextInput value={username} onChange={(event) => setUsername(event.target.value)} required />
+              <TextInput value={username} onChange={setUsername} required />
             </Field>
             <Field label="Password">
               <TextInput
                 type="password"
                 value={password}
-                onChange={(event) => setPassword(event.target.value)}
+                onChange={setPassword}
                 required
               />
             </Field>
             <div className={ADMIN_ACTIONS_CLASS}>
-              <Button type="submit" disabled={isLoading}>
+              <Button type="submit" size="md" isDisabled={isLoading}>
                 Sign in
               </Button>
             </div>

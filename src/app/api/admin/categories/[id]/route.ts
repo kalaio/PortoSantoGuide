@@ -2,19 +2,16 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { requireRequestAuthUser } from "@/lib/admin-auth";
-import {
-  MATERIAL_SYMBOL_ICON_NAME_PATTERN,
-  normalizeMaterialSymbolIconName
-} from "@/lib/material-symbols";
 import { prisma } from "@/lib/prisma";
 import { requireTrustedMutationOrigin } from "@/lib/api-security";
+import { normalizeUiIconName } from "@/lib/ui-icons";
 
 const categoryIconSchema = z
   .string()
   .trim()
   .min(1)
   .max(64)
-  .regex(MATERIAL_SYMBOL_ICON_NAME_PATTERN, "Use lowercase letters, numbers, and underscores")
+  .refine((value) => normalizeUiIconName(value) !== null, "Choose a supported icon")
   .nullable()
   .optional();
 
@@ -144,7 +141,7 @@ export async function PATCH(request: Request, context: RouteContext) {
         iconName:
           parsed.data.iconName === undefined
             ? undefined
-            : normalizeMaterialSymbolIconName(parsed.data.iconName)
+            : normalizeUiIconName(parsed.data.iconName)
       },
       select: {
         id: true,

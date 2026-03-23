@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { XClose } from "@untitledui/icons";
 import { usePathname, useRouter } from "next/navigation";
 import { type MouseEvent, useEffect, useRef, useState, useTransition } from "react";
-import CloseIcon from "@/components/icons/material/CloseIcon";
+import { cn } from "@/lib/cn";
 import type { PublicMenuLink } from "@/lib/listings";
 
 type Props = {
@@ -131,20 +132,27 @@ export default function MenuOverlay({ isOpen, onClose, menuLinks }: Props) {
   };
 
   return (
-    <div ref={overlayRef} className="homeMenuOverlay" role="dialog" aria-modal="true" aria-busy={isNavigating}>
+    <div
+      ref={overlayRef}
+      className="fixed inset-0 z-[110] bg-[#f3eadf] px-6 py-6 max-[640px]:px-4 max-[640px]:py-4"
+      role="dialog"
+      aria-modal="true"
+      aria-busy={isNavigating}
+    >
       <button
         ref={closeButtonRef}
         type="button"
-        className="homeMenuClose"
+        className="absolute right-6 top-6 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f8ebde] text-gray-700 transition hover:bg-white max-[640px]:right-4 max-[640px]:top-4"
         onClick={() => {
           setPendingHref(null);
           onClose();
         }}
         aria-label="Close menu"
       >
-        <CloseIcon aria-hidden="true" />
+        <XClose className="h-5 w-5" aria-hidden="true" />
       </button>
-      <nav className="homeMenuNav">
+
+      <nav className="mt-24 grid w-full max-w-[28rem] gap-3 max-[640px]:mt-20">
         {menuLinks.map((link) => {
           const isPending = pendingHref === link.href;
 
@@ -152,11 +160,14 @@ export default function MenuOverlay({ isOpen, onClose, menuLinks }: Props) {
             <Link
               key={link.href}
               href={link.href}
-              className={`homeMenuLink${isPending ? " isPending" : ""}`}
+              className={cn(
+                "flex min-h-[4rem] items-center justify-between rounded-3xl border border-gray-warm-200 bg-white px-5 text-[1.125rem] font-semibold text-brand-900 transition hover:border-brand-200 hover:bg-gray-warm-25",
+                isPending && "pointer-events-none border-brand-200 bg-[#f6e7d4]"
+              )}
               onClick={(event) => handleLinkClick(event, link.href)}
               aria-disabled={isNavigating}
             >
-              <span className="homeMenuLinkLabel">{link.label}</span>
+              <span>{link.label}</span>
               {isPending ? <span className="routeSpinner" aria-hidden="true" /> : null}
             </Link>
           );

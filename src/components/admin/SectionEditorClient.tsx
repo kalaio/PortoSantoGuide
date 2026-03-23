@@ -2,8 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
+import AdminFormActions, { ADMIN_ACTION_BUTTON_CLASS } from "@/components/admin/AdminFormActions";
+import { Button } from "@/components/base/buttons/button";
 import {
-  ADMIN_ACTIONS_CLASS,
   ADMIN_HEADER_ACTIONS_CLASS,
   ADMIN_FORM_CLASS,
   ADMIN_HEADER_ROW_CLASS,
@@ -16,7 +17,7 @@ import {
   joinAdminClassNames
 } from "@/components/admin/admin-tailwind";
 import DeleteConfirmModal from "@/components/admin/DeleteConfirmModal";
-import { Button, ButtonLink, Card, CheckboxField, Field, FormSection, TextInput } from "@/components/ui";
+import { Card, CheckboxField, Field, FormSection, TextInput } from "@/components/ui";
 import type { AdminSectionRecord } from "@/lib/admin-sections";
 
 type ApiIssue = {
@@ -84,6 +85,7 @@ export default function SectionEditorClient({ mode, initialSection }: SectionEdi
   const isCreate = mode === "create";
   const [form, setForm] = useState<SectionFormState>(() => toFormState(initialSection));
   const [isLoading, setIsLoading] = useState(false);
+  const [activeAction, setActiveAction] = useState<"save" | "delete" | null>(null);
   const [statusMessage, setStatusMessage] = useState("");
   const [statusTone, setStatusTone] = useState<"error" | "success" | null>(null);
   const [hasTriedSubmit, setHasTriedSubmit] = useState(false);
@@ -93,11 +95,13 @@ export default function SectionEditorClient({ mode, initialSection }: SectionEdi
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setActiveAction("save");
     setHasTriedSubmit(true);
 
     if (hasValidationErrors) {
       setStatusMessage("Please complete the required fields.");
       setStatusTone("error");
+      setActiveAction(null);
       return;
     }
 
@@ -117,8 +121,6 @@ export default function SectionEditorClient({ mode, initialSection }: SectionEdi
         })
       });
 
-    setIsLoading(false);
-
     if (!response.ok) {
       const payload = (await response.json().catch(() => ({}))) as ApiError;
       setStatusMessage(
@@ -127,12 +129,15 @@ export default function SectionEditorClient({ mode, initialSection }: SectionEdi
           : `Could not update section. ${getIssueMessage(payload, "Unknown error")}`
       );
       setStatusTone("error");
+      setIsLoading(false);
+      setActiveAction(null);
       return;
     }
 
     const payload = (await response.json()) as { data: AdminSectionRecord };
 
     if (isCreate) {
+      setActiveAction(null);
       router.push(`/admin/sections/${payload.data.id}/edit`);
       return;
     }
@@ -140,6 +145,8 @@ export default function SectionEditorClient({ mode, initialSection }: SectionEdi
     setForm(toFormState(payload.data));
     setStatusMessage("Section updated.");
     setStatusTone("success");
+    setIsLoading(false);
+    setActiveAction(null);
     router.refresh();
   }
 
@@ -148,6 +155,7 @@ export default function SectionEditorClient({ mode, initialSection }: SectionEdi
       return;
     }
 
+    setActiveAction("delete");
     setIsLoading(true);
     setStatusMessage("");
     setStatusTone(null);
@@ -156,16 +164,17 @@ export default function SectionEditorClient({ mode, initialSection }: SectionEdi
       method: "DELETE"
     });
 
-    setIsLoading(false);
-
     if (!response.ok) {
       const payload = (await response.json().catch(() => ({}))) as ApiError;
       setStatusMessage(`Could not delete section. ${getIssueMessage(payload, "Unknown error")}`);
       setStatusTone("error");
       setIsDeleteDialogOpen(false);
+      setIsLoading(false);
+      setActiveAction(null);
       return;
     }
 
+    setActiveAction(null);
     router.push("/admin/sections");
     router.refresh();
   }
@@ -176,9 +185,9 @@ export default function SectionEditorClient({ mode, initialSection }: SectionEdi
         <div className={ADMIN_HEADER_ROW_CLASS}>
           <h1 className={ADMIN_TITLE_CLASS}>{isCreate ? "New Section" : "Edit Section"}</h1>
           <div className={ADMIN_HEADER_ACTIONS_CLASS}>
-            <ButtonLink variant="secondary" href="/admin/sections">
+            <Button color="secondary" size="md" href="/admin/sections">
               Back to Sections
-            </ButtonLink>
+            </Button>
           </div>
         </div>
         <p>
@@ -195,7 +204,7 @@ export default function SectionEditorClient({ mode, initialSection }: SectionEdi
             <Field label="Slug">
               <TextInput
                 value={form.slug}
-                onChange={(event) => setForm((previous) => ({ ...previous, slug: event.target.value }))}
+                onChange={(value) => setForm((previous) => ({ ...previous, slug: value }))}
                 isInvalid={hasTriedSubmit && Boolean(validationErrors.slug)}
                 errorMessage={hasTriedSubmit ? validationErrors.slug : undefined}
                 required
@@ -204,7 +213,7 @@ export default function SectionEditorClient({ mode, initialSection }: SectionEdi
             <Field label="Label">
               <TextInput
                 value={form.label}
-                onChange={(event) => setForm((previous) => ({ ...previous, label: event.target.value }))}
+                onChange={(value) => setForm((previous) => ({ ...previous, label: value }))}
                 isInvalid={hasTriedSubmit && Boolean(validationErrors.label)}
                 errorMessage={hasTriedSubmit ? validationErrors.label : undefined}
                 required
@@ -215,9 +224,7 @@ export default function SectionEditorClient({ mode, initialSection }: SectionEdi
                 type="number"
                 min="0"
                 value={form.sortOrder}
-                onChange={(event) =>
-                  setForm((previous) => ({ ...previous, sortOrder: event.target.value }))
-                }
+                onChange={(value) => setForm((previous) => ({ ...previous, sortOrder: value }))}
                 isInvalid={hasTriedSubmit && Boolean(validationErrors.sortOrder)}
                 errorMessage={hasTriedSubmit ? validationErrors.sortOrder : undefined}
                 required
@@ -228,21 +235,20 @@ export default function SectionEditorClient({ mode, initialSection }: SectionEdi
               checked={form.isActive}
               onChange={(checked) => setForm((previous) => ({ ...previous, isActive: checked }))}
             />
-            <div className={ADMIN_ACTIONS_CLASS}>
-              <Button type="submit" disabled={isLoading}>
-                {isCreate ? "Create section" : "Save changes"}
-              </Button>
-              {!isCreate ? (
-                <Button
-                  variant="danger"
-                  type="button"
-                  onClick={() => setIsDeleteDialogOpen(true)}
-                  disabled={isLoading}
-                >
-                  Delete
+            <AdminFormActions
+              primaryActions={
+                <Button type="submit" size="md" isDisabled={isLoading} isLoading={isLoading && activeAction === "save"} className={ADMIN_ACTION_BUTTON_CLASS}>
+                  {isCreate ? "Create section" : "Save changes"}
                 </Button>
-              ) : null}
-            </div>
+              }
+              destructiveAction={
+                !isCreate ? (
+                  <Button color="primary-destructive" size="md" type="button" onClick={() => setIsDeleteDialogOpen(true)} isDisabled={isLoading} className={ADMIN_ACTION_BUTTON_CLASS}>
+                    Delete
+                  </Button>
+                ) : undefined
+              }
+            />
           </form>
           {statusMessage ? (
             <p className={joinAdminClassNames(ADMIN_STATUS_MESSAGE_CLASS, statusTone === "error" && ADMIN_STATUS_MESSAGE_ERROR_CLASS)}>{statusMessage}</p>
@@ -253,8 +259,8 @@ export default function SectionEditorClient({ mode, initialSection }: SectionEdi
       <DeleteConfirmModal
         isOpen={isDeleteDialogOpen}
         title="Delete section?"
-        description={`This will remove ${initialSection?.label ?? "this section"} permanently. Delete only works when the section is no longer used by any categories.`}
-        isLoading={isLoading}
+        description={`This will permanently delete ${initialSection?.label ?? "this section"}. This action cannot be undone. Delete only works when the section is no longer used by any categories.`}
+        isLoading={isLoading && activeAction === "delete"}
         onCancel={() => {
           if (isLoading) {
             return;

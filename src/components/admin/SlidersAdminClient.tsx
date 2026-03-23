@@ -1,8 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import AdminFormActions, { ADMIN_ACTION_BUTTON_CLASS } from "@/components/admin/AdminFormActions";
+import { Button } from "@/components/base/buttons/button";
 import {
-  ADMIN_ACTIONS_CLASS,
   ADMIN_LAYOUT_GRID_CLASS,
   ADMIN_LIST_GRID_CLASS,
   ADMIN_LIST_ITEM_ACTIVE_CLASS,
@@ -16,7 +17,7 @@ import {
   joinAdminClassNames
 } from "@/components/admin/admin-tailwind";
 import DeleteConfirmModal from "@/components/admin/DeleteConfirmModal";
-import { Badge, Button, ButtonLink, Card, Field, FormSection, SelectInput, TextInput } from "@/components/ui";
+import { Badge, Card, Field, FormSection, SelectInput, TextInput } from "@/components/ui";
 
 type SliderRow = {
   id: string;
@@ -205,7 +206,7 @@ export default function SlidersAdminClient({ initialSliders }: Props) {
             <Field label="Name">
               <TextInput
                 value={editName}
-                onChange={(event) => setEditName(event.target.value)}
+                onChange={setEditName}
                 isInvalid={hasTriedSubmit && Boolean(validationErrors.name)}
                 errorMessage={hasTriedSubmit ? validationErrors.name : undefined}
                 required
@@ -214,7 +215,7 @@ export default function SlidersAdminClient({ initialSliders }: Props) {
             <Field label="Slug">
               <TextInput
                 value={editSlug}
-                onChange={(event) => setEditSlug(event.target.value)}
+                onChange={setEditSlug}
                 isInvalid={hasTriedSubmit && Boolean(validationErrors.slug)}
                 errorMessage={hasTriedSubmit ? validationErrors.slug : undefined}
                 required
@@ -229,31 +230,32 @@ export default function SlidersAdminClient({ initialSliders }: Props) {
                 <option value="false">Inactive</option>
               </SelectInput>
             </Field>
-            <div className={ADMIN_ACTIONS_CLASS}>
-              <Button variant="secondary" type="button" onClick={() => onUpdate(selectedSlider.id)}>
-                Save Changes
-              </Button>
-              <Button
-                variant="danger"
-                type="button"
-                onClick={() => openDeleteDialog(selectedSlider.id)}
-                disabled={isDeleting}
-              >
-                Delete
-              </Button>
-              <ButtonLink href={`/admin/slides?sliderId=${selectedSlider.id}`}>
-                Manage Slides
-              </ButtonLink>
-            </div>
+            <AdminFormActions
+              primaryActions={
+                <>
+                  <Button color="secondary" size="md" type="button" onClick={() => onUpdate(selectedSlider.id)} className={ADMIN_ACTION_BUTTON_CLASS}>
+                    Save Changes
+                  </Button>
+                  <Button size="md" href={`/admin/slides?sliderId=${selectedSlider.id}`} className={ADMIN_ACTION_BUTTON_CLASS}>
+                    Manage Slides
+                  </Button>
+                </>
+              }
+              destructiveAction={
+                <Button color="primary-destructive" size="md" type="button" onClick={() => openDeleteDialog(selectedSlider.id)} isDisabled={isDeleting} className={ADMIN_ACTION_BUTTON_CLASS}>
+                  Delete
+                </Button>
+              }
+            />
             </div>
           </FormSection>
         ) : (
           <FormSection title="Edit Slider">
             <div className={ADMIN_FORM_CLASS}>
               <p className="muted">No sliders yet.</p>
-              <div className={ADMIN_ACTIONS_CLASS}>
-                <ButtonLink href="/admin/sliders/new">Create Slider</ButtonLink>
-              </div>
+              <AdminFormActions
+                primaryActions={<Button size="md" href="/admin/sliders/new" className={ADMIN_ACTION_BUTTON_CLASS}>Create Slider</Button>}
+              />
             </div>
           </FormSection>
         )}
@@ -264,7 +266,7 @@ export default function SlidersAdminClient({ initialSliders }: Props) {
       <DeleteConfirmModal
         isOpen={isDeleteDialogOpen}
         title="Delete slider?"
-        description={`This will also delete all slides in ${pendingDeleteSlider?.name ?? "this slider"}.`}
+        description={`This will permanently delete ${pendingDeleteSlider?.name ?? "this slider"} and all of its slides. This action cannot be undone.`}
         isLoading={isDeleting}
         onCancel={() => {
           setIsDeleteDialogOpen(false);

@@ -2,8 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { FormEvent, useMemo, useState } from "react";
+import AdminFormActions, { ADMIN_ACTION_BUTTON_CLASS } from "@/components/admin/AdminFormActions";
+import { Button } from "@/components/base/buttons/button";
 import {
-  ADMIN_ACTIONS_CLASS,
   ADMIN_CATEGORY_ICON_INPUT_ROW_CLASS,
   ADMIN_CATEGORY_ICON_PREVIEW_CLASS,
   ADMIN_FORM_CLASS,
@@ -18,13 +19,12 @@ import {
   joinAdminClassNames
 } from "@/components/admin/admin-tailwind";
 import DeleteConfirmModal from "@/components/admin/DeleteConfirmModal";
-import MaterialSymbolsStylesheetClient from "@/components/icons/material/MaterialSymbolsStylesheetClient";
-import CategoryIcon from "@/components/icons/material/CategoryIcon";
-import { Button, ButtonLink, Card, CheckboxField, Field, FormSection, SelectInput, TextInput } from "@/components/ui";
+import ProjectIcon from "@/components/icons/ProjectIcon";
+import { Card, CheckboxField, Field, FormSection, SelectInput, TextInput } from "@/components/ui";
 import type { AdminCategoryOption } from "@/lib/admin-categories";
 import type { AdminSchemaRecord } from "@/lib/admin-schemas";
 import type { AdminSectionRecord } from "@/lib/admin-sections";
-import { normalizeMaterialSymbolIconName } from "@/lib/material-symbols";
+import { getUiIconOptionsForCategories, normalizeUiIconName } from "@/lib/ui-icons";
 
 type SchemaOption = Pick<AdminSchemaRecord, "id" | "slug" | "label" | "isActive">;
 
@@ -120,12 +120,14 @@ export default function CategoryEditorClient({
     toFormState(initialCategory, initialSections, initialSchemas)
   );
   const [isLoading, setIsLoading] = useState(false);
+  const [activeAction, setActiveAction] = useState<"save" | "delete" | null>(null);
   const [statusMessage, setStatusMessage] = useState("");
   const [statusTone, setStatusTone] = useState<"error" | "success" | null>(null);
   const [hasTriedSubmit, setHasTriedSubmit] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const validationErrors = getValidationErrors(form);
   const hasValidationErrors = Object.keys(validationErrors).length > 0;
+  const iconOptions = getUiIconOptionsForCategories();
 
   const availableSections = useMemo(
     () => initialSections.filter((section) => section.isActive || section.id === form.sectionId),
@@ -138,11 +140,13 @@ export default function CategoryEditorClient({
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setActiveAction("save");
     setHasTriedSubmit(true);
 
     if (hasValidationErrors) {
       setStatusMessage("Please complete the required fields.");
       setStatusTone("error");
+      setActiveAction(null);
       return;
     }
 
@@ -158,7 +162,7 @@ export default function CategoryEditorClient({
         body: JSON.stringify({
           slug: form.slug,
           label: form.label,
-          iconName: normalizeMaterialSymbolIconName(form.iconName),
+          iconName: normalizeUiIconName(form.iconName),
           sectionId: form.sectionId,
           schemaId: form.schemaId,
           sortOrder: Number(form.sortOrder),
@@ -166,8 +170,6 @@ export default function CategoryEditorClient({
         })
       }
     );
-
-    setIsLoading(false);
 
     if (!response.ok) {
       const payload = (await response.json().catch(() => ({}))) as ApiError;
@@ -177,12 +179,15 @@ export default function CategoryEditorClient({
           : `Could not update category. ${getIssueMessage(payload, "Unknown error")}`
       );
       setStatusTone("error");
+      setIsLoading(false);
+      setActiveAction(null);
       return;
     }
 
     const payload = (await response.json()) as { data: AdminCategoryOption };
 
     if (isCreate) {
+      setActiveAction(null);
       router.push(`/admin/categories/${payload.data.id}/edit`);
       return;
     }
@@ -199,6 +204,8 @@ export default function CategoryEditorClient({
     }));
     setStatusMessage("Category updated.");
     setStatusTone("success");
+    setIsLoading(false);
+    setActiveAction(null);
     router.refresh();
   }
 
@@ -207,6 +214,7 @@ export default function CategoryEditorClient({
       return;
     }
 
+    setActiveAction("delete");
     setIsLoading(true);
     setStatusMessage("");
     setStatusTone(null);
@@ -215,16 +223,17 @@ export default function CategoryEditorClient({
       method: "DELETE"
     });
 
-    setIsLoading(false);
-
     if (!response.ok) {
       const payload = (await response.json().catch(() => ({}))) as ApiError;
       setStatusMessage(`Could not delete category. ${getIssueMessage(payload, "Unknown error")}`);
       setStatusTone("error");
       setIsDeleteDialogOpen(false);
+      setIsLoading(false);
+      setActiveAction(null);
       return;
     }
 
+    setActiveAction(null);
     router.push("/admin/categories");
     router.refresh();
   }
@@ -234,16 +243,14 @@ export default function CategoryEditorClient({
 
   return (
     <>
-      <MaterialSymbolsStylesheetClient iconNames={[form.iconName]} />
-
       <main className={ADMIN_PAGE_CLASS}>
         <section className={ADMIN_HERO_CLASS}>
           <div className={ADMIN_HEADER_ROW_CLASS}>
             <h1 className={ADMIN_TITLE_CLASS}>{isCreate ? "New Category" : "Edit Category"}</h1>
             <div className={ADMIN_HEADER_ACTIONS_CLASS}>
-              <ButtonLink variant="secondary" href="/admin/categories">
+              <Button color="secondary" size="md" href="/admin/categories">
                 Back to Categories
-              </ButtonLink>
+              </Button>
             </div>
           </div>
           <p>
@@ -260,7 +267,7 @@ export default function CategoryEditorClient({
               <Field label="Slug">
                 <TextInput
                   value={form.slug}
-                  onChange={(event) => setForm((previous) => ({ ...previous, slug: event.target.value }))}
+                  onChange={(value) => setForm((previous) => ({ ...previous, slug: value }))}
                   isInvalid={hasTriedSubmit && Boolean(validationErrors.slug)}
                   errorMessage={hasTriedSubmit ? validationErrors.slug : undefined}
                   required
@@ -269,23 +276,29 @@ export default function CategoryEditorClient({
               <Field label="Label">
                 <TextInput
                   value={form.label}
-                  onChange={(event) => setForm((previous) => ({ ...previous, label: event.target.value }))}
+                  onChange={(value) => setForm((previous) => ({ ...previous, label: value }))}
                   isInvalid={hasTriedSubmit && Boolean(validationErrors.label)}
                   errorMessage={hasTriedSubmit ? validationErrors.label : undefined}
                   required
                 />
               </Field>
-              <Field label="Icon name" hint="Material symbol name">
+              <Field label="Icon" hint="Curated Untitled UI icon">
                 <div className={ADMIN_CATEGORY_ICON_INPUT_ROW_CLASS}>
-                  <TextInput
+                  <SelectInput
                     value={form.iconName}
                     onChange={(event) =>
                       setForm((previous) => ({ ...previous, iconName: event.target.value }))
                     }
-                    placeholder="award_meal"
-                  />
+                  >
+                    <option value="">No icon</option>
+                    {iconOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </SelectInput>
                   <span className={ADMIN_CATEGORY_ICON_PREVIEW_CLASS} aria-hidden="true">
-                    <CategoryIcon iconName={form.iconName} />
+                    <ProjectIcon iconName={form.iconName} className="h-5 w-5" />
                   </span>
                 </div>
               </Field>
@@ -324,9 +337,7 @@ export default function CategoryEditorClient({
                   type="number"
                   min="0"
                   value={form.sortOrder}
-                  onChange={(event) =>
-                    setForm((previous) => ({ ...previous, sortOrder: event.target.value }))
-                  }
+                  onChange={(value) => setForm((previous) => ({ ...previous, sortOrder: value }))}
                   isInvalid={hasTriedSubmit && Boolean(validationErrors.sortOrder)}
                   errorMessage={hasTriedSubmit ? validationErrors.sortOrder : undefined}
                   required
@@ -344,21 +355,20 @@ export default function CategoryEditorClient({
                   {currentSchema ? `Schema: ${currentSchema.label} (${currentSchema.slug})` : ""}
                 </p>
               ) : null}
-              <div className={ADMIN_ACTIONS_CLASS}>
-                <Button type="submit" disabled={isLoading}>
-                  {isCreate ? "Create category" : "Save changes"}
-                </Button>
-                {!isCreate ? (
-                  <Button
-                    variant="danger"
-                    type="button"
-                    onClick={() => setIsDeleteDialogOpen(true)}
-                    disabled={isLoading}
-                  >
-                    Delete
+              <AdminFormActions
+                primaryActions={
+                  <Button type="submit" size="md" isDisabled={isLoading} isLoading={isLoading && activeAction === "save"} className={ADMIN_ACTION_BUTTON_CLASS}>
+                    {isCreate ? "Create category" : "Save changes"}
                   </Button>
-                ) : null}
-              </div>
+                }
+                destructiveAction={
+                  !isCreate ? (
+                    <Button color="primary-destructive" size="md" type="button" onClick={() => setIsDeleteDialogOpen(true)} isDisabled={isLoading} className={ADMIN_ACTION_BUTTON_CLASS}>
+                      Delete
+                    </Button>
+                  ) : undefined
+                }
+              />
             </form>
             {availableSections.length === 0 || availableSchemas.length === 0 ? (
               <p className={joinAdminClassNames(ADMIN_STATUS_MESSAGE_CLASS, ADMIN_STATUS_MESSAGE_ERROR_CLASS)}>
@@ -374,8 +384,8 @@ export default function CategoryEditorClient({
         <DeleteConfirmModal
           isOpen={isDeleteDialogOpen}
           title="Delete category?"
-          description={`This will remove ${initialCategory?.label ?? "this category"} permanently. Delete only works when the category is no longer attached to any listings.`}
-          isLoading={isLoading}
+          description={`This will permanently delete ${initialCategory?.label ?? "this category"}. This action cannot be undone. Delete only works when the category is no longer attached to any listings.`}
+          isLoading={isLoading && activeAction === "delete"}
           onCancel={() => {
             if (isLoading) {
               return;

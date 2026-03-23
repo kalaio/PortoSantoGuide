@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
-const { heroui } = require("@heroui/theme/plugin");
-
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
@@ -10,5 +7,5 @@ module.exports = {
   theme: {
     extend: {}
   },
-  plugins: [heroui()]
+  plugins: []
 };

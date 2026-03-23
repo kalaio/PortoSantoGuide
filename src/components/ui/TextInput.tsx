@@ -1,6 +1,27 @@
-import { Input } from "@heroui/react";
-import { forwardRef, type ChangeEvent, type ComponentPropsWithoutRef, type FocusEvent, type ReactNode } from "react";
-import { ADMIN_INPUT_CLASS, ADMIN_INPUT_WRAPPER_CLASS, joinAdminClassNames } from "@/components/admin/admin-tailwind";
+import type { ComponentType, FocusEvent, HTMLAttributes, ReactNode } from "react";
+import { HintText } from "@/components/base/input/hint-text";
+import { InputBase } from "@/components/base/input/input";
+import { cx } from "@/utils/cx";
+
+function getNextValue(payload: unknown) {
+  if (typeof payload === "string") {
+    return payload;
+  }
+
+  if (
+    payload &&
+    typeof payload === "object" &&
+    "target" in payload &&
+    payload.target &&
+    typeof payload.target === "object" &&
+    "value" in payload.target
+  ) {
+    const target = payload.target as { value?: unknown };
+    return typeof target.value === "string" ? target.value : String(target.value ?? "");
+  }
+
+  return String(payload ?? "");
+}
 
 type TextInputProps = {
   "aria-describedby"?: string;
@@ -10,47 +31,63 @@ type TextInputProps = {
   disabled?: boolean;
   errorMessage?: ReactNode;
   id?: string;
+  icon?: ComponentType<HTMLAttributes<HTMLOrSVGElement>>;
   isInvalid?: boolean;
   max?: number | string;
   min?: number | string;
   minLength?: number;
   name?: string;
   onBlur?: (event: FocusEvent<HTMLInputElement>) => void;
-  onChange?: (event: ChangeEvent<HTMLInputElement>) => void;
+  onChange?: (value: string) => void;
   placeholder?: string;
   readOnly?: boolean;
   required?: boolean;
+  size?: "sm" | "md";
   step?: number | string;
   type?: string;
   value?: string | number | readonly string[];
 };
 
-const TextInput = forwardRef<HTMLInputElement, TextInputProps>(function TextInput(
-  { className, defaultValue, disabled, errorMessage, isInvalid, readOnly, required, value, ...props },
-  ref
-) {
-  const classNames = joinAdminClassNames("uiInput", ADMIN_INPUT_CLASS, className ?? "");
-
-  return (
-    <Input
-      ref={ref}
-      className={classNames}
-      classNames={{
-        inputWrapper: ADMIN_INPUT_WRAPPER_CLASS
-      }}
-      variant="bordered"
-      size="lg"
-      radius="lg"
+export default function TextInput({
+  className,
+  defaultValue,
+  disabled,
+  errorMessage,
+  icon,
+  isInvalid,
+  onChange,
+  readOnly,
+  required,
+  size = "md",
+  value,
+  ...props
+}: TextInputProps) {
+  const input = (
+    <InputBase
+      {...(props as Record<string, unknown>)}
+      size={size}
+      wrapperClassName={cx("w-full", className)}
+      icon={icon}
+      defaultValue={defaultValue === undefined ? undefined : String(defaultValue)}
+      value={value === undefined ? undefined : String(value)}
       isDisabled={disabled}
       isInvalid={isInvalid}
       isReadOnly={readOnly}
       isRequired={required}
-      errorMessage={errorMessage}
-      defaultValue={defaultValue === undefined ? undefined : String(defaultValue)}
-      value={value === undefined ? undefined : String(value)}
-      {...(props as ComponentPropsWithoutRef<typeof Input>)}
+      onChange={(payload) => onChange?.(getNextValue(payload))}
     />
   );
-});
 
-export default TextInput;
+  if (!errorMessage) {
+    return input;
+  }
+
+  return (
+    <div className="grid gap-2">
+      {input}
+      <HintText isInvalid className="text-[0.84rem]">
+        {errorMessage}
+      </HintText>
+    </div>
+  );
+}

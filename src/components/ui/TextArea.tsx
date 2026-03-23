@@ -1,10 +1,27 @@
-import { Textarea } from "@heroui/react";
-import { forwardRef, type ChangeEvent, type ComponentPropsWithoutRef, type FocusEvent, type ReactNode } from "react";
-import {
-  ADMIN_INPUT_CLASS,
-  ADMIN_TEXTAREA_INPUT_WRAPPER_CLASS,
-  joinAdminClassNames
-} from "@/components/admin/admin-tailwind";
+import type { FocusEvent, ReactNode } from "react";
+import { HintText } from "@/components/base/input/hint-text";
+import { TextAreaBase } from "@/components/base/textarea/textarea";
+import { cx } from "@/utils/cx";
+
+function getNextValue(payload: unknown) {
+  if (typeof payload === "string") {
+    return payload;
+  }
+
+  if (
+    payload &&
+    typeof payload === "object" &&
+    "target" in payload &&
+    payload.target &&
+    typeof payload.target === "object" &&
+    "value" in payload.target
+  ) {
+    const target = payload.target as { value?: unknown };
+    return typeof target.value === "string" ? target.value : String(target.value ?? "");
+  }
+
+  return String(payload ?? "");
+}
 
 type TextAreaProps = {
   "aria-describedby"?: string;
@@ -18,7 +35,7 @@ type TextAreaProps = {
   minLength?: number;
   name?: string;
   onBlur?: (event: FocusEvent<HTMLTextAreaElement>) => void;
-  onChange?: (event: ChangeEvent<HTMLTextAreaElement>) => void;
+  onChange?: (value: string) => void;
   placeholder?: string;
   readOnly?: boolean;
   required?: boolean;
@@ -26,32 +43,41 @@ type TextAreaProps = {
   value?: string | number | readonly string[];
 };
 
-const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(function TextArea(
-  { className, defaultValue, disabled, errorMessage, isInvalid, readOnly, required, value, ...props },
-  ref
-) {
-  const classNames = joinAdminClassNames("uiTextarea", ADMIN_INPUT_CLASS, className ?? "");
-
-  return (
-    <Textarea
-      ref={ref}
-      className={classNames}
-      classNames={{
-        inputWrapper: ADMIN_TEXTAREA_INPUT_WRAPPER_CLASS
-      }}
-      variant="bordered"
-      size="lg"
-      radius="lg"
-      isDisabled={disabled}
-      isInvalid={isInvalid}
-      isReadOnly={readOnly}
-      isRequired={required}
-      errorMessage={errorMessage}
+export default function TextArea({
+  className,
+  defaultValue,
+  disabled,
+  errorMessage,
+  isInvalid,
+  onChange,
+  readOnly,
+  required,
+  value,
+  ...props
+}: TextAreaProps) {
+  const textArea = (
+    <TextAreaBase
+      {...(props as Record<string, unknown>)}
+      className={cx("w-full", isInvalid && "ring-error", className)}
       defaultValue={defaultValue === undefined ? undefined : String(defaultValue)}
       value={value === undefined ? undefined : String(value)}
-      {...(props as ComponentPropsWithoutRef<typeof Textarea>)}
+      disabled={disabled}
+      readOnly={readOnly}
+      required={required}
+      onChange={(payload) => onChange?.(getNextValue(payload))}
     />
   );
-});
 
-export default TextArea;
+  if (!errorMessage) {
+    return textArea;
+  }
+
+  return (
+    <div className="grid gap-2">
+      {textArea}
+      <HintText isInvalid className="text-[0.84rem]">
+        {errorMessage}
+      </HintText>
+    </div>
+  );
+}

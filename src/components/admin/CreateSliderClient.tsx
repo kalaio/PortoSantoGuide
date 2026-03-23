@@ -2,8 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
+import AdminFormActions, { ADMIN_ACTION_BUTTON_CLASS } from "@/components/admin/AdminFormActions";
+import { Button } from "@/components/base/buttons/button";
 import {
-  ADMIN_ACTIONS_CLASS,
   ADMIN_FORM_CLASS,
   ADMIN_PANEL_CLASS,
   ADMIN_REQUIRED_LEGEND_CLASS,
@@ -11,7 +12,7 @@ import {
   ADMIN_STATUS_MESSAGE_ERROR_CLASS,
   joinAdminClassNames
 } from "@/components/admin/admin-tailwind";
-import { Button, ButtonLink, Field, TextInput } from "@/components/ui";
+import { Field, TextInput } from "@/components/ui";
 
 type ApiError = {
   error?: string;
@@ -48,16 +49,19 @@ export default function CreateSliderClient() {
   const [statusTone, setStatusTone] = useState<"error" | null>(null);
   const [hasTriedSubmit, setHasTriedSubmit] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [activeAction, setActiveAction] = useState<"create" | null>(null);
   const validationErrors = getValidationErrors(name, slug);
   const hasValidationErrors = Object.keys(validationErrors).length > 0;
 
   async function onCreate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setActiveAction("create");
     setHasTriedSubmit(true);
 
     if (hasValidationErrors) {
       setMessage("Please complete the required fields.");
       setStatusTone("error");
+      setActiveAction(null);
       return;
     }
 
@@ -74,15 +78,16 @@ export default function CreateSliderClient() {
       })
     });
 
-    setIsLoading(false);
-
     if (!response.ok) {
       const payload = (await response.json().catch(() => ({}))) as ApiError;
       setMessage(payload.error ?? "Could not create slider.");
       setStatusTone("error");
+      setIsLoading(false);
+      setActiveAction(null);
       return;
     }
 
+    setActiveAction(null);
     router.push("/admin/sliders");
     router.refresh();
   }
@@ -94,7 +99,7 @@ export default function CreateSliderClient() {
         <Field label="Name">
           <TextInput
             value={name}
-            onChange={(event) => setName(event.target.value)}
+            onChange={setName}
             isInvalid={hasTriedSubmit && Boolean(validationErrors.name)}
             errorMessage={hasTriedSubmit ? validationErrors.name : undefined}
             required
@@ -104,7 +109,7 @@ export default function CreateSliderClient() {
         <Field label="Slug">
           <TextInput
             value={slug}
-            onChange={(event) => setSlug(event.target.value)}
+            onChange={setSlug}
             isInvalid={hasTriedSubmit && Boolean(validationErrors.slug)}
             errorMessage={hasTriedSubmit ? validationErrors.slug : undefined}
             required
@@ -112,14 +117,18 @@ export default function CreateSliderClient() {
           />
         </Field>
 
-        <div className={ADMIN_ACTIONS_CLASS}>
-          <Button type="submit" disabled={isLoading}>
-            Create slider
-          </Button>
-          <ButtonLink variant="secondary" href="/admin/sliders">
-            Cancel
-          </ButtonLink>
-        </div>
+        <AdminFormActions
+          primaryActions={
+            <>
+              <Button type="submit" size="md" isDisabled={isLoading} isLoading={isLoading && activeAction === "create"} className={ADMIN_ACTION_BUTTON_CLASS}>
+                Create slider
+              </Button>
+              <Button color="secondary" size="md" href="/admin/sliders" className={ADMIN_ACTION_BUTTON_CLASS}>
+                Cancel
+              </Button>
+            </>
+          }
+        />
       </form>
 
       {message ? <p className={joinAdminClassNames(ADMIN_STATUS_MESSAGE_CLASS, statusTone === "error" && ADMIN_STATUS_MESSAGE_ERROR_CLASS)}>{message}</p> : null}

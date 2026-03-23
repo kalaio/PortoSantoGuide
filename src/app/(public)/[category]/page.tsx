@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import DirectoryView from "@/components/DirectoryView";
-import MaterialSymbolsStylesheet from "@/components/icons/material/MaterialSymbolsStylesheet";
 import { getListingsByCategorySlug } from "@/lib/listings";
 
 type CategoryArchivePageProps = {
@@ -17,17 +16,17 @@ export default async function CategoryArchivePage({ params }: CategoryArchivePag
   }
 
   return (
-    <main className="page">
-      <MaterialSymbolsStylesheet
-        iconNames={[archive.category.iconName, ...archive.listings.map((item) => item.primaryCategory.iconName)]}
-      />
-
-      <section className="hero">
-        <Link href={`/${archive.category.sectionSlug}`} className="muted">
+    <main className="mx-auto w-full max-w-[1280px] px-5 py-10 max-[640px]:px-3 max-[640px]:py-6">
+      <section className="mb-8 grid gap-3 max-[640px]:mb-6">
+        <Link href={`/${archive.category.sectionSlug}`} className="text-lg text-gray-500 max-[640px]:text-base">
           {archive.category.sectionLabel}
         </Link>
-        <h1>{archive.category.label}</h1>
-        <p>Discover curated places in Porto Santo, map-first and easy to explore.</p>
+        <h1 className="m-0 text-display-sm font-semibold tracking-[-0.04em] text-gray-950 max-[640px]:text-[2.5rem]">
+          {archive.category.label}
+        </h1>
+        <p className="max-w-[46rem] text-xl text-gray-600 max-[640px]:text-lg">
+          Discover curated places in Porto Santo, map-first and easy to explore.
+        </p>
       </section>
 
       <DirectoryView

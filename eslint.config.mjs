@@ -16,6 +16,11 @@ export default defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
-    "public/uploads/**"
+    "public/uploads/**",
+    "src/components/application/**",
+    "src/components/base/**",
+    "src/components/foundations/**",
+    "src/components/marketing/**",
+    "src/components/shared-assets/**"
   ])
 ]);

@@ -1,51 +1,29 @@
 "use client";
 
+import { SearchMd } from "@untitledui/icons";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { SearchLinearIcon } from "@heroui/shared-icons";
-import type { SortDescriptor } from "@react-types/shared";
-import {
-  Chip,
-  Input,
-  Pagination,
-  Select,
-  SelectItem,
-  Table,
-  TableBody,
-  TableCell,
-  TableColumn,
-  TableHeader,
-  TableRow
-} from "@heroui/react";
+import AdminPagination from "@/components/admin/AdminPagination";
 import {
   ADMIN_HEADER_ROW_DENSE_CLASS,
   ADMIN_METRICS_CLASS,
   ADMIN_SECTION_HEADING_CLASS,
-  ADMIN_SELECT_TRIGGER_CLASS,
   ADMIN_TABLE_CLAMP_CLASS,
   ADMIN_TABLE_FILTERS_COMPACT_CLASS,
   ADMIN_TABLE_FOOTER_CLASS,
   ADMIN_TABLE_PANEL_CLASS,
-  ADMIN_TABLE_SEARCH_ICON_CLASS,
   ADMIN_TABLE_SCROLLER_CLASS,
   ADMIN_TOOLBAR_PANEL_CLASS
 } from "@/components/admin/admin-tailwind";
-import type {
-  AdminSchemaRow,
-  AdminSchemasSortDirection,
-  AdminSchemasSortField
-} from "@/lib/admin-schemas";
+import { Badge, SelectInput, TextInput } from "@/components/ui";
+import type { AdminSchemaRow, AdminSchemasSortDirection, AdminSchemasSortField } from "@/lib/admin-schemas";
 
 type AdminSchemasTableProps = {
   schemas: AdminSchemaRow[];
   total: number;
   page: number;
   pageSize: number;
-  statusCounts: {
-    total: number;
-    active: number;
-    inactive: number;
-  };
+  statusCounts: { total: number; active: number; inactive: number };
   filters: {
     query: string;
     status: string;
@@ -57,37 +35,25 @@ type AdminSchemasTableProps = {
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50];
 const SEARCH_DEBOUNCE_MS = 280;
-const SORTABLE_COLUMNS: ReadonlySet<AdminSchemasSortField> = new Set([
-  "updatedAt",
-  "label",
-  "status",
-  "sortOrder",
-  "fieldCount"
-]);
-
-function getStatusColor(isActive: boolean) {
-  return isActive ? ("success" as const) : ("default" as const);
-}
-
-function getStatusLabel(isActive: boolean) {
-  return isActive ? "Active" : "Inactive";
-}
+const SORTABLE_COLUMNS: ReadonlySet<AdminSchemasSortField> = new Set(["updatedAt", "label", "status", "sortOrder", "fieldCount"]);
 
 function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en-GB", {
-    dateStyle: "medium",
-    timeStyle: "short"
-  }).format(new Date(value));
+  return new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
 }
 
-export default function AdminSchemasTable({
-  schemas,
-  total,
-  page,
-  pageSize,
-  statusCounts,
-  filters
-}: AdminSchemasTableProps) {
+function getNextSortDirection(currentSort: AdminSchemasSortField, currentDir: AdminSchemasSortDirection, column: AdminSchemasSortField) {
+  if (currentSort !== column) {
+    return "ascending";
+  }
+  return currentDir === "ascending" ? "descending" : "ascending";
+}
+
+function SortableHeader({ label, column, activeSort, activeDir, onSort }: { label: string; column: AdminSchemasSortField; activeSort: AdminSchemasSortField; activeDir: AdminSchemasSortDirection; onSort: (column: AdminSchemasSortField) => void }) {
+  const isActive = activeSort === column;
+  return <button type="button" className="inline-flex items-center gap-1 font-inherit" onClick={() => onSort(column)}><span>{label}</span><span aria-hidden="true">{isActive ? (activeDir === "ascending" ? "↑" : "↓") : "↕"}</span></button>;
+}
+
+export default function AdminSchemasTable({ schemas, total, page, pageSize, statusCounts, filters }: AdminSchemasTableProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -95,279 +61,76 @@ export default function AdminSchemasTable({
   const [queryInput, setQueryInput] = useState(filters.query);
   const requestedQueryRef = useRef(filters.query);
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
-  const sortDescriptor: SortDescriptor = {
-    column: filters.sort,
-    direction: filters.dir
-  };
 
   useEffect(() => {
     setQueryInput(filters.query);
     requestedQueryRef.current = filters.query;
   }, [filters.query]);
 
-  const updateFilters = useCallback(
-    (next: Partial<AdminSchemasTableProps["filters"] & { page?: number; pageSize?: number }>) => {
-      const params = new URLSearchParams(searchParams.toString());
+  const updateFilters = useCallback((next: Partial<AdminSchemasTableProps["filters"] & { page?: number; pageSize?: number }>) => {
+    const params = new URLSearchParams(searchParams.toString());
+    const nextPage = next.page ?? 1;
+    const nextPageSize = next.pageSize ?? pageSize;
+    const nextQuery = next.query ?? queryInput;
+    const nextStatus = next.status ?? filters.status;
+    const nextFrontendFilters = next.frontendFilters ?? filters.frontendFilters;
+    const nextSort = next.sort ?? filters.sort;
+    const nextDir = next.dir ?? filters.dir;
 
-      const nextPage = next.page ?? 1;
-      const nextPageSize = next.pageSize ?? pageSize;
-      const nextQuery = next.query ?? queryInput;
-      const nextStatus = next.status ?? filters.status;
-      const nextFrontendFilters = next.frontendFilters ?? filters.frontendFilters;
-      const nextSort = next.sort ?? filters.sort;
-      const nextDir = next.dir ?? filters.dir;
+    requestedQueryRef.current = nextQuery;
+    if (nextQuery) params.set("q", nextQuery);
+    else params.delete("q");
+    if (nextStatus !== "all") params.set("status", nextStatus);
+    else params.delete("status");
+    if (nextFrontendFilters !== "all") params.set("frontendFilters", nextFrontendFilters);
+    else params.delete("frontendFilters");
+    if (nextSort !== "sortOrder") params.set("sort", nextSort);
+    else params.delete("sort");
+    if (nextDir !== "ascending") params.set("dir", nextDir);
+    else params.delete("dir");
+    if (nextPage > 1) params.set("page", String(nextPage));
+    else params.delete("page");
+    if (nextPageSize !== 25) params.set("pageSize", String(nextPageSize));
+    else params.delete("pageSize");
 
-      requestedQueryRef.current = nextQuery;
-
-      if (nextQuery) {
-        params.set("q", nextQuery);
-      } else {
-        params.delete("q");
-      }
-
-      if (nextStatus !== "all") {
-        params.set("status", nextStatus);
-      } else {
-        params.delete("status");
-      }
-
-      if (nextFrontendFilters !== "all") {
-        params.set("frontendFilters", nextFrontendFilters);
-      } else {
-        params.delete("frontendFilters");
-      }
-
-      if (nextSort !== "sortOrder") {
-        params.set("sort", nextSort);
-      } else {
-        params.delete("sort");
-      }
-
-      if (nextDir !== "ascending") {
-        params.set("dir", nextDir);
-      } else {
-        params.delete("dir");
-      }
-
-      if (nextPage > 1) {
-        params.set("page", String(nextPage));
-      } else {
-        params.delete("page");
-      }
-
-      if (nextPageSize !== 25) {
-        params.set("pageSize", String(nextPageSize));
-      } else {
-        params.delete("pageSize");
-      }
-
-      startTransition(() => {
-        router.replace(params.toString().length > 0 ? `${pathname}?${params.toString()}` : pathname, {
-          scroll: false
-        });
-      });
-    },
-    [filters.dir, filters.frontendFilters, filters.sort, filters.status, pageSize, pathname, queryInput, router, searchParams]
-  );
+    startTransition(() => {
+      router.replace(params.toString().length > 0 ? `${pathname}?${params.toString()}` : pathname, { scroll: false });
+    });
+  }, [filters.dir, filters.frontendFilters, filters.sort, filters.status, pageSize, pathname, queryInput, router, searchParams]);
 
   useEffect(() => {
-    if (queryInput === filters.query || queryInput === requestedQueryRef.current) {
-      return;
-    }
-
-    const timeoutId = window.setTimeout(() => {
-      updateFilters({ query: queryInput, page: 1 });
-    }, SEARCH_DEBOUNCE_MS);
-
-    return () => {
-      window.clearTimeout(timeoutId);
-    };
+    if (queryInput === filters.query || queryInput === requestedQueryRef.current) return;
+    const timeoutId = window.setTimeout(() => updateFilters({ query: queryInput, page: 1 }), SEARCH_DEBOUNCE_MS);
+    return () => window.clearTimeout(timeoutId);
   }, [filters.query, queryInput, updateFilters]);
 
-  function handleSortChange(descriptor: SortDescriptor) {
-    const nextColumn = typeof descriptor.column === "string" ? descriptor.column : String(descriptor.column);
-
-    if (!SORTABLE_COLUMNS.has(nextColumn as AdminSchemasSortField)) {
-      return;
-    }
-
-    updateFilters({
-      sort: nextColumn as AdminSchemasSortField,
-      dir: descriptor.direction === "descending" ? "descending" : "ascending",
-      page: 1
-    });
+  function handleSortChange(column: AdminSchemasSortField) {
+    if (!SORTABLE_COLUMNS.has(column)) return;
+    updateFilters({ sort: column, dir: getNextSortDirection(filters.sort, filters.dir, column), page: 1 });
   }
 
   return (
     <>
       <section className={ADMIN_TOOLBAR_PANEL_CLASS}>
-        <div className={ADMIN_HEADER_ROW_DENSE_CLASS}>
-          <div>
-            <h2 className={ADMIN_SECTION_HEADING_CLASS}>Overview</h2>
-          </div>
-          <div className={ADMIN_METRICS_CLASS}>
-            <Chip radius="sm" size="sm" variant="flat">Total {statusCounts.total}</Chip>
-            <Chip color="success" radius="sm" size="sm" variant="flat">Active {statusCounts.active}</Chip>
-            <Chip radius="sm" size="sm" variant="flat">Inactive {statusCounts.inactive}</Chip>
-          </div>
-        </div>
-
+        <div className={ADMIN_HEADER_ROW_DENSE_CLASS}><div><h2 className={ADMIN_SECTION_HEADING_CLASS}>Overview</h2></div><div className={ADMIN_METRICS_CLASS}><Badge>Total {statusCounts.total}</Badge><Badge tone="success">Active {statusCounts.active}</Badge><Badge>Inactive {statusCounts.inactive}</Badge></div></div>
         <div className={ADMIN_TABLE_FILTERS_COMPACT_CLASS}>
-          <Input
-            aria-label="Search schemas"
-            classNames={{ inputWrapper: "!shadow-none" }}
-            isClearable
-            placeholder="Search label, slug, or description"
-            radius="lg"
-            size="lg"
-            startContent={<SearchLinearIcon aria-hidden="true" className={ADMIN_TABLE_SEARCH_ICON_CLASS} height={18} width={18} />}
-            value={queryInput}
-            variant="bordered"
-            onClear={() => {
-              setQueryInput("");
-            }}
-            onValueChange={(value) => {
-              setQueryInput(value);
-            }}
-          />
-          <Select
-            aria-label="Filter schemas by status"
-            classNames={{ trigger: ADMIN_SELECT_TRIGGER_CLASS }}
-            disallowEmptySelection
-            radius="lg"
-            selectedKeys={new Set([filters.status])}
-            size="lg"
-            variant="bordered"
-            onSelectionChange={(keys) => {
-              const nextValue = keys instanceof Set ? String(keys.values().next().value ?? "all") : "all";
-              updateFilters({ status: nextValue, page: 1 });
-            }}
-          >
-            <SelectItem key="all">All statuses</SelectItem>
-            <SelectItem key="active">Active</SelectItem>
-            <SelectItem key="inactive">Inactive</SelectItem>
-          </Select>
-          <Select
-            aria-label="Filter schemas by frontend filter support"
-            classNames={{ trigger: ADMIN_SELECT_TRIGGER_CLASS }}
-            disallowEmptySelection
-            radius="lg"
-            selectedKeys={new Set([filters.frontendFilters])}
-            size="lg"
-            variant="bordered"
-            onSelectionChange={(keys) => {
-              const nextValue = keys instanceof Set ? String(keys.values().next().value ?? "all") : "all";
-              updateFilters({ frontendFilters: nextValue, page: 1 });
-            }}
-          >
-            <SelectItem key="all">All field setups</SelectItem>
-            <SelectItem key="enabled">With frontend filters</SelectItem>
-            <SelectItem key="disabled">Without frontend filters</SelectItem>
-          </Select>
-          <Select
-            aria-label="Rows per page"
-            classNames={{ trigger: ADMIN_SELECT_TRIGGER_CLASS }}
-            disallowEmptySelection
-            radius="lg"
-            selectedKeys={new Set([String(pageSize)])}
-            size="lg"
-            variant="bordered"
-            onSelectionChange={(keys) => {
-              const nextValue = keys instanceof Set ? String(keys.values().next().value ?? pageSize) : String(pageSize);
-              const parsed = Number(nextValue);
-              if (!Number.isFinite(parsed)) {
-                return;
-              }
-
-              updateFilters({ pageSize: parsed, page: 1 });
-            }}
-          >
-            {PAGE_SIZE_OPTIONS.map((option) => (
-              <SelectItem key={String(option)}>{`Show ${option}`}</SelectItem>
-            ))}
-          </Select>
+          <TextInput aria-label="Search schemas" icon={SearchMd} placeholder="Search label, slug, or description" value={queryInput} onChange={setQueryInput} />
+          <SelectInput aria-label="Filter by field setup" value={filters.frontendFilters} onChange={(event) => updateFilters({ frontendFilters: event.target.value, page: 1 })}><option value="all">All field setups</option><option value="enabled">With frontend filters</option><option value="disabled">Without frontend filters</option></SelectInput>
+          <SelectInput aria-label="Filter by status" value={filters.status} onChange={(event) => updateFilters({ status: event.target.value, page: 1 })}><option value="all">All statuses</option><option value="active">Active</option><option value="inactive">Inactive</option></SelectInput>
+          <SelectInput aria-label="Rows per page" value={String(pageSize)} onChange={(event) => updateFilters({ pageSize: Number(event.target.value), page: 1 })}>{PAGE_SIZE_OPTIONS.map((option) => <option key={option} value={option}>{`Show ${option}`}</option>)}</SelectInput>
         </div>
       </section>
 
       <section className={ADMIN_TABLE_PANEL_CLASS}>
         <div className={ADMIN_TABLE_SCROLLER_CLASS}>
-          <Table
-            aria-label="Schemas table"
-            classNames={{
-              base: "adminDataTable",
-              table: "adminDataTableTable adminSchemasDataTableTable",
-              th: "adminDataTableHeadCell",
-              td: "adminDataTableCell",
-              tr: "adminDataTableRow"
-            }}
-            removeWrapper
-            shadow="none"
-            sortDescriptor={sortDescriptor}
-            onSortChange={handleSortChange}
-            onRowAction={(key) => {
-              const schema = schemas.find((item) => item.id === key);
-              if (!schema) {
-                return;
-              }
-
-              router.push(`/admin/schemas/${schema.id}/edit`);
-            }}
-          >
-            <TableHeader>
-              <TableColumn key="label" allowsSorting isRowHeader>
-                Schema
-              </TableColumn>
-              <TableColumn key="status" allowsSorting>
-                Status
-              </TableColumn>
-              <TableColumn key="fieldCount" allowsSorting>
-                Fields
-              </TableColumn>
-              <TableColumn key="sortOrder" allowsSorting>
-                Order
-              </TableColumn>
-              <TableColumn key="updatedAt" allowsSorting>
-                Updated
-              </TableColumn>
-            </TableHeader>
-            <TableBody emptyContent={isPending ? "Updating schemas..." : "No schemas match the current filters."} items={schemas}>
-              {(schema) => (
-                <TableRow key={schema.id} textValue={`${schema.label} ${schema.slug}`}>
-                  <TableCell>
-                    <div className="adminListingPrimaryCell">
-                      <strong>{schema.label}</strong>
-                      <span className="muted">{schema.slug}</span>
-                      {schema.description?.trim() ? (
-                        <span className={`muted ${ADMIN_TABLE_CLAMP_CLASS}`}>{schema.description}</span>
-                      ) : null}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="adminListingStatusCell">
-                      <Chip color={getStatusColor(schema.isActive)} radius="sm" size="sm" variant="flat">
-                        {getStatusLabel(schema.isActive)}
-                      </Chip>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <span className={ADMIN_TABLE_CLAMP_CLASS}>
-                      {schema.fieldCount} total{schema.frontendFilterCount > 0 ? ` · ${schema.frontendFilterCount} frontend` : ""}
-                    </span>
-                  </TableCell>
-                  <TableCell>{schema.sortOrder}</TableCell>
-                  <TableCell>{formatDate(schema.updatedAt)}</TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+          <table className="adminDataTableTable adminSchemasDataTableTable w-full min-w-[860px] border-collapse">
+            <thead><tr><th className="adminDataTableHeadCell text-left"><SortableHeader label="Schema" column="label" activeSort={filters.sort} activeDir={filters.dir} onSort={handleSortChange} /></th><th className="adminDataTableHeadCell text-left"><SortableHeader label="Status" column="status" activeSort={filters.sort} activeDir={filters.dir} onSort={handleSortChange} /></th><th className="adminDataTableHeadCell text-left"><SortableHeader label="Fields" column="fieldCount" activeSort={filters.sort} activeDir={filters.dir} onSort={handleSortChange} /></th><th className="adminDataTableHeadCell text-left"><SortableHeader label="Order" column="sortOrder" activeSort={filters.sort} activeDir={filters.dir} onSort={handleSortChange} /></th><th className="adminDataTableHeadCell text-left"><SortableHeader label="Updated" column="updatedAt" activeSort={filters.sort} activeDir={filters.dir} onSort={handleSortChange} /></th></tr></thead>
+            <tbody>
+              {schemas.length === 0 ? <tr><td className="adminDataTableCell px-4 py-6 text-[color:var(--admin-muted)]" colSpan={5}>{isPending ? "Updating schemas..." : "No schemas match the current filters."}</td></tr> : schemas.map((schema, index) => <tr key={schema.id} className="adminDataTableRow" data-last={index === schemas.length - 1 ? "true" : undefined} tabIndex={0} onClick={() => router.push(`/admin/schemas/${schema.id}/edit`)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); router.push(`/admin/schemas/${schema.id}/edit`); } }}><td className="adminDataTableCell px-4 py-4"><div className="adminListingPrimaryCell"><strong>{schema.label}</strong><span className="muted">{schema.slug}</span>{schema.description?.trim() ? <span className={`muted ${ADMIN_TABLE_CLAMP_CLASS}`}>{schema.description}</span> : null}</div></td><td className="adminDataTableCell px-4 py-4"><Badge tone={schema.isActive ? "success" : "neutral"}>{schema.isActive ? "Active" : "Inactive"}</Badge></td><td className="adminDataTableCell px-4 py-4"><span className={ADMIN_TABLE_CLAMP_CLASS}>{schema.fieldCount} total{schema.frontendFilterCount > 0 ? ` · ${schema.frontendFilterCount} frontend` : ""}</span></td><td className="adminDataTableCell px-4 py-4">{schema.sortOrder}</td><td className="adminDataTableCell px-4 py-4">{formatDate(schema.updatedAt)}</td></tr>)}
+            </tbody>
+          </table>
         </div>
-
-        <div className={ADMIN_TABLE_FOOTER_CLASS}>
-          <p className="muted">
-            Showing {total === 0 ? 0 : (page - 1) * pageSize + 1}-{Math.min(page * pageSize, total)} of {total} schemas
-          </p>
-          <Pagination page={page} total={totalPages} onChange={(nextPage) => updateFilters({ page: nextPage })} />
-        </div>
+        <div className={ADMIN_TABLE_FOOTER_CLASS}><p className="muted">Showing {total === 0 ? 0 : (page - 1) * pageSize + 1}-{Math.min(page * pageSize, total)} of {total} schemas</p><AdminPagination page={page} total={totalPages} onChange={(nextPage) => updateFilters({ page: nextPage })} /></div>
       </section>
     </>
   );

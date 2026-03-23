@@ -1,13 +1,15 @@
 "use client";
 
+import { CheckboxGroup } from "react-aria-components";
 import {
   ADMIN_CHECKBOX_LABEL_MUTED_CLASS,
   ADMIN_FIELD_ERROR_CLASS,
   ADMIN_HOURS_SECTION_CLASS,
-  ADMIN_LIST_GRID_CLASS,
+  ADMIN_CHECKBOX_LABEL_CLASS,
   joinAdminClassNames
 } from "@/components/admin/admin-tailwind";
-import { CheckboxField, Field, SelectInput } from "@/components/ui";
+import { Checkbox } from "@/components/base/checkbox/checkbox";
+import { Field, SelectInput } from "@/components/ui";
 import type { ListingCategorySectionProps } from "@/components/admin/listing-editor/types";
 
 export default function ListingCategorySection({
@@ -18,6 +20,25 @@ export default function ListingCategorySection({
   onToggleCategory,
   validationErrors
 }: ListingCategorySectionProps) {
+  const categoryIdsErrorId = "listing-category-ids-error";
+
+  function handleCategoryGroupChange(nextCategoryIds: string[]) {
+    const nextValues = new Set(nextCategoryIds);
+
+    for (const category of availableCategoryOptions) {
+      if (category.id === form.primaryCategoryId) {
+        continue;
+      }
+
+      const wasSelected = form.categoryIds.includes(category.id);
+      const isSelected = nextValues.has(category.id);
+
+      if (wasSelected !== isSelected) {
+        onToggleCategory(category.id, isSelected);
+      }
+    }
+  }
+
   return (
     <>
       <Field label="Primary category (canonical URL)">
@@ -38,28 +59,37 @@ export default function ListingCategorySection({
 
       <div className={ADMIN_HOURS_SECTION_CLASS}>
         <p className="muted">Additional categories (same section)</p>
-        <div className={joinAdminClassNames(ADMIN_LIST_GRID_CLASS, "adminCheckboxList")}>
-          {availableCategoryOptions.map((category) => {
-            const checked = form.categoryIds.includes(category.id);
-            const isPrimary = form.primaryCategoryId === category.id;
+        <CheckboxGroup
+          aria-label="Additional categories"
+          value={form.categoryIds}
+          onChange={handleCategoryGroupChange}
+          isInvalid={Boolean(validationErrors?.categoryIds)}
+          aria-describedby={validationErrors?.categoryIds ? categoryIdsErrorId : undefined}
+          className="grid gap-3"
+        >
+          <div className="flex flex-wrap gap-x-5 gap-y-3">
+            {availableCategoryOptions.map((category) => {
+              const isPrimary = form.primaryCategoryId === category.id;
 
-            return (
-              <CheckboxField
-                key={category.id}
-                label={
-                  <span>
-                    {category.label}
-                    {isPrimary ? <span className={ADMIN_CHECKBOX_LABEL_MUTED_CLASS}> (primary)</span> : null}
-                  </span>
-                }
-                checked={checked}
-                disabled={isPrimary}
-                onChange={(nextChecked) => onToggleCategory(category.id, nextChecked)}
-              />
-            );
-          })}
-        </div>
-        {validationErrors?.categoryIds ? <p className={ADMIN_FIELD_ERROR_CLASS}>{validationErrors.categoryIds}</p> : null}
+              return (
+                <Checkbox
+                  key={category.id}
+                  value={category.id}
+                  size="md"
+                  isDisabled={isPrimary}
+                  className="max-w-full"
+                  label={
+                    <span className={joinAdminClassNames(ADMIN_CHECKBOX_LABEL_CLASS, "max-w-full") }>
+                      {category.label}
+                      {isPrimary ? <span className={ADMIN_CHECKBOX_LABEL_MUTED_CLASS}> (primary)</span> : null}
+                    </span>
+                  }
+                />
+              );
+            })}
+          </div>
+        </CheckboxGroup>
+        {validationErrors?.categoryIds ? <p id={categoryIdsErrorId} className={ADMIN_FIELD_ERROR_CLASS}>{validationErrors.categoryIds}</p> : null}
       </div>
     </>
   );

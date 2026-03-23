@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Button } from "@/components/base/buttons/button";
 import AdminSchemasTable from "@/components/admin/AdminSchemasTable";
 import {
   ADMIN_HEADER_ACTIONS_CLASS,
@@ -7,7 +7,6 @@ import {
   ADMIN_PAGE_CLASS,
   ADMIN_TITLE_CLASS
 } from "@/components/admin/admin-tailwind";
-import { buttonClassName } from "@/components/ui/button-styles";
 import { requireServerUserWithRole } from "@/lib/admin-auth-server";
 import {
   getAdminSchemasPageData,
@@ -57,9 +56,9 @@ export default async function AdminSchemasPage({ searchParams }: AdminSchemasPag
         <div className={ADMIN_HEADER_ROW_CLASS}>
           <h1 className={ADMIN_TITLE_CLASS}>Schemas</h1>
           <div className={ADMIN_HEADER_ACTIONS_CLASS}>
-            <Link className={buttonClassName({})} href="/admin/schemas/new">
+            <Button size="md" href="/admin/schemas/new">
               New Schema
-            </Link>
+            </Button>
           </div>
         </div>
       </section>

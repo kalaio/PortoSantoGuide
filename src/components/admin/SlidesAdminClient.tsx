@@ -2,8 +2,9 @@
 
 import Image from "next/image";
 import { useMemo, useRef, useState } from "react";
+import AdminFormActions, { ADMIN_ACTION_BUTTON_CLASS } from "@/components/admin/AdminFormActions";
+import { Button } from "@/components/base/buttons/button";
 import {
-  ADMIN_ACTIONS_CLASS,
   ADMIN_LAYOUT_GRID_CLASS,
   ADMIN_LIST_GRID_CLASS,
   ADMIN_LIST_ITEM_ACTIVE_CLASS,
@@ -31,7 +32,7 @@ import {
   joinAdminClassNames
 } from "@/components/admin/admin-tailwind";
 import DeleteConfirmModal from "@/components/admin/DeleteConfirmModal";
-import { Button, Field, FileTriggerButton, FormSection, SelectInput, TextArea, TextInput } from "@/components/ui";
+import { Field, FileTriggerButton, FormSection, SelectInput, TextArea, TextInput } from "@/components/ui";
 
 type Slider = {
   id: string;
@@ -73,6 +74,7 @@ export default function SlidesAdminClient({
   const [message, setMessage] = useState("");
   const [statusTone, setStatusTone] = useState<"error" | "success" | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [activeAction, setActiveAction] = useState<"load" | "create" | "delete" | null>(null);
   const [uploadingByKey, setUploadingByKey] = useState<Record<string, boolean>>({});
   const [lastUploadedFilenameByKey, setLastUploadedFilenameByKey] = useState<Record<string, string>>({});
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -109,6 +111,7 @@ export default function SlidesAdminClient({
     setSelectedSliderId(sliderId);
     setMessage("");
     setStatusTone(null);
+    setActiveAction("load");
     setIsLoading(true);
     const nextSlides = await fetchSlides(sliderId);
 
@@ -118,12 +121,14 @@ export default function SlidesAdminClient({
 
     setSlides(nextSlides);
     setIsLoading(false);
+    setActiveAction(null);
   }
 
   async function handleCreateSlide() {
     if (!selectedSliderId) {
       return;
     }
+    setActiveAction("create");
     setIsLoading(true);
     setMessage("");
     setStatusTone(null);
@@ -134,17 +139,19 @@ export default function SlidesAdminClient({
       body: JSON.stringify({})
     });
 
-    setIsLoading(false);
-
     if (!response.ok) {
       const payload = (await response.json().catch(() => ({}))) as { error?: string };
       setMessage(payload.error ?? "Could not create slide.");
       setStatusTone("error");
+      setIsLoading(false);
+      setActiveAction(null);
       return;
     }
 
     const payload = (await response.json()) as { data: Slide };
     setSlides([...slides, payload.data].sort((a, b) => a.order - b.order));
+    setIsLoading(false);
+    setActiveAction(null);
   }
 
   async function handleUpdateSlide(id: string, patch: Partial<Slide>) {
@@ -158,20 +165,21 @@ export default function SlidesAdminClient({
       body: JSON.stringify(patch)
     });
 
-    setIsLoading(false);
-
     if (!response.ok) {
       const payload = (await response.json().catch(() => ({}))) as { error?: string };
       setMessage(payload.error ?? "Could not update slide.");
       setStatusTone("error");
+      setIsLoading(false);
       return;
     }
 
     const payload = (await response.json()) as { data: Slide };
     setSlides(slides.map((slide) => (slide.id === id ? payload.data : slide)));
+    setIsLoading(false);
   }
 
   async function handleDeleteSlide(id: string) {
+    setActiveAction("delete");
     setIsLoading(true);
     setMessage("");
     setStatusTone(null);
@@ -180,20 +188,22 @@ export default function SlidesAdminClient({
       method: "DELETE"
     });
 
-    setIsLoading(false);
-
     if (!response.ok) {
       const payload = (await response.json().catch(() => ({}))) as { error?: string };
       setMessage(payload.error ?? "Could not delete slide.");
       setStatusTone("error");
       setIsDeleteDialogOpen(false);
       setPendingDeleteSlideId(null);
+      setIsLoading(false);
+      setActiveAction(null);
       return;
     }
 
     setSlides(slides.filter((slide) => slide.id !== id));
     setIsDeleteDialogOpen(false);
     setPendingDeleteSlideId(null);
+    setIsLoading(false);
+    setActiveAction(null);
   }
 
   function openDeleteDialog(slideId: string) {
@@ -313,11 +323,13 @@ export default function SlidesAdminClient({
       <section className={ADMIN_PANEL_CLASS}>
         <FormSection title={selectedSlider ? `Slides for ${selectedSlider.name}` : "Slides"}>
         {selectedSlider ? (
-          <div className={ADMIN_ACTIONS_CLASS}>
-            <Button type="button" onClick={handleCreateSlide} disabled={isLoading}>
-              Add Slide
-            </Button>
-          </div>
+          <AdminFormActions
+            primaryActions={
+              <Button type="button" size="md" onClick={handleCreateSlide} isDisabled={isLoading} isLoading={isLoading && activeAction === "create"} className={ADMIN_ACTION_BUTTON_CLASS}>
+                Add Slide
+              </Button>
+            }
+          />
         ) : null}
 
         {slides.length === 0 ? <p className="muted">No slides yet.</p> : null}
@@ -330,8 +342,9 @@ export default function SlidesAdminClient({
                 <div className={ADMIN_SLIDE_ACTIONS_CLASS}>
                   <Button
                     type="button"
-                    variant="secondary"
-                    disabled={index === 0}
+                    color="secondary"
+                    size="md"
+                    isDisabled={index === 0}
                     onClick={() => {
                       const next = [...slides];
                       const [item] = next.splice(index, 1);
@@ -343,8 +356,9 @@ export default function SlidesAdminClient({
                   </Button>
                   <Button
                     type="button"
-                    variant="secondary"
-                    disabled={index === slides.length - 1}
+                    color="secondary"
+                    size="md"
+                    isDisabled={index === slides.length - 1}
                     onClick={() => {
                       const next = [...slides];
                       const [item] = next.splice(index, 1);
@@ -354,12 +368,7 @@ export default function SlidesAdminClient({
                   >
                     Down
                   </Button>
-                  <Button
-                    type="button"
-                    variant="danger"
-                    onClick={() => openDeleteDialog(slide.id)}
-                    disabled={isLoading}
-                  >
+                  <Button type="button" color="primary-destructive" size="md" onClick={() => openDeleteDialog(slide.id)} isDisabled={isLoading}>
                     Delete
                   </Button>
                 </div>
@@ -370,10 +379,10 @@ export default function SlidesAdminClient({
                   <TextInput
                     value={slide.title ?? ""}
                     placeholder="Slide title"
-                    onChange={(event) =>
+                    onChange={(value) =>
                       setSlides(
                         slides.map((item) =>
-                          item.id === slide.id ? { ...item, title: event.target.value } : item
+                          item.id === slide.id ? { ...item, title: value } : item
                         )
                       )
                     }
@@ -460,10 +469,10 @@ export default function SlidesAdminClient({
                     type="url"
                     value={slide.videoUrl ?? ""}
                     placeholder="https://..."
-                    onChange={(event) =>
+                    onChange={(value) =>
                       setSlides(
                         slides.map((item) =>
-                          item.id === slide.id ? { ...item, videoUrl: event.target.value } : item
+                          item.id === slide.id ? { ...item, videoUrl: value } : item
                         )
                       )
                     }
@@ -488,10 +497,10 @@ export default function SlidesAdminClient({
                     rows={3}
                     value={slide.description ?? ""}
                     placeholder="Short summary shown with the slide"
-                    onChange={(event) =>
+                    onChange={(value) =>
                       setSlides(
                         slides.map((item) =>
-                          item.id === slide.id ? { ...item, description: event.target.value } : item
+                          item.id === slide.id ? { ...item, description: value } : item
                         )
                       )
                     }
@@ -510,8 +519,8 @@ export default function SlidesAdminClient({
       <DeleteConfirmModal
         isOpen={isDeleteDialogOpen}
         title="Delete slide?"
-        description={`This will remove ${pendingDeleteSlide?.title ?? "this slide"} permanently.`}
-        isLoading={isLoading}
+        description={`This will permanently delete ${pendingDeleteSlide?.title ?? "this slide"}. This action cannot be undone.`}
+        isLoading={isLoading && activeAction === "delete"}
         onCancel={() => {
           if (isLoading) {
             return;

@@ -2,9 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { FormEvent, useMemo, useState } from "react";
-import { Chip } from "@heroui/react";
+import AdminFormActions, { ADMIN_ACTION_BUTTON_CLASS } from "@/components/admin/AdminFormActions";
+import { Button } from "@/components/base/buttons/button";
 import {
-  ADMIN_ACTIONS_CLASS,
   ADMIN_FORM_CLASS,
   ADMIN_HEADER_ACTIONS_CLASS,
   ADMIN_HEADER_ROW_CLASS,
@@ -29,7 +29,7 @@ import {
 } from "@/components/admin/listing-editor/helpers";
 import { useListingMap } from "@/components/admin/listing-editor/useListingMap";
 import type { ApiErrorResponse, ListingFormState } from "@/components/admin/listing-editor/types";
-import { Button, ButtonLink } from "@/components/ui";
+import { Badge } from "@/components/ui";
 import type { AdminCategoryOption } from "@/lib/admin-categories";
 import { hasListingSchemaField } from "@/lib/listing-fields";
 import { validateListingPayloadAgainstSchemaFields } from "@/lib/listing-schema-validation";
@@ -92,6 +92,7 @@ export default function EditListingClient({
   const [statusTone, setStatusTone] = useState<"error" | "success" | null>(null);
   const [hasTriedSubmit, setHasTriedSubmit] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [activeAction, setActiveAction] = useState<"save" | "publish" | "discard" | "archive" | "unarchive" | "delete" | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const categories = initialCategories;
   const isPublishedListing = liveStatus === "PUBLISHED";
@@ -242,7 +243,7 @@ export default function EditListingClient({
     };
   }
 
-  async function persistChanges() {
+  async function persistChanges({ keepLoading = false }: { keepLoading?: boolean } = {}) {
     setHasTriedSubmit(true);
     setStatusTone(null);
 
@@ -262,7 +263,9 @@ export default function EditListingClient({
       body: JSON.stringify(toPayload(form))
     });
 
-    setIsLoading(false);
+    if (!response.ok || !keepLoading) {
+      setIsLoading(false);
+    }
 
     if (!response.ok) {
       const payload = (await response.json().catch(() => ({}))) as ApiErrorResponse;
@@ -292,9 +295,11 @@ export default function EditListingClient({
 
   async function onUpdate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setActiveAction("save");
     const payload = await persistChanges();
 
     if (!payload) {
+      setActiveAction(null);
       return;
     }
 
@@ -302,42 +307,39 @@ export default function EditListingClient({
       setHasDraftRevision(Boolean(payload.hasDraftRevision));
       setStatusMessage("Draft changes saved. Publish to update the live listing.");
       setStatusTone("success");
+      setActiveAction(null);
       return;
     }
 
     setStatusMessage("Listing updated.");
     setStatusTone("success");
+    setActiveAction(null);
     router.refresh();
   }
 
   async function onPublish() {
-    const saved = await persistChanges();
+    setActiveAction("publish");
+    const saved = await persistChanges({ keepLoading: true });
 
     if (!saved) {
+      setActiveAction(null);
       return;
     }
-
-    if (saved.mode === "draft") {
-      setHasDraftRevision(Boolean(saved.hasDraftRevision));
-    }
-
-    setIsLoading(true);
-    setStatusMessage("");
-    setStatusTone(null);
 
     const response = await fetch(`/api/listings/${listing.id}/publish`, {
       method: "POST"
     });
-
-    setIsLoading(false);
 
     const payload = (await response.json().catch(() => ({}))) as ApiErrorResponse & {
       data?: { slug?: string; status?: ListingFormState["status"] };
     };
 
     if (!response.ok) {
+      setHasDraftRevision(Boolean(saved.hasDraftRevision));
       setStatusMessage(payload.error ?? "Could not publish listing.");
       setStatusTone("error");
+      setIsLoading(false);
+      setActiveAction(null);
       return;
     }
 
@@ -345,11 +347,14 @@ export default function EditListingClient({
     setLiveStatus("PUBLISHED");
     setStatusMessage("Listing published.");
     setStatusTone("success");
+    setIsLoading(false);
+    setActiveAction(null);
 
     router.push(`/admin/listings/${listing.id}/edit`);
   }
 
   async function onDiscardDraft() {
+    setActiveAction("discard");
     setIsLoading(true);
     setStatusMessage("");
     setStatusTone(null);
@@ -358,23 +363,26 @@ export default function EditListingClient({
       method: "POST"
     });
 
-    setIsLoading(false);
-
     const payload = (await response.json().catch(() => ({}))) as ApiErrorResponse;
 
     if (!response.ok) {
       setStatusMessage(payload.error ?? "Could not discard draft.");
       setStatusTone("error");
+      setIsLoading(false);
+      setActiveAction(null);
       return;
     }
 
     setHasDraftRevision(false);
     setStatusMessage("Draft discarded.");
     setStatusTone("success");
+    setIsLoading(false);
+    setActiveAction(null);
     router.refresh();
   }
 
   async function onArchive() {
+    setActiveAction("archive");
     setIsLoading(true);
     setStatusMessage("");
     setStatusTone(null);
@@ -383,13 +391,13 @@ export default function EditListingClient({
       method: "POST"
     });
 
-    setIsLoading(false);
-
     const payload = (await response.json().catch(() => ({}))) as ApiErrorResponse;
 
     if (!response.ok) {
       setStatusMessage(payload.error ?? "Could not archive listing.");
       setStatusTone("error");
+      setIsLoading(false);
+      setActiveAction(null);
       return;
     }
 
@@ -397,32 +405,33 @@ export default function EditListingClient({
     setHasDraftRevision(false);
     setStatusMessage("Listing archived.");
     setStatusTone("success");
+    setIsLoading(false);
+    setActiveAction(null);
     router.refresh();
   }
 
   async function onUnarchive() {
-    const saved = await persistChanges();
+    setActiveAction("unarchive");
+    const saved = await persistChanges({ keepLoading: true });
 
     if (!saved) {
+      setActiveAction(null);
       return;
     }
 
-    setIsLoading(true);
-    setStatusMessage("");
-    setStatusTone(null);
-
-    const endpoint = saved.mode === "draft" || hasDraftRevision ? "publish" : "unarchive";
+    const endpoint = saved.mode === "draft" || Boolean(saved.hasDraftRevision) ? "publish" : "unarchive";
     const response = await fetch(`/api/listings/${listing.id}/${endpoint}`, {
       method: "POST"
     });
 
-    setIsLoading(false);
-
     const payload = (await response.json().catch(() => ({}))) as ApiErrorResponse;
 
     if (!response.ok) {
+      setHasDraftRevision(Boolean(saved.hasDraftRevision));
       setStatusMessage(payload.error ?? "Could not unarchive listing.");
       setStatusTone("error");
+      setIsLoading(false);
+      setActiveAction(null);
       return;
     }
 
@@ -430,10 +439,13 @@ export default function EditListingClient({
     setLiveStatus("PUBLISHED");
     setStatusMessage("Listing unarchived.");
     setStatusTone("success");
+    setIsLoading(false);
+    setActiveAction(null);
     router.refresh();
   }
 
   async function onDelete() {
+    setActiveAction("delete");
     setIsLoading(true);
     setStatusMessage("");
     setStatusTone(null);
@@ -442,17 +454,19 @@ export default function EditListingClient({
       method: "DELETE"
     });
 
-    setIsLoading(false);
-
     if (!response.ok) {
       const payload = (await response.json().catch(() => ({}))) as ApiErrorResponse;
       setStatusMessage(payload.error ?? "Could not delete listing.");
       setStatusTone("error");
       setIsDeleteDialogOpen(false);
+      setIsLoading(false);
+      setActiveAction(null);
       return;
     }
 
     setIsDeleteDialogOpen(false);
+    setIsLoading(false);
+    setActiveAction(null);
     router.push("/admin/listings");
   }
 
@@ -462,19 +476,19 @@ export default function EditListingClient({
         <div className={ADMIN_HEADER_ROW_CLASS}>
           <h1 className={ADMIN_TITLE_CLASS}>Edit Listing</h1>
           <div className={ADMIN_HEADER_ACTIONS_CLASS}>
-            <ButtonLink variant="secondary" href="/admin/listings">
+            <Button color="secondary" size="md" href="/admin/listings">
               Back to Listings
-            </ButtonLink>
+            </Button>
           </div>
         </div>
         <div className={ADMIN_LISTING_STATE_BAR_CLASS}>
-          <Chip color={getLiveStatusChipColor(liveStatus)} radius="sm" size="sm" variant="flat">
+          <Badge tone={getLiveStatusChipColor(liveStatus) === "warning" ? "warning" : getLiveStatusChipColor(liveStatus) === "success" ? "success" : "neutral"}>
             Status: {formatStatus(liveStatus)}
-          </Chip>
+          </Badge>
           {hasDraftRevision ? (
-            <Chip className={ADMIN_DRAFT_CHIP_CLASS} radius="sm" size="sm" variant="flat">
+            <Badge className={ADMIN_DRAFT_CHIP_CLASS} tone="primary">
               Draft changes pending
-            </Chip>
+            </Badge>
           ) : null}
         </div>
         <p>Update listing details, categories, and coordinates.</p>
@@ -519,39 +533,41 @@ export default function EditListingClient({
             onChange={setDetailsDraft}
             validationErrors={hasTriedSubmit ? validationErrorMap : {}}
           />
-          <div className={ADMIN_ACTIONS_CLASS}>
-            <Button type="submit" disabled={isLoading}>
-              {isPublishedListing ? "Save draft" : "Save changes"}
-            </Button>
-            {isArchivedListing ? (
-              <Button variant="secondary" type="button" onClick={onUnarchive} disabled={isLoading}>
-                Unarchive
-              </Button>
-            ) : null}
-            {hasDraftRevision || (!isPublishedListing && !isArchivedListing) ? (
-              <Button variant="secondary" type="button" onClick={onPublish} disabled={isLoading}>
-                {isPublishedListing ? "Publish changes" : "Publish listing"}
-              </Button>
-            ) : null}
-            {hasDraftRevision ? (
-              <Button variant="secondary" type="button" onClick={onDiscardDraft} disabled={isLoading}>
-                Discard draft
-              </Button>
-            ) : null}
-            {isPublishedListing ? (
-              <Button variant="secondary" type="button" onClick={onArchive} disabled={isLoading}>
-                Archive
-              </Button>
-            ) : null}
-            <Button
-              variant="danger"
-              type="button"
-              onClick={() => setIsDeleteDialogOpen(true)}
-              disabled={isLoading}
-            >
-              Delete
-            </Button>
-          </div>
+          <AdminFormActions
+            primaryActions={
+              <>
+                <Button type="submit" size="md" isDisabled={isLoading} isLoading={isLoading && activeAction === "save"} className={ADMIN_ACTION_BUTTON_CLASS}>
+                  {isPublishedListing ? "Save draft" : "Save changes"}
+                </Button>
+                {isArchivedListing ? (
+                  <Button color="secondary" size="md" type="button" onClick={onUnarchive} isDisabled={isLoading} isLoading={isLoading && activeAction === "unarchive"} className={ADMIN_ACTION_BUTTON_CLASS}>
+                    Unarchive
+                  </Button>
+                ) : hasDraftRevision || (!isPublishedListing && !isArchivedListing) ? (
+                  <Button color="secondary" size="md" type="button" onClick={onPublish} isDisabled={isLoading} isLoading={isLoading && activeAction === "publish"} className={ADMIN_ACTION_BUTTON_CLASS}>
+                    {isPublishedListing ? "Publish changes" : "Publish listing"}
+                  </Button>
+                ) : null}
+                {hasDraftRevision ? (
+                  <Button color="secondary" size="md" type="button" onClick={onDiscardDraft} isDisabled={isLoading} isLoading={isLoading && activeAction === "discard"} className={ADMIN_ACTION_BUTTON_CLASS}>
+                    Discard draft
+                  </Button>
+                ) : null}
+              </>
+            }
+            destructiveAction={
+              <>
+                {isPublishedListing ? (
+                  <Button color="secondary" size="md" type="button" onClick={onArchive} isDisabled={isLoading} isLoading={isLoading && activeAction === "archive"} className={ADMIN_ACTION_BUTTON_CLASS}>
+                    Archive
+                  </Button>
+                ) : null}
+                <Button color="primary-destructive" size="md" type="button" onClick={() => setIsDeleteDialogOpen(true)} isDisabled={isLoading} className={ADMIN_ACTION_BUTTON_CLASS}>
+                  Delete
+                </Button>
+              </>
+            }
+          />
         </form>
 
         {statusMessage ? (
@@ -562,8 +578,8 @@ export default function EditListingClient({
       <DeleteConfirmModal
         isOpen={isDeleteDialogOpen}
         title="Delete listing?"
-        description="This action cannot be undone."
-        isLoading={isLoading}
+        description={`This will permanently delete ${listing.title}. This action cannot be undone.`}
+        isLoading={isLoading && activeAction === "delete"}
         onCancel={() => {
           if (isLoading) {
             return;

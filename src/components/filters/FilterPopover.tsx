@@ -1,6 +1,7 @@
 "use client";
 
 import { type ReactNode, useCallback, useEffect, useId, useRef, useState } from "react";
+import { cn } from "@/lib/cn";
 
 type FilterPopoverRenderArgs<T> = {
   draftValue: T;
@@ -97,10 +98,15 @@ export default function FilterPopover<T>({
   }, [draftValue, getDraft, isEqual, isOpen, normalize, onApply, value]);
 
   return (
-    <div className="filterItem">
+    <div className="relative">
       <button
         type="button"
-        className={`filterButton${isOpen ? " isOpen" : ""}${isActive ? " isActive" : ""}`}
+        className={cn(
+          "inline-flex min-h-12 items-center rounded-full border bg-white px-5 text-[1.0625rem] font-medium text-gray-900 transition",
+          isOpen || isActive
+            ? "border-gray-950 shadow-sm"
+            : "border-gray-warm-200 hover:border-brand-200 hover:bg-gray-warm-50"
+        )}
         onClick={() => {
           if (isOpen) {
             setDraftValue(getDraft(value));
@@ -119,7 +125,14 @@ export default function FilterPopover<T>({
       </button>
 
       {isOpen ? (
-        <div className={["filterPopover", popoverClassName ?? ""].filter(Boolean).join(" ")} id={popoverId} ref={popoverRef}>
+        <div
+          className={cn(
+            "absolute left-0 top-[calc(100%+0.75rem)] z-30 w-[min(22rem,calc(100vw-1.5rem))] rounded-[1.75rem] border border-gray-warm-200 bg-white p-4 shadow-[0_24px_60px_rgba(10,13,18,0.1)]",
+            popoverClassName ?? ""
+          )}
+          id={popoverId}
+          ref={popoverRef}
+        >
           {children({
             draftValue,
             setDraftValue,
@@ -128,10 +141,10 @@ export default function FilterPopover<T>({
             }
           })}
 
-          <div className="filterFooter">
+          <div className="mt-4 flex items-center justify-between gap-3">
             <button
               type="button"
-              className="filterClear"
+              className="text-base font-semibold text-gray-500 transition hover:text-gray-800"
               onClick={() => {
                 const nextValue = normalize(clearValue);
                 onApply(nextValue);
@@ -143,7 +156,7 @@ export default function FilterPopover<T>({
 
             <button
               type="button"
-              className="filterApply"
+              className="inline-flex min-h-11 items-center justify-center rounded-full bg-brand-900 px-5 text-base font-semibold text-white transition hover:bg-brand-800"
               onClick={() => {
                 const nextValue = normalize(draftValue);
                 onApply(nextValue);

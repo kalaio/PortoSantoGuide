@@ -1,14 +1,5 @@
-import { Divider } from "@heroui/react";
 import type { ReactNode } from "react";
-import {
-  ADMIN_FORM_SECTION_BODY_CLASS,
-  ADMIN_FORM_SECTION_CLASS,
-  ADMIN_FORM_SECTION_DESCRIPTION_CLASS,
-  ADMIN_FORM_SECTION_DIVIDER_CLASS,
-  ADMIN_FORM_SECTION_HEADER_CLASS,
-  ADMIN_FORM_SECTION_TITLE_CLASS,
-  joinAdminClassNames
-} from "@/components/admin/admin-tailwind";
+import { cx } from "@/utils/cx";
 
 type FormSectionProps = {
   title: string;
@@ -18,26 +9,18 @@ type FormSectionProps = {
   children: ReactNode;
 };
 
-export default function FormSection({
-  title,
-  description,
-  actions,
-  className,
-  children
-}: FormSectionProps) {
-  const classNames = joinAdminClassNames("uiFormSection", ADMIN_FORM_SECTION_CLASS, className ?? "");
-
+export default function FormSection({ title, description, actions, className, children }: FormSectionProps) {
   return (
-    <section className={classNames}>
-      <header className={joinAdminClassNames("uiFormSectionHeader", ADMIN_FORM_SECTION_HEADER_CLASS)}>
-        <div>
-          <h2 className={joinAdminClassNames("uiFormSectionTitle", ADMIN_FORM_SECTION_TITLE_CLASS)}>{title}</h2>
-          {description ? <p className={joinAdminClassNames("uiFormSectionDescription", ADMIN_FORM_SECTION_DESCRIPTION_CLASS)}>{description}</p> : null}
+    <section className={cx("grid gap-5", className)}>
+      <header className="flex flex-wrap items-start justify-between gap-4">
+        <div className="grid gap-1.5">
+          <h2 className="text-lg font-semibold text-primary max-[640px]:text-md">{title}</h2>
+          {description ? <p className="text-sm text-tertiary">{description}</p> : null}
         </div>
-        {actions ? <div className="uiFormSectionActions">{actions}</div> : null}
+        {actions ? <div className="flex items-center gap-2">{actions}</div> : null}
       </header>
-      <Divider className={joinAdminClassNames("uiFormSectionDivider", ADMIN_FORM_SECTION_DIVIDER_CLASS)} />
-      <div className={joinAdminClassNames("uiFormSectionBody", ADMIN_FORM_SECTION_BODY_CLASS)}>{children}</div>
+      <div className="border-t border-secondary" />
+      <div className="grid gap-5">{children}</div>
     </section>
   );
 }

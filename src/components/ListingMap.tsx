@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import maplibregl from "maplibre-gl";
 import { getDetailsSummaryByFields, getFoodOpeningState, hasSchemaField } from "@/lib/listing-details";
-import { buildMaterialSymbolSvgUrl } from "@/lib/material-symbols";
+import { renderUiIconSvg } from "@/lib/ui-icons";
 import type { Listing } from "@/types/listing";
 import "maplibre-gl/dist/maplibre-gl.css";
 
@@ -16,18 +16,18 @@ export type MapBounds = {
 
 const buildPopupContent = (listing: Listing) => {
   const popup = document.createElement("div");
-  popup.className = "mapPopup";
+  popup.className = "listingMapPopup";
 
   const title = document.createElement("strong");
-  title.className = "mapPopupTitle";
+  title.className = "listingMapPopupTitle";
   title.textContent = listing.title;
 
   const category = document.createElement("p");
-  category.className = "mapPopupMeta";
+  category.className = "listingMapPopupMeta";
   category.textContent = listing.primaryCategory.label;
 
   const details = document.createElement("p");
-  details.className = "mapPopupPrice";
+  details.className = "listingMapPopupSummary";
   details.textContent = getDetailsSummaryByFields(listing.primaryCategory.schema?.fields, listing.details);
 
   popup.append(title, category, details);
@@ -41,7 +41,7 @@ const toMapBounds = (bounds: maplibregl.LngLatBounds): MapBounds => ({
   west: bounds.getWest()
 });
 
-const DEFAULT_MARKER_ICON_NAME = "shield";
+const DEFAULT_MARKER_ICON_NAME = "map-pin";
 const INITIAL_MARKER_REFRESH_MAX_DPR = 1.5;
 
 function shouldRunInitialMarkerRefresh() {
@@ -50,18 +50,10 @@ function shouldRunInitialMarkerRefresh() {
 
 function createMapMarkerIconElement(iconName: string | null | undefined) {
   const icon = document.createElement("span");
-  icon.className = "mapMarkerIcon";
+  icon.className = "listingMapMarkerIcon";
   icon.setAttribute("aria-hidden", "true");
 
-  const svgUrl = buildMaterialSymbolSvgUrl(iconName) ?? buildMaterialSymbolSvgUrl(DEFAULT_MARKER_ICON_NAME);
-  if (svgUrl) {
-    icon.classList.add("mapMarkerIconSvgBackground");
-    icon.style.setProperty("--map-marker-icon-url", `url("${svgUrl}")`);
-    return icon;
-  }
-
-  icon.classList.add("material-symbols-outlined");
-  icon.textContent = DEFAULT_MARKER_ICON_NAME;
+  icon.innerHTML = renderUiIconSvg(iconName) ?? renderUiIconSvg(DEFAULT_MARKER_ICON_NAME) ?? "";
   return icon;
 }
 
@@ -107,7 +99,7 @@ function createMarkerEntry(
   visitedListingIds: Set<string>
 ): MarkerEntry {
   const markerElement = document.createElement("button");
-  markerElement.className = "mapMarker";
+  markerElement.className = "listingMapMarker";
   markerElement.type = "button";
 
   const openingState = getMarkerOpeningState(listing);
@@ -128,7 +120,7 @@ function createMarkerEntry(
 
   if (openingState) {
     const markerStatusDot = document.createElement("span");
-    markerStatusDot.className = `mapMarkerStatus ${openingState === "open" ? "isOpen" : "isClosed"}`;
+    markerStatusDot.className = `listingMapMarkerStatus ${openingState === "open" ? "isOpen" : "isClosed"}`;
     markerStatusDot.setAttribute("aria-hidden", "true");
     markerElement.append(markerStatusDot);
   }
@@ -427,12 +419,14 @@ export default function ListingMap({ listings, hoveredListingId, onSearchInArea 
   }, [hoveredListingId]);
 
   return (
-    <div className="mapViewport">
-      <div ref={mapNodeRef} className={`mapCanvas${isMapReady ? " isReady" : ""}`} />
-      {!isMapReady ? <div className="mapLoading">Loading map...</div> : null}
+    <div className="relative h-full w-full bg-white">
+      <div ref={mapNodeRef} className={`h-full w-full transition-opacity duration-200 ${isMapReady ? "opacity-100" : "opacity-0"}`} />
+      {!isMapReady ? (
+        <div className="absolute inset-0 grid place-items-center bg-white text-sm text-gray-500">Loading map...</div>
+      ) : null}
       {isMapReady && isSearchInAreaVisible && onSearchInArea ? (
         <button
-          className="mapSearchButton"
+          className="absolute left-1/2 top-5 z-10 inline-flex -translate-x-1/2 items-center justify-center rounded-full bg-brand-900 px-6 py-3 text-base font-semibold text-white shadow-[0_20px_40px_rgba(10,13,18,0.12)] transition hover:bg-brand-800"
           type="button"
           onClick={() => {
             if (!pendingBoundsRef.current || !onSearchInArea) {

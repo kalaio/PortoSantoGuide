@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Button } from "@/components/base/buttons/button";
 import {
   ADMIN_HEADER_ACTIONS_CLASS,
   ADMIN_HEADER_ROW_CLASS,
@@ -11,7 +12,6 @@ import {
   ADMIN_STATUS_MESSAGE_CLASS,
   ADMIN_TITLE_CLASS
 } from "@/components/admin/admin-tailwind";
-import { buttonClassName } from "@/components/ui/button-styles";
 import { requireServerUserWithRole } from "@/lib/admin-auth-server";
 import { getAdminSections } from "@/lib/admin-sections";
 
@@ -25,9 +25,9 @@ export default async function AdminSectionsPage() {
         <div className={ADMIN_HEADER_ROW_CLASS}>
           <h1 className={ADMIN_TITLE_CLASS}>Sections</h1>
           <div className={ADMIN_HEADER_ACTIONS_CLASS}>
-            <Link className={buttonClassName({})} href="/admin/sections/new">
+            <Button size="md" href="/admin/sections/new">
               New Section
-            </Link>
+            </Button>
           </div>
         </div>
       </section>

@@ -12,7 +12,7 @@ const schemas = [
   {
     slug: "food-place",
     label: "Food Place",
-    description: "Dining venues such as restaurants, pizzerias, and snack-bars.",
+    description: "Dining venues such as restaurants, pizzerias, bars, bakeries, and snack-bars.",
     sortOrder: 1,
     fields: [
       { fieldKey: "description", sortOrder: 1, isRequired: true },
@@ -64,7 +64,7 @@ const categories = [
   {
     slug: "restaurants",
     label: "Restaurants",
-    iconName: "restaurant",
+    iconName: "fork-knife",
     sectionSlug: "where-to-eat",
     schemaSlug: "food-place",
     sortOrder: 1
@@ -72,7 +72,7 @@ const categories = [
   {
     slug: "pizzerias",
     label: "Pizzerias",
-    iconName: "local_pizza",
+    iconName: "pizza",
     sectionSlug: "where-to-eat",
     schemaSlug: "food-place",
     sortOrder: 2
@@ -80,15 +80,31 @@ const categories = [
   {
     slug: "snack-bars",
     label: "Snack-bars",
-    iconName: "fastfood",
+    iconName: "snack-bar",
     sectionSlug: "where-to-eat",
     schemaSlug: "food-place",
     sortOrder: 3
   },
   {
+    slug: "bars",
+    label: "Bars",
+    iconName: "bar",
+    sectionSlug: "where-to-eat",
+    schemaSlug: "food-place",
+    sortOrder: 4
+  },
+  {
+    slug: "bakeries",
+    label: "Bakeries",
+    iconName: "bakery",
+    sectionSlug: "where-to-eat",
+    schemaSlug: "food-place",
+    sortOrder: 5
+  },
+  {
     slug: "activities",
     label: "Activities",
-    iconName: "hiking",
+    iconName: "compass",
     sectionSlug: "what-to-do",
     schemaSlug: "activity",
     sortOrder: 1
@@ -96,7 +112,7 @@ const categories = [
   {
     slug: "viewpoints",
     label: "Viewpoints",
-    iconName: "travel_explore",
+    iconName: "viewpoint",
     sectionSlug: "what-to-do",
     schemaSlug: "viewpoint",
     sortOrder: 2

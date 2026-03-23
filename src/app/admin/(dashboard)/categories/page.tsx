@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Button } from "@/components/base/buttons/button";
 import AdminCategoriesTable from "@/components/admin/AdminCategoriesTable";
 import {
   ADMIN_HEADER_ACTIONS_CLASS,
@@ -8,7 +8,6 @@ import {
   ADMIN_PAGE_CLASS,
   ADMIN_TITLE_CLASS
 } from "@/components/admin/admin-tailwind";
-import { buttonClassName } from "@/components/ui/button-styles";
 import { requireServerAdminUser } from "@/lib/admin-auth-server";
 import {
   getAdminCategoriesPageData,
@@ -62,9 +61,9 @@ export default async function AdminCategoriesPage({ searchParams }: AdminCategor
         <div className={ADMIN_HEADER_ROW_CLASS}>
           <h1 className={ADMIN_TITLE_CLASS}>Categories</h1>
           <div className={ADMIN_HEADER_ACTIONS_CLASS}>
-            <Link className={buttonClassName({})} href="/admin/categories/new">
+            <Button size="md" href="/admin/categories/new">
               New Category
-            </Link>
+            </Button>
           </div>
         </div>
       </section>

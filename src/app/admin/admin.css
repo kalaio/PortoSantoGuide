@@ -7,6 +7,10 @@
   --admin-accent: #0f766e;
   --admin-accent-soft: rgba(15, 118, 110, 0.1);
   --admin-font-size-base: 1rem;
+  --danger: rgb(217 45 32);
+  --danger-h: 4;
+  --danger-s: 74%;
+  --danger-l: 49%;
   min-height: 100vh;
   background: var(--admin-bg);
   color: var(--admin-text);
@@ -18,7 +22,7 @@
 .adminRoute input,
 .adminRoute select,
 .adminRoute textarea {
-  font: inherit;
+  font-family: inherit;
 }
 
 .adminRoute p,

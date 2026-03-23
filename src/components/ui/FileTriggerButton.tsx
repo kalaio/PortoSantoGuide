@@ -1,8 +1,8 @@
 "use client";
 
 import { useRef } from "react";
+import { Button } from "@/components/base/buttons/button";
 import { ADMIN_NATIVE_HIDDEN_CLASS, joinAdminClassNames } from "@/components/admin/admin-tailwind";
-import { Button } from "@/components/ui/Button";
 
 type FileTriggerButtonProps = {
   accept?: string;
@@ -47,9 +47,9 @@ export default function FileTriggerButton({
 
       <Button
         type="button"
-        variant="secondary"
+        color="secondary"
         size="sm"
-        disabled={isDisabled}
+        isDisabled={isDisabled}
         className={uploading ? "isUploading" : undefined}
         onClick={() => inputRef.current?.click()}
       >

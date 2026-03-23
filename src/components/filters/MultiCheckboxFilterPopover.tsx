@@ -57,16 +57,19 @@ export default function MultiCheckboxFilterPopover({
       isActive={normalizedValue.length > 0}
       normalizeDraft={(draft) => normalizeValues(draft, options)}
       onApply={onChange}
-      popoverClassName="multiFilterPopover"
+      popoverClassName="w-[min(21rem,calc(100vw-1.5rem))]"
       value={normalizedValue}
     >
       {({ draftValue, setDraftWith }) => (
-        <div className="multiFilterOptions" role="group" aria-label={label}>
+        <div className="mb-4 flex flex-wrap gap-3" role="group" aria-label={label}>
           {options.map((option) => {
             const checked = draftValue.includes(option.value);
 
             return (
-              <label key={option.value} className={`multiFilterOption${checked ? " isChecked" : ""}`}>
+              <label
+                key={option.value}
+                className={`relative inline-flex min-h-12 items-center rounded-full border px-5 text-base transition ${checked ? "border-brand-600 bg-brand-50 text-brand-800" : "border-gray-warm-200 bg-white text-gray-900 hover:border-brand-200 hover:bg-gray-warm-50"}`}
+              >
                 <input
                   type="checkbox"
                   checked={checked}

@@ -2,8 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
+import AdminFormActions, { ADMIN_ACTION_BUTTON_CLASS } from "@/components/admin/AdminFormActions";
+import { Button } from "@/components/base/buttons/button";
 import {
-  ADMIN_ACTIONS_CLASS,
   ADMIN_FORM_CLASS,
   ADMIN_HEADER_ACTIONS_CLASS,
   ADMIN_HEADER_ROW_CLASS,
@@ -16,7 +17,7 @@ import {
   joinAdminClassNames
 } from "@/components/admin/admin-tailwind";
 import DeleteConfirmModal from "@/components/admin/DeleteConfirmModal";
-import { Badge, Button, ButtonLink, Card, Field, FormSection, SelectInput, TextInput } from "@/components/ui";
+import { Badge, Card, Field, FormSection, SelectInput, TextInput } from "@/components/ui";
 
 type UserRole = "ADMINISTRATOR" | "OWNER" | "SUBSCRIBER";
 
@@ -155,6 +156,7 @@ export default function UserEditorClient({ mode, currentUserId, initialUser }: U
   const [editIsActive, setEditIsActive] = useState<boolean>(initialUser?.isActive ?? true);
   const [editPassword, setEditPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [activeAction, setActiveAction] = useState<"create" | "save" | "delete" | null>(null);
   const [statusMessage, setStatusMessage] = useState("");
   const [statusTone, setStatusTone] = useState<"error" | "success" | null>(null);
   const [hasTriedCreateSubmit, setHasTriedCreateSubmit] = useState(false);
@@ -177,12 +179,14 @@ export default function UserEditorClient({ mode, currentUserId, initialUser }: U
 
   async function onCreate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setActiveAction("create");
     setHasTriedCreateSubmit(true);
     setCreateFieldErrors({});
 
     if (hasCreateValidationErrors) {
       setStatusMessage("Please complete the required fields.");
       setStatusTone("error");
+      setActiveAction(null);
       return;
     }
 
@@ -201,17 +205,18 @@ export default function UserEditorClient({ mode, currentUserId, initialUser }: U
       })
     });
 
-    setIsLoading(false);
-
     if (!response.ok) {
       const payload = (await response.json().catch(() => ({}))) as ApiError;
       setCreateFieldErrors(getFieldErrors(payload));
       setStatusMessage(`Could not create user. ${getIssueMessage(payload, "Unknown error")}`);
       setStatusTone("error");
+      setIsLoading(false);
+      setActiveAction(null);
       return;
     }
 
     const payload = (await response.json()) as { data: UserRow };
+    setActiveAction(null);
     router.push(`/admin/users/${payload.data.id}/edit`);
   }
 
@@ -220,12 +225,14 @@ export default function UserEditorClient({ mode, currentUserId, initialUser }: U
       return;
     }
 
+    setActiveAction("save");
     setHasTriedEditSubmit(true);
     setEditFieldErrors({});
 
     if (hasEditValidationErrors) {
       setStatusMessage("Please fix the highlighted fields.");
       setStatusTone("error");
+      setActiveAction(null);
       return;
     }
 
@@ -268,6 +275,7 @@ export default function UserEditorClient({ mode, currentUserId, initialUser }: U
       setIsLoading(false);
       setStatusMessage("No changes to save.");
       setStatusTone(null);
+      setActiveAction(null);
       return;
     }
 
@@ -277,13 +285,13 @@ export default function UserEditorClient({ mode, currentUserId, initialUser }: U
       body: JSON.stringify(payload)
     });
 
-    setIsLoading(false);
-
     if (!response.ok) {
       const errorPayload = (await response.json().catch(() => ({}))) as ApiError;
       setEditFieldErrors(getFieldErrors(errorPayload));
       setStatusMessage(`Could not update user. ${getIssueMessage(errorPayload, "Unknown error")}`);
       setStatusTone("error");
+      setIsLoading(false);
+      setActiveAction(null);
       return;
     }
 
@@ -296,6 +304,8 @@ export default function UserEditorClient({ mode, currentUserId, initialUser }: U
     setEditFieldErrors({});
     setStatusMessage("User updated.");
     setStatusTone("success");
+    setIsLoading(false);
+    setActiveAction(null);
     router.refresh();
   }
 
@@ -304,6 +314,7 @@ export default function UserEditorClient({ mode, currentUserId, initialUser }: U
       return;
     }
 
+    setActiveAction("delete");
     setIsLoading(true);
     setStatusMessage("");
     setStatusTone(null);
@@ -312,16 +323,17 @@ export default function UserEditorClient({ mode, currentUserId, initialUser }: U
       method: "DELETE"
     });
 
-    setIsLoading(false);
-
     if (!response.ok) {
       const payload = (await response.json().catch(() => ({}))) as ApiError;
       setStatusMessage(`Could not delete user. ${getIssueMessage(payload, "Unknown error")}`);
       setStatusTone("error");
       setIsDeleteDialogOpen(false);
+      setIsLoading(false);
+      setActiveAction(null);
       return;
     }
 
+    setActiveAction(null);
     router.push("/admin/users");
     router.refresh();
   }
@@ -332,9 +344,9 @@ export default function UserEditorClient({ mode, currentUserId, initialUser }: U
         <div className={ADMIN_HEADER_ROW_CLASS}>
           <h1 className={ADMIN_TITLE_CLASS}>{isCreate ? "New User" : "Edit User"}</h1>
           <div className={ADMIN_HEADER_ACTIONS_CLASS}>
-            <ButtonLink variant="secondary" href="/admin/users">
+            <Button color="secondary" size="md" href="/admin/users">
               Back to Users
-            </ButtonLink>
+            </Button>
           </div>
         </div>
         <p>
@@ -352,8 +364,8 @@ export default function UserEditorClient({ mode, currentUserId, initialUser }: U
               <Field label="Username">
                 <TextInput
                   value={newUsername}
-                  onChange={(event) => {
-                    setNewUsername(event.target.value);
+                  onChange={(value) => {
+                    setNewUsername(value);
                     setCreateFieldErrors((current) => ({ ...current, username: undefined }));
                   }}
                   isInvalid={Boolean((hasTriedCreateSubmit && createValidationErrors.username) || createFieldErrors.username)}
@@ -365,8 +377,8 @@ export default function UserEditorClient({ mode, currentUserId, initialUser }: U
                 <TextInput
                   type="email"
                   value={newEmail}
-                  onChange={(event) => {
-                    setNewEmail(event.target.value);
+                  onChange={(value) => {
+                    setNewEmail(value);
                     setCreateFieldErrors((current) => ({ ...current, email: undefined }));
                   }}
                   isInvalid={Boolean((hasTriedCreateSubmit && createValidationErrors.email) || createFieldErrors.email)}
@@ -379,8 +391,8 @@ export default function UserEditorClient({ mode, currentUserId, initialUser }: U
                   type="password"
                   minLength={8}
                   value={newPassword}
-                  onChange={(event) => {
-                    setNewPassword(event.target.value);
+                  onChange={(value) => {
+                    setNewPassword(value);
                     setCreateFieldErrors((current) => ({ ...current, password: undefined }));
                   }}
                   isInvalid={Boolean((hasTriedCreateSubmit && createValidationErrors.password) || createFieldErrors.password)}
@@ -397,19 +409,21 @@ export default function UserEditorClient({ mode, currentUserId, initialUser }: U
                   ))}
                 </SelectInput>
               </Field>
-              <div className={ADMIN_ACTIONS_CLASS}>
-                <Button type="submit" disabled={isLoading}>
-                  Create user
-                </Button>
-              </div>
+              <AdminFormActions
+                primaryActions={
+                  <Button type="submit" size="md" isDisabled={isLoading} isLoading={isLoading && activeAction === "create"} className={ADMIN_ACTION_BUTTON_CLASS}>
+                    Create user
+                  </Button>
+                }
+              />
             </form>
           ) : initialUser ? (
             <div className={ADMIN_FORM_CLASS}>
               <Field label="Username">
                 <TextInput
                   value={editUsername}
-                  onChange={(event) => {
-                    setEditUsername(event.target.value);
+                  onChange={(value) => {
+                    setEditUsername(value);
                     setEditFieldErrors((current) => ({ ...current, username: undefined }));
                   }}
                   isInvalid={Boolean((hasTriedEditSubmit && editValidationErrors.username) || editFieldErrors.username)}
@@ -421,8 +435,8 @@ export default function UserEditorClient({ mode, currentUserId, initialUser }: U
                 <TextInput
                   type="email"
                   value={editEmail}
-                  onChange={(event) => {
-                    setEditEmail(event.target.value);
+                  onChange={(value) => {
+                    setEditEmail(value);
                     setEditFieldErrors((current) => ({ ...current, email: undefined }));
                   }}
                   isInvalid={Boolean((hasTriedEditSubmit && editValidationErrors.email) || editFieldErrors.email)}
@@ -457,8 +471,8 @@ export default function UserEditorClient({ mode, currentUserId, initialUser }: U
                   type="password"
                   minLength={8}
                   value={editPassword}
-                  onChange={(event) => {
-                    setEditPassword(event.target.value);
+                  onChange={(value) => {
+                    setEditPassword(value);
                     setEditFieldErrors((current) => ({ ...current, password: undefined }));
                   }}
                   isInvalid={Boolean((hasTriedEditSubmit && editValidationErrors.password) || editFieldErrors.password)}
@@ -470,19 +484,18 @@ export default function UserEditorClient({ mode, currentUserId, initialUser }: U
                 <p className="muted">Created: {new Date(initialUser.createdAt).toLocaleString()}</p>
                 <Badge tone={editIsActive ? "success" : "neutral"}>{editIsActive ? "Active" : "Inactive"}</Badge>
               </div>
-              <div className={ADMIN_ACTIONS_CLASS}>
-                <Button type="button" onClick={onUpdate} disabled={isLoading}>
-                  Save changes
-                </Button>
-                <Button
-                  variant="danger"
-                  type="button"
-                  onClick={() => setIsDeleteDialogOpen(true)}
-                  disabled={isLoading || initialUser.id === currentUserId || isProtectedDefaultAdmin}
-                >
-                  Delete
-                </Button>
-              </div>
+              <AdminFormActions
+                primaryActions={
+                  <Button type="button" size="md" onClick={onUpdate} isDisabled={isLoading} isLoading={isLoading && activeAction === "save"} className={ADMIN_ACTION_BUTTON_CLASS}>
+                    Save changes
+                  </Button>
+                }
+                destructiveAction={
+                  <Button color="primary-destructive" size="md" type="button" onClick={() => setIsDeleteDialogOpen(true)} isDisabled={isLoading || initialUser.id === currentUserId || isProtectedDefaultAdmin} className={ADMIN_ACTION_BUTTON_CLASS}>
+                    Delete
+                  </Button>
+                }
+              />
               {isProtectedDefaultAdmin ? (
                 <p className="muted">The default administrator account is protected and cannot be deleted, deactivated, or demoted.</p>
               ) : null}
@@ -500,8 +513,8 @@ export default function UserEditorClient({ mode, currentUserId, initialUser }: U
       <DeleteConfirmModal
         isOpen={isDeleteDialogOpen}
         title="Delete user?"
-        description={`This will remove ${initialUser?.username ?? "this user"} permanently.`}
-        isLoading={isLoading}
+        description={`This will permanently delete ${initialUser?.username ?? "this user"}. This action cannot be undone.`}
+        isLoading={isLoading && activeAction === "delete"}
         onCancel={() => {
           if (isLoading) {
             return;

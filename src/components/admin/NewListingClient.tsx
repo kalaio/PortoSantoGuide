@@ -2,8 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { FormEvent, useMemo, useState } from "react";
+import AdminFormActions, { ADMIN_ACTION_BUTTON_CLASS } from "@/components/admin/AdminFormActions";
+import { Button } from "@/components/base/buttons/button";
 import {
-  ADMIN_ACTIONS_CLASS,
   ADMIN_FORM_CLASS,
   ADMIN_HEADER_ACTIONS_CLASS,
   ADMIN_HEADER_ROW_CLASS,
@@ -26,7 +27,6 @@ import {
 } from "@/components/admin/listing-editor/helpers";
 import type { ApiErrorResponse, ListingFormState } from "@/components/admin/listing-editor/types";
 import { useListingMap } from "@/components/admin/listing-editor/useListingMap";
-import { Button, ButtonLink } from "@/components/ui";
 import type { AdminCategoryOption } from "@/lib/admin-categories";
 import { hasListingSchemaField } from "@/lib/listing-fields";
 import { validateListingPayloadAgainstSchemaFields } from "@/lib/listing-schema-validation";
@@ -45,6 +45,7 @@ export default function NewListingClient({ initialCategories }: { initialCategor
   const [statusTone, setStatusTone] = useState<"error" | "success" | null>(null);
   const [hasTriedSubmit, setHasTriedSubmit] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [activeAction, setActiveAction] = useState<"create" | null>(null);
   const categories = initialCategories;
 
   const primaryCategory = useMemo(
@@ -165,12 +166,14 @@ export default function NewListingClient({ initialCategories }: { initialCategor
 
   async function onCreate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setActiveAction("create");
     setHasTriedSubmit(true);
     setStatusTone(null);
 
     if (hasValidationErrors) {
       setStatusMessage("Please complete the required fields.");
       setStatusTone("error");
+      setActiveAction(null);
       return;
     }
 
@@ -184,8 +187,6 @@ export default function NewListingClient({ initialCategories }: { initialCategor
       body: JSON.stringify(toPayload(form))
     });
 
-    setIsLoading(false);
-
     if (!response.ok) {
       const payload = (await response.json().catch(() => ({}))) as ApiErrorResponse;
       const firstIssue = payload.issues?.[0];
@@ -195,14 +196,19 @@ export default function NewListingClient({ initialCategories }: { initialCategor
         const label = field ? `${field}: ` : "";
         setStatusMessage(`Could not create listing. ${label}${firstIssue.message}`);
         setStatusTone("error");
+        setIsLoading(false);
+        setActiveAction(null);
         return;
       }
 
       setStatusMessage(payload.error ?? "Could not create listing. Check required fields.");
       setStatusTone("error");
+      setIsLoading(false);
+      setActiveAction(null);
       return;
     }
 
+    setActiveAction(null);
     router.push("/admin/listings");
   }
 
@@ -212,9 +218,9 @@ export default function NewListingClient({ initialCategories }: { initialCategor
         <div className={ADMIN_HEADER_ROW_CLASS}>
           <h1 className={ADMIN_TITLE_CLASS}>Create Listing</h1>
           <div className={ADMIN_HEADER_ACTIONS_CLASS}>
-            <ButtonLink variant="secondary" href="/admin/listings">
+            <Button color="secondary" size="md" href="/admin/listings">
               Back to Listings
-            </ButtonLink>
+            </Button>
           </div>
         </div>
         <p>Create a listing, define the canonical category, and fill only relevant details.</p>
@@ -247,11 +253,13 @@ export default function NewListingClient({ initialCategories }: { initialCategor
             onChange={setDetailsDraft}
             validationErrors={hasTriedSubmit ? validationErrorMap : {}}
           />
-          <div className={ADMIN_ACTIONS_CLASS}>
-            <Button type="submit" disabled={isLoading}>
-              Create listing
-            </Button>
-          </div>
+          <AdminFormActions
+            primaryActions={
+              <Button type="submit" size="md" isDisabled={isLoading} isLoading={isLoading && activeAction === "create"} className={ADMIN_ACTION_BUTTON_CLASS}>
+                Create listing
+              </Button>
+            }
+          />
         </form>
 
         {statusMessage ? (

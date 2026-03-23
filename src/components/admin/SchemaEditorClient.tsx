@@ -2,8 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { FormEvent, useMemo, useState } from "react";
+import AdminFormActions, { ADMIN_ACTION_BUTTON_CLASS } from "@/components/admin/AdminFormActions";
+import { Button } from "@/components/base/buttons/button";
 import {
-  ADMIN_ACTIONS_CLASS,
   ADMIN_FIELD_ERROR_CLASS,
   ADMIN_FIELD_REGISTRY_CONTROLS_CLASS,
   ADMIN_FIELD_REGISTRY_ITEM_CLASS,
@@ -24,7 +25,7 @@ import {
   joinAdminClassNames
 } from "@/components/admin/admin-tailwind";
 import DeleteConfirmModal from "@/components/admin/DeleteConfirmModal";
-import { Button, ButtonLink, Card, CheckboxField, Field, FormSection, TextArea, TextInput } from "@/components/ui";
+import { Card, CheckboxField, Field, FormSection, TextArea, TextInput } from "@/components/ui";
 import type { AdminSchemaFieldRecord, AdminSchemaRecord } from "@/lib/admin-schemas";
 import { LISTING_FIELDS, type ListingFieldDefinition } from "@/lib/listing-fields";
 
@@ -204,10 +205,10 @@ function SchemaFieldPicker({
                   min="0"
                   disabled={!enabled}
                   value={current?.sortOrder ?? ""}
-                  onChange={(event) =>
+                  onChange={(nextValue) =>
                     onChange(
                       value.map((item) =>
-                        item.fieldKey === field.key ? { ...item, sortOrder: event.target.value } : item
+                        item.fieldKey === field.key ? { ...item, sortOrder: nextValue } : item
                       )
                     )
                   }
@@ -227,6 +228,7 @@ export default function SchemaEditorClient({ mode, initialSchema }: SchemaEditor
   const isCreate = mode === "create";
   const [form, setForm] = useState<SchemaFormState>(() => toFormState(initialSchema));
   const [isLoading, setIsLoading] = useState(false);
+  const [activeAction, setActiveAction] = useState<"save" | "delete" | null>(null);
   const [statusMessage, setStatusMessage] = useState("");
   const [statusTone, setStatusTone] = useState<"error" | "success" | null>(null);
   const [hasTriedSubmit, setHasTriedSubmit] = useState(false);
@@ -237,11 +239,13 @@ export default function SchemaEditorClient({ mode, initialSchema }: SchemaEditor
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setActiveAction("save");
     setHasTriedSubmit(true);
 
     if (hasValidationErrors) {
       setStatusMessage("Please complete the required fields.");
       setStatusTone("error");
+      setActiveAction(null);
       return;
     }
 
@@ -263,8 +267,6 @@ export default function SchemaEditorClient({ mode, initialSchema }: SchemaEditor
         })
       });
 
-    setIsLoading(false);
-
     if (!response.ok) {
       const payload = (await response.json().catch(() => ({}))) as ApiError;
       setStatusMessage(
@@ -273,12 +275,15 @@ export default function SchemaEditorClient({ mode, initialSchema }: SchemaEditor
           : `Could not update schema. ${getIssueMessage(payload, "Unknown error")}`
       );
       setStatusTone("error");
+      setIsLoading(false);
+      setActiveAction(null);
       return;
     }
 
     const payload = (await response.json()) as { data: AdminSchemaRecord };
 
     if (isCreate) {
+      setActiveAction(null);
       router.push(`/admin/schemas/${payload.data.id}/edit`);
       return;
     }
@@ -286,6 +291,8 @@ export default function SchemaEditorClient({ mode, initialSchema }: SchemaEditor
     setForm(toFormState(payload.data));
     setStatusMessage("Schema updated.");
     setStatusTone("success");
+    setIsLoading(false);
+    setActiveAction(null);
     router.refresh();
   }
 
@@ -294,6 +301,7 @@ export default function SchemaEditorClient({ mode, initialSchema }: SchemaEditor
       return;
     }
 
+    setActiveAction("delete");
     setIsLoading(true);
     setStatusMessage("");
     setStatusTone(null);
@@ -302,16 +310,17 @@ export default function SchemaEditorClient({ mode, initialSchema }: SchemaEditor
       method: "DELETE"
     });
 
-    setIsLoading(false);
-
     if (!response.ok) {
       const payload = (await response.json().catch(() => ({}))) as ApiError;
       setStatusMessage(`Could not delete schema. ${getIssueMessage(payload, "Unknown error")}`);
       setStatusTone("error");
       setIsDeleteDialogOpen(false);
+      setIsLoading(false);
+      setActiveAction(null);
       return;
     }
 
+    setActiveAction(null);
     router.push("/admin/schemas");
     router.refresh();
   }
@@ -322,9 +331,9 @@ export default function SchemaEditorClient({ mode, initialSchema }: SchemaEditor
         <div className={ADMIN_HEADER_ROW_CLASS}>
           <h1 className={ADMIN_TITLE_CLASS}>{isCreate ? "New Schema" : "Edit Schema"}</h1>
           <div className={ADMIN_HEADER_ACTIONS_CLASS}>
-            <ButtonLink variant="secondary" href="/admin/schemas">
+            <Button color="secondary" size="md" href="/admin/schemas">
               Back to Schemas
-            </ButtonLink>
+            </Button>
           </div>
         </div>
         <p>
@@ -341,7 +350,7 @@ export default function SchemaEditorClient({ mode, initialSchema }: SchemaEditor
             <Field label="Slug">
               <TextInput
                 value={form.slug}
-                onChange={(event) => setForm((previous) => ({ ...previous, slug: event.target.value }))}
+                onChange={(value) => setForm((previous) => ({ ...previous, slug: value }))}
                 isInvalid={hasTriedSubmit && Boolean(validationErrors.slug)}
                 errorMessage={hasTriedSubmit ? validationErrors.slug : undefined}
                 required
@@ -350,7 +359,7 @@ export default function SchemaEditorClient({ mode, initialSchema }: SchemaEditor
             <Field label="Label">
               <TextInput
                 value={form.label}
-                onChange={(event) => setForm((previous) => ({ ...previous, label: event.target.value }))}
+                onChange={(value) => setForm((previous) => ({ ...previous, label: value }))}
                 isInvalid={hasTriedSubmit && Boolean(validationErrors.label)}
                 errorMessage={hasTriedSubmit ? validationErrors.label : undefined}
                 required
@@ -359,9 +368,7 @@ export default function SchemaEditorClient({ mode, initialSchema }: SchemaEditor
             <Field label="Description">
               <TextArea
                 value={form.description}
-                onChange={(event) =>
-                  setForm((previous) => ({ ...previous, description: event.target.value }))
-                }
+                onChange={(value) => setForm((previous) => ({ ...previous, description: value }))}
                 rows={3}
               />
             </Field>
@@ -370,9 +377,7 @@ export default function SchemaEditorClient({ mode, initialSchema }: SchemaEditor
                 type="number"
                 min="0"
                 value={form.sortOrder}
-                onChange={(event) =>
-                  setForm((previous) => ({ ...previous, sortOrder: event.target.value }))
-                }
+                onChange={(value) => setForm((previous) => ({ ...previous, sortOrder: value }))}
               />
             </Field>
             <CheckboxField
@@ -391,21 +396,20 @@ export default function SchemaEditorClient({ mode, initialSchema }: SchemaEditor
                 errorMessage={hasTriedSubmit ? validationErrors.fields : undefined}
               />
             </FormSection>
-            <div className={ADMIN_ACTIONS_CLASS}>
-              <Button type="submit" disabled={isLoading}>
-                {isCreate ? "Create schema" : "Save changes"}
-              </Button>
-              {!isCreate ? (
-                <Button
-                  variant="danger"
-                  type="button"
-                  onClick={() => setIsDeleteDialogOpen(true)}
-                  disabled={isLoading}
-                >
-                  Delete
+            <AdminFormActions
+              primaryActions={
+                <Button type="submit" size="md" isDisabled={isLoading} isLoading={isLoading && activeAction === "save"} className={ADMIN_ACTION_BUTTON_CLASS}>
+                  {isCreate ? "Create schema" : "Save changes"}
                 </Button>
-              ) : null}
-            </div>
+              }
+              destructiveAction={
+                !isCreate ? (
+                  <Button color="primary-destructive" size="md" type="button" onClick={() => setIsDeleteDialogOpen(true)} isDisabled={isLoading} className={ADMIN_ACTION_BUTTON_CLASS}>
+                    Delete
+                  </Button>
+                ) : undefined
+              }
+            />
           </form>
           {statusMessage ? (
             <p className={joinAdminClassNames(ADMIN_STATUS_MESSAGE_CLASS, statusTone === "error" && ADMIN_STATUS_MESSAGE_ERROR_CLASS)}>{statusMessage}</p>
@@ -416,8 +420,8 @@ export default function SchemaEditorClient({ mode, initialSchema }: SchemaEditor
       <DeleteConfirmModal
         isOpen={isDeleteDialogOpen}
         title="Delete schema?"
-        description={`This will remove ${initialSchema?.label ?? "this schema"} permanently. Delete only works when no categories still use this schema.`}
-        isLoading={isLoading}
+        description={`This will permanently delete ${initialSchema?.label ?? "this schema"}. This action cannot be undone. Delete only works when no categories still use this schema.`}
+        isLoading={isLoading && activeAction === "delete"}
         onCancel={() => {
           if (isLoading) {
             return;

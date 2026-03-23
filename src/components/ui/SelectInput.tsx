@@ -1,4 +1,3 @@
-import { Select, SelectItem } from "@heroui/react";
 import {
   Children,
   Fragment,
@@ -8,13 +7,13 @@ import {
   type OptionHTMLAttributes,
   type ReactNode
 } from "react";
+import { Select } from "@/components/base/select/select";
 import {
-  ADMIN_NATIVE_HIDDEN_CLASS,
   ADMIN_SELECT_CLASS,
-  ADMIN_SELECT_TRIGGER_CLASS,
-  ADMIN_SELECT_VALUE_CLASS,
   joinAdminClassNames
 } from "@/components/admin/admin-tailwind";
+import { HintText } from "@/components/base/input/hint-text";
+import { cx } from "@/utils/cx";
 
 type SelectInputProps = {
   "aria-describedby"?: string;
@@ -46,7 +45,7 @@ function getOptionLabel(label: ReactNode): string | undefined {
   }
 
   if (Array.isArray(label)) {
-    const text: string = label
+    const text = label
       .map((item) => getOptionLabel(item))
       .filter(Boolean)
       .join("");
@@ -59,29 +58,6 @@ function getOptionLabel(label: ReactNode): string | undefined {
   }
 
   return undefined;
-}
-
-function getSelectedItemLabel(items: Array<{ rendered?: ReactNode; textValue?: string }>) {
-  return items
-    .map((item) => {
-      if (typeof item.rendered === "string") {
-        return item.rendered;
-      }
-
-      return item.textValue ?? "";
-    })
-    .filter(Boolean)
-    .join(", ");
-}
-
-function getSelectedOptionLabel(options: SelectOption[], selectedValue: string) {
-  const selectedOption = options.find((option) => option.value === selectedValue);
-
-  if (!selectedOption) {
-    return undefined;
-  }
-
-  return getOptionLabel(selectedOption.label);
 }
 
 function extractOptions(children: ReactNode): SelectOption[] {
@@ -102,7 +78,6 @@ function extractOptions(children: ReactNode): SelectOption[] {
     }
 
     const props = child.props as OptionHTMLAttributes<HTMLOptionElement> & { children?: ReactNode };
-
     options.push({
       label: props.children ?? "",
       value: String(props.value ?? ""),
@@ -113,7 +88,7 @@ function extractOptions(children: ReactNode): SelectOption[] {
   return options;
 }
 
-const SelectInput = forwardRef<HTMLSelectElement, SelectInputProps>(function SelectInput(
+const SelectInput = forwardRef<HTMLDivElement, SelectInputProps>(function SelectInput(
   {
     "aria-describedby": ariaDescribedBy,
     "aria-labelledby": ariaLabelledBy,
@@ -133,78 +108,52 @@ const SelectInput = forwardRef<HTMLSelectElement, SelectInputProps>(function Sel
   },
   ref
 ) {
-  const classNames = joinAdminClassNames("uiSelect", ADMIN_SELECT_CLASS, className ?? "");
+  const classNames = joinAdminClassNames(ADMIN_SELECT_CLASS, className ?? "");
   const options = extractOptions(children);
   const selectedValue = String(value ?? defaultValue ?? "");
-  const selectedKeys = selectedValue ? new Set([selectedValue]) : new Set<string>();
   const emptyOption = options.find((option) => option.value === "");
-  const selectedOptionLabel = getSelectedOptionLabel(options, selectedValue);
-
-  function emitChange(nextValue: string) {
-    const syntheticEvent = {
-      target: { value: nextValue, name, id },
-      currentTarget: { value: nextValue, name, id }
-    } as ChangeEvent<HTMLSelectElement>;
-
-    onChange?.(syntheticEvent);
-  }
-
-  function handleSelectionChange(keys: unknown) {
-    const nextValue = keys instanceof Set ? String(keys.values().next().value ?? "") : "";
-
-    emitChange(nextValue);
-  }
 
   return (
-    <>
-      <select
+    <div className={classNames}>
+      <Select
         ref={ref}
-        className={joinAdminClassNames("uiNativeSelect", ADMIN_NATIVE_HIDDEN_CLASS)}
         id={id}
         name={name}
-        value={selectedValue}
-        required={required}
-        disabled={disabled}
-        tabIndex={-1}
-        aria-hidden="true"
-        onChange={() => undefined}
-      >
-        {children}
-      </select>
-      <Select
-        aria-describedby={ariaDescribedBy}
-        aria-labelledby={ariaLabelledBy}
-        className={classNames}
-        classNames={{
-          trigger: joinAdminClassNames("uiSelectTrigger", ADMIN_SELECT_TRIGGER_CLASS),
-          value: joinAdminClassNames("uiSelectValue", ADMIN_SELECT_VALUE_CLASS)
-        }}
-        selectedKeys={selectedKeys}
-        variant="bordered"
-        size="lg"
-        radius="lg"
+        size="md"
+        items={options.map((option) => ({
+          id: option.value,
+          label: getOptionLabel(option.label) ?? option.value,
+          isDisabled: option.disabled
+        }))}
+        selectedKey={selectedValue || null}
+        defaultSelectedKey={defaultValue === undefined ? undefined : String(defaultValue)}
+        placeholder={getOptionLabel(emptyOption?.label) ?? "Select"}
         isDisabled={disabled}
         isInvalid={isInvalid}
         isRequired={required}
-        disallowEmptySelection={required}
-        description={description}
-        errorMessage={errorMessage}
-        placeholder={getOptionLabel(emptyOption?.label)}
-        renderValue={(items) => selectedOptionLabel || getSelectedItemLabel(items) || (getOptionLabel(emptyOption?.label) ?? "")}
         onBlur={onBlur}
-        onSelectionChange={handleSelectionChange}
+        onSelectionChange={(key) => {
+          const nextValue = key === null ? "" : String(key);
+          const syntheticEvent = {
+            target: { value: nextValue, name, id },
+            currentTarget: { value: nextValue, name, id }
+          } as ChangeEvent<HTMLSelectElement>;
+
+          onChange?.(syntheticEvent);
+        }}
+        className={cx("w-full")}
+        aria-describedby={ariaDescribedBy}
+        aria-labelledby={ariaLabelledBy}
       >
-        {options.map((option) => (
-          <SelectItem
-            key={option.value}
-            isDisabled={option.disabled}
-            textValue={getOptionLabel(option.label) ?? option.value}
-          >
-            {option.label}
-          </SelectItem>
-        ))}
+        {(item) => <Select.Item id={item.id} label={item.label} isDisabled={item.isDisabled} />}
       </Select>
-    </>
+      {description ? <HintText className="mt-2 text-[0.8rem]">{description}</HintText> : null}
+      {errorMessage ? (
+        <HintText isInvalid className="mt-2 text-[0.84rem]">
+          {errorMessage}
+        </HintText>
+      ) : null}
+    </div>
   );
 });
 

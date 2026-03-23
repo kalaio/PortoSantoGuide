@@ -1,10 +1,5 @@
-import { Checkbox } from "@heroui/react";
 import type { ReactNode } from "react";
-import {
-  ADMIN_CHECKBOX_FIELD_CLASS,
-  ADMIN_CHECKBOX_LABEL_CLASS,
-  joinAdminClassNames
-} from "@/components/admin/admin-tailwind";
+import { Checkbox } from "@/components/base/checkbox/checkbox";
 
 type CheckboxFieldProps = {
   label: ReactNode;
@@ -21,19 +16,14 @@ export default function CheckboxField({
   disabled = false,
   className
 }: CheckboxFieldProps) {
-  const baseClassName = joinAdminClassNames("uiCheckboxField", ADMIN_CHECKBOX_FIELD_CLASS, className ?? "");
-
   return (
     <Checkbox
-      classNames={{
-        base: baseClassName,
-        label: joinAdminClassNames("uiCheckboxFieldLabel", ADMIN_CHECKBOX_LABEL_CLASS)
-      }}
+      className={className}
+      label={label}
       isSelected={checked}
       isDisabled={disabled}
-      onValueChange={onChange}
-    >
-      {label}
-    </Checkbox>
+      onChange={onChange}
+      size="md"
+    />
   );
 }

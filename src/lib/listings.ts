@@ -1,6 +1,7 @@
 import { ListingStatus, Prisma } from "@prisma/client";
 import { mockListings } from "@/data/mockListings";
 import { prisma } from "@/lib/prisma";
+import { getCategoryFallbackIconName, normalizeUiIconName } from "@/lib/ui-icons";
 import type {
   Listing,
   ListingCategorySummary,
@@ -12,7 +13,7 @@ import { toListingDetails } from "@/lib/listing-details";
 export type SectionCategorySummary = {
   slug: string;
   label: string;
-  iconName: string | null;
+  iconName: ListingCategorySummary["iconName"];
   listingCount: number;
 };
 
@@ -62,14 +63,6 @@ type ListingWithPublishedRevision = Prisma.ListingGetPayload<typeof listingWithR
 
 type PublishedRevision = NonNullable<ListingWithPublishedRevision["currentPublishedRevision"]>;
 
-const CATEGORY_ICON_FALLBACK: Record<string, string> = {
-  restaurants: "restaurant",
-  pizzerias: "local_pizza",
-  "snack-bars": "fastfood",
-  activities: "hiking",
-  viewpoints: "travel_explore"
-};
-
 const PUBLIC_LISTING_STATUS = ListingStatus.PUBLISHED;
 
 function getPublishedRevision(item: ListingWithPublishedRevision): PublishedRevision {
@@ -109,7 +102,7 @@ function toPrimaryCategory(item: ListingWithPublishedRevision): ListingCategoryS
   return {
     slug: revision.primaryCategory.slug,
     label: revision.primaryCategory.label,
-    iconName: revision.primaryCategory.iconName,
+    iconName: normalizeUiIconName(revision.primaryCategory.iconName),
     sectionSlug: revision.primaryCategory.section.slug,
     sectionLabel: revision.primaryCategory.section.label,
     schema: revision.primaryCategory.schema
@@ -278,7 +271,7 @@ export async function getSectionSummaryBySlug(slug: string): Promise<DirectorySe
         categories.set(category.slug, {
           slug: category.slug,
           label: category.label,
-          iconName: CATEGORY_ICON_FALLBACK[category.slug] ?? null,
+          iconName: getCategoryFallbackIconName(category.slug),
           listingCount: (current?.listingCount ?? 0) + 1
         });
       });
@@ -349,7 +342,7 @@ export async function getSectionSummaryBySlug(slug: string): Promise<DirectorySe
       categories: categories.map((item) => ({
         slug: item.slug,
         label: item.label,
-        iconName: item.iconName,
+        iconName: normalizeUiIconName(item.iconName),
         listingCount: item.assignments.length
       }))
     };
@@ -379,7 +372,7 @@ export async function getListingsByCategorySlug(
         ? {
             slug: categorySlug,
             label: categoryLabel,
-            iconName: primaryForSection.iconName,
+            iconName: normalizeUiIconName(primaryForSection.iconName),
             sectionSlug: primaryForSection.sectionSlug,
             sectionLabel: primaryForSection.sectionLabel,
             schema: primaryForSection.schema
@@ -464,7 +457,7 @@ export async function getListingsByCategorySlug(
       category: {
         slug: category.slug,
         label: category.label,
-        iconName: category.iconName,
+        iconName: normalizeUiIconName(category.iconName),
         sectionSlug: category.section.slug,
         sectionLabel: category.section.label,
         schema: category.schema

@@ -36,6 +36,11 @@
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "src/components/application/**/*",
+    "src/components/base/**/*",
+    "src/components/foundations/**/*",
+    "src/components/marketing/**/*",
+    "src/components/shared-assets/**/*"
   ]
 }

@@ -30,7 +30,7 @@ export const mockListings: Listing[] = [
     primaryCategory: {
       slug: "restaurants",
       label: "Restaurants",
-      iconName: "restaurant",
+      iconName: "fork-knife",
       sectionSlug: "where-to-eat",
       sectionLabel: "Where to eat",
       schema: {
@@ -78,7 +78,7 @@ export const mockListings: Listing[] = [
     primaryCategory: {
       slug: "pizzerias",
       label: "Pizzerias",
-      iconName: "local_pizza",
+      iconName: "pizza",
       sectionSlug: "where-to-eat",
       sectionLabel: "Where to eat",
       schema: {
@@ -117,7 +117,7 @@ export const mockListings: Listing[] = [
     primaryCategory: {
       slug: "activities",
       label: "Activities",
-      iconName: "hiking",
+      iconName: "compass",
       sectionSlug: "what-to-do",
       sectionLabel: "What to do",
       schema: {

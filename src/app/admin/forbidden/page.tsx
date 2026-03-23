@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Button } from "@/components/base/buttons/button";
 import {
   ADMIN_ACTIONS_CLASS,
   ADMIN_CARD_BODY_CLASS,
@@ -12,7 +12,6 @@ import {
   ADMIN_LOGIN_PAGE_CLASS,
   ADMIN_PAGE_CLASS
 } from "@/components/admin/admin-tailwind";
-import { buttonClassName } from "@/components/ui/button-styles";
 
 export default function AdminForbiddenPage() {
   return (
@@ -27,12 +26,12 @@ export default function AdminForbiddenPage() {
           </div>
           <div className={ADMIN_CARD_BODY_CLASS}>
             <div className={ADMIN_ACTIONS_CLASS}>
-              <Link className={buttonClassName({ variant: "secondary" })} href="/">
+              <Button color="secondary" size="md" href="/">
                 Go to home
-              </Link>
-              <Link className={buttonClassName({})} href="/admin/login">
+              </Button>
+              <Button size="md" href="/admin/login">
                 Switch account
-              </Link>
+              </Button>
             </div>
           </div>
         </div>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import MultiCheckboxFilterPopover from "@/components/filters/MultiCheckboxFilterPopover";
 import type { MapBounds } from "@/components/ListingMap";
 import ListingMapLazy from "@/components/ListingMapLazy";
+import { cn } from "@/lib/cn";
 import { CUISINE_OPTIONS } from "@/lib/cuisines";
 import { hasListingSchemaField, isFrontendFilterEnabledListingSchemaField } from "@/lib/listing-fields";
 import { getDetailsSummaryByFields, getFoodCuisineValues, getFoodOpeningState, hasSchemaField } from "@/lib/listing-details";
@@ -146,13 +147,25 @@ export default function DirectoryView({ listings, categorySchemaFields }: Direct
   const isMobileMapMode = showMap && isMobileViewport && mobileViewMode === "map";
 
   return (
-    <div className={`directoryArchive${isMobileMapMode ? " isMobileMapMode" : ""}${hasVisibleFilters ? " hasFilters" : " hasNoFilters"}`}>
+    <div className="grid gap-5">
       {hasVisibleFilters ? (
-        <div className="directoryFiltersBar" aria-label="Archive filters" role="region">
-          <div className="directoryFiltersLeft">
+        <div
+          className={cn(
+            "sticky z-30 flex items-center justify-between gap-3 border-y border-gray-warm-200 bg-white/95 px-2 py-3 backdrop-blur",
+            isMobileMapMode ? "top-16" : "top-20 max-[900px]:top-16"
+          )}
+          aria-label="Archive filters"
+          role="region"
+        >
+          <div className="flex flex-wrap items-center gap-3 max-[900px]:overflow-x-auto max-[900px]:whitespace-nowrap">
             {supportsOpenNowFilter ? (
               <button
-                className={`filterButton${isOpenNowOnly ? " isActive" : ""}`}
+                className={cn(
+                  "inline-flex min-h-12 items-center rounded-full border bg-white px-5 text-[1.0625rem] font-medium text-gray-900 transition",
+                  isOpenNowOnly
+                    ? "border-gray-950 shadow-sm"
+                    : "border-gray-warm-200 hover:border-brand-200 hover:bg-gray-warm-50"
+                )}
                 type="button"
                 aria-pressed={isOpenNowOnly}
                 onClick={() => setIsOpenNowOnly((currentValue) => !currentValue)}
@@ -173,10 +186,14 @@ export default function DirectoryView({ listings, categorySchemaFields }: Direct
       ) : null}
 
       <section
-        className={`directoryLayoutGrid${isMobileMapMode ? " isMobileMapMode" : ""}${showMap ? "" : " hasNoMap"}`}
+        className={cn(
+          "grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(21rem,38rem)]",
+          !showMap && "grid-cols-1",
+          isMobileMapMode && "block"
+        )}
       >
-        <aside className="directoryPanel">
-          <div className="directoryListingList">
+        <aside className={cn(isMobileMapMode && "hidden") }>
+          <div className="grid gap-3">
             {visibleListings.map((listing) => {
               const isActive = hoveredListingId === listing.id;
               const detailsSummary = getDetailsSummaryByFields(listing.primaryCategory.schema?.fields, listing.details);
@@ -185,28 +202,43 @@ export default function DirectoryView({ listings, categorySchemaFields }: Direct
                 <Link
                   key={listing.id}
                   href={getListingPath(listing)}
-                  className="listingCardLink"
+                  className="block"
                   onFocus={() => setHoveredListingId(listing.id)}
                   onBlur={() => setHoveredListingId(null)}
                 >
                   <article
-                    className={`directoryListingItem${isActive ? " isActive" : ""}`}
+                    className={cn(
+                      "rounded-[1.5rem] border bg-white px-5 py-4 shadow-sm transition",
+                      isActive
+                        ? "border-brand-500 shadow-md"
+                        : "border-gray-warm-200 hover:border-brand-200 hover:shadow-md"
+                    )}
                     onMouseEnter={() => setHoveredListingId(listing.id)}
                     onMouseLeave={() => setHoveredListingId(null)}
-                    >
-                      <h3>{listing.title}</h3>
-                      <p className="muted">{listing.categories.map((item) => item.label).join(" · ")}</p>
-                      {detailsSummary ? <p className="muted">{detailsSummary}</p> : null}
-                    </article>
-                  </Link>
+                  >
+                    <h3 className="m-0 text-[1.2rem] font-semibold text-gray-950">{listing.title}</h3>
+                    <p className="mt-1 text-base text-gray-500">{listing.categories.map((item) => item.label).join(" · ")}</p>
+                    {detailsSummary ? <p className="mt-1 text-base leading-8 text-gray-500">{detailsSummary}</p> : null}
+                  </article>
+                </Link>
               );
             })}
-            {visibleListings.length === 0 ? <p className="muted">No places in this area.</p> : null}
+            {visibleListings.length === 0 ? (
+              <p className="rounded-[1.5rem] border border-dashed border-gray-warm-300 bg-white px-5 py-8 text-base text-gray-500">
+                No places in this area.
+              </p>
+            ) : null}
           </div>
         </aside>
 
         {showMap ? (
-          <div className="mapWrap directoryMapWrap">
+          <div
+            className={cn(
+              "min-h-[44rem] overflow-hidden rounded-[1.75rem] border border-gray-warm-200 bg-white shadow-sm max-[900px]:min-h-[50vh]",
+              isMobileMapMode && "fixed inset-x-0 bottom-0 top-[7.6rem] z-20 rounded-none border-x-0 border-b-0",
+              isMobileMapMode && !hasVisibleFilters && "top-16"
+            )}
+          >
             <ListingMapLazy
               listings={mappableListings}
               hoveredListingId={hoveredListingId}
@@ -217,7 +249,7 @@ export default function DirectoryView({ listings, categorySchemaFields }: Direct
 
         {showMap ? (
           <button
-            className="directoryMobileToggle"
+            className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-1/2 z-30 inline-flex min-h-12 min-w-[120px] -translate-x-1/2 items-center justify-center rounded-full border border-gray-warm-200 bg-white px-8 text-[1.3rem] font-semibold text-brand-900 shadow-[0_20px_40px_rgba(10,13,18,0.12)] lg:hidden"
             type="button"
             aria-pressed={mobileViewMode === "map"}
             aria-label={mobileViewMode === "map" ? "Show list" : "Show map"}

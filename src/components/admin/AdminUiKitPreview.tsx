@@ -11,10 +11,9 @@ import {
   ADMIN_UI_KIT_STACK_CLASS,
   ADMIN_UI_KIT_UPLOAD_PREVIEW_CLASS
 } from "@/components/admin/admin-tailwind";
+import { Button } from "@/components/base/buttons/button";
 import {
   Badge,
-  Button,
-  ButtonLink,
   Card,
   CheckboxField,
   Field,
@@ -45,15 +44,15 @@ export default function AdminUiKitPreview() {
     <div className={ADMIN_UI_KIT_STACK_CLASS}>
       <Card as="section" title="Buttons" description="Variants, sizes, and states used in admin pages.">
         <div className={ADMIN_UI_KIT_BUTTON_ROW_CLASS}>
-          <Button>Primary</Button>
-          <Button variant="secondary">Secondary</Button>
-          <Button variant="danger">Danger</Button>
-          <Button variant="ghost">Ghost</Button>
+          <Button size="md">Primary</Button>
+          <Button color="secondary" size="md">Secondary</Button>
+          <Button color="primary-destructive" size="md">Danger</Button>
+          <Button color="tertiary" size="md">Ghost</Button>
           <Button size="sm">Small</Button>
-          <Button disabled>Disabled</Button>
-          <ButtonLink size="sm" href="/admin">
+          <Button size="md" isDisabled>Disabled</Button>
+          <Button size="sm" href="/admin">
             Link Button
-          </ButtonLink>
+          </Button>
         </div>
       </Card>
 
@@ -61,11 +60,11 @@ export default function AdminUiKitPreview() {
         <FormSection title="Edit Form Example" className={ADMIN_FORM_SECTION_TIGHT_CLASS}>
           <form className={ADMIN_FORM_CLASS} onSubmit={(event) => event.preventDefault()}>
             <Field label="Title">
-              <TextInput value={title} onChange={(event) => setTitle(event.target.value)} />
+              <TextInput value={title} onChange={setTitle} />
             </Field>
 
             <Field label="Description">
-              <TextArea rows={3} value={description} onChange={(event) => setDescription(event.target.value)} />
+              <TextArea rows={3} value={description} onChange={setDescription} />
             </Field>
 
             <div className={ADMIN_FIELD_ROW_CLASS}>
@@ -84,10 +83,10 @@ export default function AdminUiKitPreview() {
             <CheckboxField label="Featured listing" checked={isFeatured} onChange={setIsFeatured} />
 
             <div className={ADMIN_UI_KIT_BUTTON_ROW_CLASS}>
-              <Button type="submit" variant="secondary">
+              <Button type="submit" color="secondary" size="md">
                 Save Changes
               </Button>
-              <Button type="button" variant="danger">
+              <Button type="button" color="primary-destructive" size="md">
                 Delete
               </Button>
             </div>

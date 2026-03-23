@@ -1,7 +1,7 @@
 "use client";
 
-import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@heroui/react";
-import { Button } from "@/components/ui";
+import { Dialog, Modal, ModalOverlay } from "@/components/application/modals/modal";
+import { Button } from "@/components/base/buttons/button";
 
 type DeleteConfirmModalProps = {
   isOpen: boolean;
@@ -22,32 +22,37 @@ export default function DeleteConfirmModal({
   onCancel,
   onConfirm
 }: DeleteConfirmModalProps) {
+  if (!isOpen) {
+    return null;
+  }
+
   return (
-    <Modal
-      hideCloseButton={isLoading}
-      isDismissable={!isLoading}
-      isKeyboardDismissDisabled={isLoading}
+    <ModalOverlay
       isOpen={isOpen}
-      onOpenChange={(open) => {
-        if (!open && !isLoading) {
+      isDismissable={!isLoading}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen && !isLoading) {
           onCancel();
         }
       }}
+      className="z-[120]"
     >
-      <ModalContent>
-        <ModalHeader>{title}</ModalHeader>
-        <ModalBody>
-          <p className="muted">{description}</p>
-        </ModalBody>
-        <ModalFooter>
-          <Button variant="secondary" type="button" onClick={onCancel} disabled={isLoading}>
-            No
-          </Button>
-          <Button variant="danger" type="button" onClick={onConfirm} disabled={isLoading}>
-            {confirmLabel}
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+      <Modal className="max-w-[26rem]">
+        <Dialog className="grid w-full gap-4 rounded-[1.5rem] border border-[color:var(--admin-border)] bg-white p-6 shadow-[0_24px_60px_rgba(10,13,18,0.16)]">
+          <div className="grid gap-2">
+            <h3 className="m-0 text-xl font-semibold text-[color:var(--admin-text)]">{title}</h3>
+            <p className="m-0 text-[color:var(--admin-muted)]">{description}</p>
+          </div>
+          <div className="flex flex-wrap justify-end gap-3 [&>*]:min-w-[8.5rem] [&>*]:justify-center">
+            <Button color="secondary" size="md" type="button" onClick={onCancel} isDisabled={isLoading}>
+              No
+            </Button>
+            <Button color="primary-destructive" size="md" type="button" onClick={onConfirm} isDisabled={isLoading} isLoading={isLoading}>
+              {confirmLabel}
+            </Button>
+          </div>
+        </Dialog>
+      </Modal>
+    </ModalOverlay>
   );
 }

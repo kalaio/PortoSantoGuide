@@ -2,8 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
+import AdminFormActions, { ADMIN_ACTION_BUTTON_CLASS } from "@/components/admin/AdminFormActions";
+import { Button } from "@/components/base/buttons/button";
 import {
-  ADMIN_ACTIONS_CLASS,
   ADMIN_HEADER_ACTIONS_CLASS,
   ADMIN_FORM_CLASS,
   ADMIN_HEADER_ROW_CLASS,
@@ -16,7 +17,7 @@ import {
   joinAdminClassNames
 } from "@/components/admin/admin-tailwind";
 import DeleteConfirmModal from "@/components/admin/DeleteConfirmModal";
-import { Button, ButtonLink, Card, Field, FormSection, SelectInput, TextInput } from "@/components/ui";
+import { Card, Field, FormSection, SelectInput, TextInput } from "@/components/ui";
 
 type Suggestion = {
   id: string;
@@ -100,6 +101,7 @@ export default function SearchSuggestionEditorClient({
   const isCreate = mode === "create";
   const [form, setForm] = useState<SuggestionFormState>(() => toFormState(initialSuggestion));
   const [isLoading, setIsLoading] = useState(false);
+  const [activeAction, setActiveAction] = useState<"save" | "delete" | null>(null);
   const [statusMessage, setStatusMessage] = useState("");
   const [statusTone, setStatusTone] = useState<"error" | "success" | null>(null);
   const [hasTriedSubmit, setHasTriedSubmit] = useState(false);
@@ -109,11 +111,13 @@ export default function SearchSuggestionEditorClient({
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setActiveAction("save");
     setHasTriedSubmit(true);
 
     if (hasValidationErrors) {
       setStatusMessage("Please complete the required fields.");
       setStatusTone("error");
+      setActiveAction(null);
       return;
     }
 
@@ -137,8 +141,6 @@ export default function SearchSuggestionEditorClient({
       }
     );
 
-    setIsLoading(false);
-
     if (!response.ok) {
       const payload = (await response.json().catch(() => ({}))) as ApiError;
       setStatusMessage(
@@ -147,12 +149,15 @@ export default function SearchSuggestionEditorClient({
           : `Could not update suggestion. ${getIssueMessage(payload, "Unknown error")}`
       );
       setStatusTone("error");
+      setIsLoading(false);
+      setActiveAction(null);
       return;
     }
 
     const payload = (await response.json()) as { data: Suggestion };
 
     if (isCreate) {
+      setActiveAction(null);
       router.push(`/admin/search-suggestions/${payload.data.id}/edit`);
       return;
     }
@@ -160,6 +165,8 @@ export default function SearchSuggestionEditorClient({
     setForm(toFormState(payload.data));
     setStatusMessage("Suggestion updated.");
     setStatusTone("success");
+    setIsLoading(false);
+    setActiveAction(null);
     router.refresh();
   }
 
@@ -168,6 +175,7 @@ export default function SearchSuggestionEditorClient({
       return;
     }
 
+    setActiveAction("delete");
     setIsLoading(true);
     setStatusMessage("");
     setStatusTone(null);
@@ -176,16 +184,17 @@ export default function SearchSuggestionEditorClient({
       method: "DELETE"
     });
 
-    setIsLoading(false);
-
     if (!response.ok) {
       const payload = (await response.json().catch(() => ({}))) as ApiError;
       setStatusMessage(`Could not delete suggestion. ${getIssueMessage(payload, "Unknown error")}`);
       setStatusTone("error");
       setIsDeleteDialogOpen(false);
+      setIsLoading(false);
+      setActiveAction(null);
       return;
     }
 
+    setActiveAction(null);
     router.push("/admin/search-suggestions");
     router.refresh();
   }
@@ -196,9 +205,9 @@ export default function SearchSuggestionEditorClient({
         <div className={ADMIN_HEADER_ROW_CLASS}>
           <h1 className={ADMIN_TITLE_CLASS}>{isCreate ? "New Search Suggestion" : "Edit Search Suggestion"}</h1>
           <div className={ADMIN_HEADER_ACTIONS_CLASS}>
-            <ButtonLink variant="secondary" href="/admin/search-suggestions">
+            <Button color="secondary" size="md" href="/admin/search-suggestions">
               Back to Search Suggestions
-            </ButtonLink>
+            </Button>
           </div>
         </div>
         <p>
@@ -215,7 +224,7 @@ export default function SearchSuggestionEditorClient({
             <Field label="Label">
               <TextInput
                 value={form.label}
-                onChange={(event) => setForm((previous) => ({ ...previous, label: event.target.value }))}
+                onChange={(value) => setForm((previous) => ({ ...previous, label: value }))}
                 isInvalid={hasTriedSubmit && Boolean(validationErrors.label)}
                 errorMessage={hasTriedSubmit ? validationErrors.label : undefined}
                 required
@@ -224,7 +233,7 @@ export default function SearchSuggestionEditorClient({
             <Field label="Query">
               <TextInput
                 value={form.query}
-                onChange={(event) => setForm((previous) => ({ ...previous, query: event.target.value }))}
+                onChange={(value) => setForm((previous) => ({ ...previous, query: value }))}
                 isInvalid={hasTriedSubmit && Boolean(validationErrors.query)}
                 errorMessage={hasTriedSubmit ? validationErrors.query : undefined}
                 required
@@ -236,7 +245,7 @@ export default function SearchSuggestionEditorClient({
                 min="0"
                 max="1000"
                 value={form.priority}
-                onChange={(event) => setForm((previous) => ({ ...previous, priority: event.target.value }))}
+                onChange={(value) => setForm((previous) => ({ ...previous, priority: value }))}
                 isInvalid={hasTriedSubmit && Boolean(validationErrors.priority)}
                 errorMessage={hasTriedSubmit ? validationErrors.priority : undefined}
                 required
@@ -253,21 +262,20 @@ export default function SearchSuggestionEditorClient({
                 <option value="false">Inactive</option>
               </SelectInput>
             </Field>
-            <div className={ADMIN_ACTIONS_CLASS}>
-              <Button type="submit" disabled={isLoading}>
-                {isCreate ? "Create suggestion" : "Save changes"}
-              </Button>
-              {!isCreate ? (
-                <Button
-                  variant="danger"
-                  type="button"
-                  onClick={() => setIsDeleteDialogOpen(true)}
-                  disabled={isLoading}
-                >
-                  Delete
+            <AdminFormActions
+              primaryActions={
+                <Button type="submit" size="md" isDisabled={isLoading} isLoading={isLoading && activeAction === "save"} className={ADMIN_ACTION_BUTTON_CLASS}>
+                  {isCreate ? "Create suggestion" : "Save changes"}
                 </Button>
-              ) : null}
-            </div>
+              }
+              destructiveAction={
+                !isCreate ? (
+                  <Button color="primary-destructive" size="md" type="button" onClick={() => setIsDeleteDialogOpen(true)} isDisabled={isLoading} className={ADMIN_ACTION_BUTTON_CLASS}>
+                    Delete
+                  </Button>
+                ) : undefined
+              }
+            />
           </form>
           {statusMessage ? (
             <p className={joinAdminClassNames(ADMIN_STATUS_MESSAGE_CLASS, statusTone === "error" && ADMIN_STATUS_MESSAGE_ERROR_CLASS)}>{statusMessage}</p>
@@ -278,8 +286,8 @@ export default function SearchSuggestionEditorClient({
       <DeleteConfirmModal
         isOpen={isDeleteDialogOpen}
         title="Delete suggestion?"
-        description={`This will remove ${initialSuggestion?.label ?? "this suggestion"} permanently.`}
-        isLoading={isLoading}
+        description={`This will permanently delete ${initialSuggestion?.label ?? "this suggestion"}. This action cannot be undone.`}
+        isLoading={isLoading && activeAction === "delete"}
         onCancel={() => {
           if (isLoading) {
             return;

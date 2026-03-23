@@ -1,16 +1,11 @@
 "use client";
 
-import { Select, SelectItem, type Selection } from "@heroui/react";
-import {
-  ADMIN_CUISINE_SELECT_POPOVER_CLASS,
-  ADMIN_CUISINE_SELECT_VALUE_CLASS,
-  ADMIN_CUISINE_SELECT_VALUE_PLACEHOLDER_CLASS,
-  ADMIN_SELECT_CLASS,
-  ADMIN_SELECT_TRIGGER_CLASS,
-  ADMIN_SELECT_VALUE_CLASS,
-  joinAdminClassNames
-} from "@/components/admin/admin-tailwind";
-import { CUISINE_OPTIONS, getCuisineLabel } from "@/lib/cuisines";
+import { useEffect, useMemo } from "react";
+import type { Key } from "react-aria-components";
+import { useListData } from "react-stately";
+import { MultiSelect } from "@/components/base/select/multi-select";
+import type { SelectItemType } from "@/components/base/select/select";
+import { CUISINE_OPTIONS } from "@/lib/cuisines";
 
 type CuisineMultiSelectProps = {
   value: string[];
@@ -19,18 +14,15 @@ type CuisineMultiSelectProps = {
   errorMessage?: string;
 };
 
-function getTriggerLabel(value: string[]) {
-  if (value.length === 0) {
-    return "Select cuisines";
-  }
+const CUISINE_ITEMS: SelectItemType[] = CUISINE_OPTIONS.map((option) => ({
+  id: option.value,
+  label: option.label
+}));
 
-  const labels = value.map((item) => getCuisineLabel(item));
+function toOrderedCuisineValues(keys: Iterable<string>) {
+  const selectedKeys = new Set(keys);
 
-  if (labels.length <= 2) {
-    return labels.join(", ");
-  }
-
-  return `${labels.length} cuisines selected`;
+  return CUISINE_OPTIONS.filter((option) => selectedKeys.has(option.value)).map((option) => option.value);
 }
 
 export default function CuisineMultiSelect({
@@ -39,54 +31,57 @@ export default function CuisineMultiSelect({
   required = false,
   errorMessage
 }: CuisineMultiSelectProps) {
-  const selectedKeys = new Set(value);
   const isInvalid = required && value.length === 0 && Boolean(errorMessage);
 
-  return (
-    <Select
-      aria-label="Select cuisines"
-      className={joinAdminClassNames("uiSelect", ADMIN_SELECT_CLASS, "adminCuisineSelect")}
-      classNames={{
-        base: "w-full",
-        mainWrapper: "w-full",
-        trigger: joinAdminClassNames("uiSelectTrigger", ADMIN_SELECT_TRIGGER_CLASS),
-        value: joinAdminClassNames(
-          "uiSelectValue",
-          ADMIN_SELECT_VALUE_CLASS,
-          ADMIN_CUISINE_SELECT_VALUE_CLASS,
-          value.length === 0 && ADMIN_CUISINE_SELECT_VALUE_PLACEHOLDER_CLASS
-        ),
-        popoverContent: ADMIN_CUISINE_SELECT_POPOVER_CLASS
-      }}
-      disallowEmptySelection={false}
-      errorMessage={isInvalid ? errorMessage : undefined}
-      fullWidth
-      isInvalid={isInvalid}
-      isRequired={required}
-      maxListboxHeight={280}
-      size="lg"
-      placeholder="Select one or more cuisines"
-      renderValue={() => getTriggerLabel(value)}
-      selectedKeys={selectedKeys}
-      showScrollIndicators
-      selectionMode="multiple"
-      scrollShadowProps={{ hideScrollBar: false, offset: 24 }}
-      variant="bordered"
-      radius="lg"
-      onSelectionChange={(keys: Selection) => {
-        if (keys === "all") {
-          onChange(CUISINE_OPTIONS.map((option) => option.value));
-          return;
-        }
+  const selectedCuisineItems = useMemo(
+    () => CUISINE_ITEMS.filter((item) => value.includes(item.id)),
+    [value]
+  );
 
-        onChange(CUISINE_OPTIONS.map((option) => option.value).filter((optionValue) => keys.has(optionValue)));
-      }}
+  const selectedItems = useListData({
+    initialItems: selectedCuisineItems
+  });
+
+  useEffect(() => {
+    const currentIds = selectedItems.items.map((item) => item.id);
+
+    if (
+      currentIds.length === selectedCuisineItems.length &&
+      currentIds.every((id, index) => id === selectedCuisineItems[index]?.id)
+    ) {
+      return;
+    }
+
+    for (const item of [...selectedItems.items]) {
+      selectedItems.remove(item.id);
+    }
+
+    for (const item of selectedCuisineItems) {
+      selectedItems.append(item);
+    }
+  }, [selectedCuisineItems, selectedItems]);
+
+  const handleItemInserted = (key: Key) => {
+    onChange(toOrderedCuisineValues([...value, String(key)]));
+  };
+
+  const handleItemCleared = (key: Key) => {
+    onChange(toOrderedCuisineValues(value.filter((item) => item !== String(key))));
+  };
+
+  return (
+    <MultiSelect
+      items={CUISINE_ITEMS}
+      selectedItems={selectedItems}
+      size="md"
+      placeholder="Search cuisines"
+      placeholderIcon={null}
+      isInvalid={isInvalid}
+      hint={isInvalid ? errorMessage : undefined}
+      onItemInserted={handleItemInserted}
+      onItemCleared={handleItemCleared}
     >
-      {CUISINE_OPTIONS.map((option) => (
-        <SelectItem key={option.value} textValue={option.label}>
-          {option.label}
-        </SelectItem>
-      ))}
-    </Select>
+      {(item) => <MultiSelect.Item id={item.id} label={item.label} />}
+    </MultiSelect>
   );
 }

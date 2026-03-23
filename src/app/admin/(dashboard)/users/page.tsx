@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Button } from "@/components/base/buttons/button";
 import AdminUsersTable from "@/components/admin/AdminUsersTable";
 import {
   ADMIN_HEADER_ACTIONS_CLASS,
@@ -7,7 +7,6 @@ import {
   ADMIN_PAGE_CLASS,
   ADMIN_TITLE_CLASS
 } from "@/components/admin/admin-tailwind";
-import { buttonClassName } from "@/components/ui/button-styles";
 import { requireServerUserWithRole } from "@/lib/admin-auth-server";
 import {
   getAdminUsersPageData,
@@ -55,9 +54,9 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
         <div className={ADMIN_HEADER_ROW_CLASS}>
           <h1 className={ADMIN_TITLE_CLASS}>Users</h1>
           <div className={ADMIN_HEADER_ACTIONS_CLASS}>
-            <Link className={buttonClassName({})} href="/admin/users/new">
+            <Button size="md" href="/admin/users/new">
               New User
-            </Link>
+            </Button>
           </div>
         </div>
       </section>

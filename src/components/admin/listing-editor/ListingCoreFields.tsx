@@ -24,7 +24,7 @@ export default function ListingCoreFields({
       <Field label="Slug">
         <TextInput
           value={form.slug}
-          onChange={(event) => onChange((previous) => ({ ...previous, slug: event.target.value }))}
+          onChange={(value) => onChange((previous) => ({ ...previous, slug: value }))}
           isInvalid={Boolean(validationErrors.slug)}
           errorMessage={validationErrors.slug}
           required
@@ -33,7 +33,7 @@ export default function ListingCoreFields({
       <Field label="Title">
         <TextInput
           value={form.title}
-          onChange={(event) => onChange((previous) => ({ ...previous, title: event.target.value }))}
+          onChange={(value) => onChange((previous) => ({ ...previous, title: value }))}
           isInvalid={Boolean(validationErrors.title)}
           errorMessage={validationErrors.title}
           required

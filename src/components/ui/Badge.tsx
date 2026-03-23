@@ -1,31 +1,30 @@
 import type { ReactNode } from "react";
-import { joinAdminClassNames } from "@/components/admin/admin-tailwind";
+import { Badge as BaseBadge } from "@/components/base/badges/badges";
 
 type BadgeTone = "neutral" | "success" | "danger";
+type ExtendedBadgeTone = BadgeTone | "warning" | "primary";
 
 type BadgeProps = {
   children: ReactNode;
-  tone?: BadgeTone;
+  tone?: ExtendedBadgeTone;
   className?: string;
 };
 
 export default function Badge({ children, tone = "neutral", className }: BadgeProps) {
-  const toneClassName =
+  const color =
     tone === "success"
-      ? "bg-[rgba(34,197,94,0.12)] text-[color:var(--success)]"
-      : tone === "danger"
-        ? "bg-[hsla(var(--danger-h),var(--danger-s),var(--danger-l),0.12)] text-[color:var(--danger)]"
-        : "bg-[rgba(15,23,42,0.08)] text-[color:var(--admin-muted)]";
+      ? "success"
+      : tone === "warning"
+        ? "warning"
+        : tone === "primary"
+          ? "brand"
+          : tone === "danger"
+            ? "error"
+            : "gray";
 
   return (
-    <span
-      className={joinAdminClassNames(
-        "inline-flex min-h-[30px] items-center justify-center whitespace-nowrap rounded-full px-2.5 text-[0.78rem] font-bold tracking-[0.01em]",
-        toneClassName,
-        className ?? ""
-      )}
-    >
+    <BaseBadge type="pill-color" size="sm" color={color} className={className}>
       {children}
-    </span>
+    </BaseBadge>
   );
 }

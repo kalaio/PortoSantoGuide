@@ -2,19 +2,16 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { requireRequestAuthUser } from "@/lib/admin-auth";
-import {
-  MATERIAL_SYMBOL_ICON_NAME_PATTERN,
-  normalizeMaterialSymbolIconName
-} from "@/lib/material-symbols";
 import { prisma } from "@/lib/prisma";
 import { requireTrustedMutationOrigin } from "@/lib/api-security";
+import { normalizeUiIconName } from "@/lib/ui-icons";
 
 const categoryIconSchema = z
   .string()
   .trim()
   .min(1)
   .max(64)
-  .regex(MATERIAL_SYMBOL_ICON_NAME_PATTERN, "Use lowercase letters, numbers, and underscores")
+  .refine((value) => normalizeUiIconName(value) !== null, "Choose a supported icon")
   .nullable()
   .optional();
 
@@ -193,12 +190,12 @@ export async function POST(request: Request) {
 
   try {
     const created = await prisma.listingCategory.create({
-      data: {
-        slug: parsed.data.slug,
-        label: parsed.data.label,
-        iconName: normalizeMaterialSymbolIconName(parsed.data.iconName),
-        sectionId: parsed.data.sectionId,
-        schemaId: parsed.data.schemaId,
+        data: {
+          slug: parsed.data.slug,
+          label: parsed.data.label,
+          iconName: normalizeUiIconName(parsed.data.iconName),
+          sectionId: parsed.data.sectionId,
+          schemaId: parsed.data.schemaId,
         sortOrder: parsed.data.sortOrder ?? 0,
         isActive: parsed.data.isActive ?? true
       },

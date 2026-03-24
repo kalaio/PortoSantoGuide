@@ -38,10 +38,10 @@ export default function DeleteConfirmModal({
       className="z-[120]"
     >
       <Modal className="max-w-[26rem]">
-        <Dialog className="grid w-full gap-4 rounded-[1.5rem] border border-[color:var(--admin-border)] bg-white p-6 shadow-[0_24px_60px_rgba(10,13,18,0.16)]">
+        <Dialog className="grid w-full gap-4 rounded-[1.5rem] border border-secondary bg-primary p-6 shadow-[0_24px_60px_rgba(10,13,18,0.16)]">
           <div className="grid gap-2">
-            <h3 className="m-0 text-xl font-semibold text-[color:var(--admin-text)]">{title}</h3>
-            <p className="m-0 text-[color:var(--admin-muted)]">{description}</p>
+            <h3 className="m-0 text-xl font-semibold text-primary">{title}</h3>
+            <p className="m-0 text-tertiary">{description}</p>
           </div>
           <div className="flex flex-wrap justify-end gap-3 [&>*]:min-w-[8.5rem] [&>*]:justify-center">
             <Button color="secondary" size="md" type="button" onClick={onCancel} isDisabled={isLoading}>

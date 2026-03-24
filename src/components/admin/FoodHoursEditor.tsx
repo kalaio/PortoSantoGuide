@@ -120,7 +120,7 @@ export default function FoodHoursEditor({ value, onChange, errorMessage }: FoodH
                       <Button className={ADMIN_HOURS_INTERVAL_BUTTON_CLASS} type="button" color="secondary" size="sm" onClick={() => handleRemoveInterval(dayKey, intervalIndex)}>
                         Remove
                       </Button>
-                      {validationMessage ? <p className="col-span-full text-[0.84rem] text-[color:var(--danger)]">{validationMessage}</p> : null}
+                      {validationMessage ? <p className="col-span-full text-[0.84rem] text-error-primary">{validationMessage}</p> : null}
                     </div>
                   );
                 })}

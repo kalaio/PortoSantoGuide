@@ -164,8 +164,8 @@ export default function AdminSidebar({ user }: { user: SidebarUser }) {
 
   function renderContent({ mobile = false }: { mobile?: boolean } = {}) {
     return (
-      <aside className="flex h-full min-h-screen w-full max-w-full flex-col border-secondary bg-primary pt-0 shadow-xs md:border-r lg:h-screen lg:min-h-0">
-        <div className="flex flex-col gap-5 px-4 lg:px-5">
+      <aside className="flex h-full min-h-screen w-full max-w-full flex-col border-secondary bg-primary pt-0 shadow-xs md:border-r lg:h-screen lg:min-h-0 lg:bg-[var(--admin-surface)] lg:backdrop-blur-[18px]">
+        <div className="flex flex-col gap-4 px-4 lg:px-5">
           <SidebarBrand variant={mobile ? "drawer" : "default"} />
           <Input
             aria-label="Search admin navigation"
@@ -177,7 +177,7 @@ export default function AdminSidebar({ user }: { user: SidebarUser }) {
           />
         </div>
 
-        <div className="mt-6 min-h-0 flex-1 overflow-y-auto">
+        <div className="adminSidebarScrollArea mt-4 min-h-0 flex-1 overflow-y-auto">
           <nav aria-label="Admin navigation" className="pb-6">
             {isDashboardVisible ? (
               <ul className="px-2 lg:px-4">
@@ -194,11 +194,11 @@ export default function AdminSidebar({ user }: { user: SidebarUser }) {
               </ul>
             ) : null}
 
-            <ul className={cx("flex flex-col", isDashboardVisible ? "mt-5" : "mt-2")}>
+            <ul className={cx("flex flex-col", isDashboardVisible ? "mt-4" : "mt-1")}>
               {filteredGroups.map((group) => (
                 <li key={group.label}>
                   <div className="px-5 pb-1">
-                    <p className="text-xs font-bold uppercase tracking-[0.04em] text-quaternary">{group.label}</p>
+                    <p className="text-sm font-semibold text-tertiary">{group.label}</p>
                   </div>
                   <ul className="px-2 pb-5 lg:px-4">
                     {group.items.map((item) => (

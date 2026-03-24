@@ -1,25 +1,49 @@
-import Link from "next/link";
 import { Button } from "@/components/base/buttons/button";
+import AdminSearchSuggestionsTable from "@/components/admin/AdminSearchSuggestionsTable";
 import {
   ADMIN_HEADER_ACTIONS_CLASS,
   ADMIN_HEADER_ROW_CLASS,
   ADMIN_HERO_CLASS,
-  ADMIN_LIST_GRID_CLASS,
-  ADMIN_LIST_ITEM_CLASS,
-  ADMIN_LIST_LINK_CLASS,
   ADMIN_PAGE_CLASS,
-  ADMIN_PANEL_CLASS,
-  ADMIN_STATUS_MESSAGE_CLASS,
   ADMIN_TITLE_CLASS
 } from "@/components/admin/admin-tailwind";
 import { requireServerUserWithRole } from "@/lib/admin-auth-server";
-import { prisma } from "@/lib/prisma";
+import {
+  getAdminSearchSuggestionsPageData,
+  type AdminSearchSuggestionsSortDirection,
+  type AdminSearchSuggestionsSortField
+} from "@/lib/admin-search-suggestions";
 
-export default async function AdminSearchSuggestionsPage() {
-  await requireServerUserWithRole(["ADMINISTRATOR"]);
+function normalizeSortField(value: string | string[] | undefined): AdminSearchSuggestionsSortField {
+  return value === "updatedAt" || value === "label" || value === "status" ? value : "priority";
+}
 
-  const suggestions = await prisma.searchSuggestion.findMany({
-    orderBy: [{ priority: "desc" }, { updatedAt: "desc" }]
+function normalizeSortDirection(value: string | string[] | undefined): AdminSearchSuggestionsSortDirection {
+  return value === "ascending" || value === "descending" ? value : "descending";
+}
+
+type AdminSearchSuggestionsPageProps = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export default async function AdminSearchSuggestionsPage({ searchParams }: AdminSearchSuggestionsPageProps) {
+  const user = await requireServerUserWithRole(["ADMINISTRATOR"]);
+  const params = await searchParams;
+
+  const query = typeof params.q === "string" ? params.q : "";
+  const status = typeof params.status === "string" ? params.status : "all";
+  const sort = normalizeSortField(params.sort);
+  const dir = normalizeSortDirection(params.dir);
+  const page = typeof params.page === "string" ? Number(params.page) || 1 : 1;
+  const pageSize = typeof params.pageSize === "string" ? Number(params.pageSize) || 25 : 25;
+
+  const suggestionsPage = await getAdminSearchSuggestionsPageData(user, {
+    query,
+    status,
+    sort,
+    dir,
+    page,
+    pageSize
   });
 
   return (
@@ -35,27 +59,14 @@ export default async function AdminSearchSuggestionsPage() {
         </div>
       </section>
 
-      <section className={ADMIN_PANEL_CLASS}>
-        <div className={ADMIN_LIST_GRID_CLASS}>
-          {suggestions.map((suggestion) => (
-            <Link
-              key={suggestion.id}
-              className={ADMIN_LIST_LINK_CLASS}
-              href={`/admin/search-suggestions/${suggestion.id}/edit`}
-            >
-              <article className={ADMIN_LIST_ITEM_CLASS}>
-                <h3>{suggestion.label}</h3>
-                <p className="muted">Query: {suggestion.query}</p>
-                <p className="muted">Priority: {suggestion.priority}</p>
-                <p className="muted">Status: {suggestion.isActive ? "Active" : "Inactive"}</p>
-              </article>
-            </Link>
-          ))}
-        </div>
-        {suggestions.length === 0 ? (
-          <p className={ADMIN_STATUS_MESSAGE_CLASS}>No search suggestions found yet. Create your first search suggestion.</p>
-        ) : null}
-      </section>
+      <AdminSearchSuggestionsTable
+        suggestions={suggestionsPage.suggestions}
+        total={suggestionsPage.total}
+        page={suggestionsPage.page}
+        pageSize={suggestionsPage.pageSize}
+        statusCounts={suggestionsPage.statusCounts}
+        filters={{ query, status, sort, dir }}
+      />
     </main>
   );
 }

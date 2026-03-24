@@ -1,9 +1,10 @@
 "use client";
 
 import { SearchMd } from "@untitledui/icons";
-import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import { type Key, useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import AdminPagination from "@/components/admin/AdminPagination";
+import { Table } from "@/components/application/table/table";
 import {
   ADMIN_HEADER_ROW_DENSE_CLASS,
   ADMIN_METRICS_CLASS,
@@ -12,7 +13,6 @@ import {
   ADMIN_TABLE_FILTERS_COMPACT_CLASS,
   ADMIN_TABLE_FOOTER_CLASS,
   ADMIN_TABLE_PANEL_CLASS,
-  ADMIN_TABLE_SCROLLER_CLASS,
   ADMIN_TOOLBAR_PANEL_CLASS
 } from "@/components/admin/admin-tailwind";
 import { Badge, SelectInput, TextInput } from "@/components/ui";
@@ -35,7 +35,13 @@ type AdminUsersTableProps = {
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50];
 const SEARCH_DEBOUNCE_MS = 280;
-const SORTABLE_COLUMNS: ReadonlySet<AdminUsersSortField> = new Set(["createdAt", "username", "role", "status"]);
+const TABLE_COLUMNS = [
+  { id: "username", label: "User", sortable: true },
+  { id: "role", label: "Role", sortable: true },
+  { id: "status", label: "Status", sortable: true },
+  { id: "email", label: "Email", sortable: false },
+  { id: "createdAt", label: "Created", sortable: true }
+] as const satisfies ReadonlyArray<{ id: string; label: string; sortable: boolean }>;
 
 function formatRole(role: AdminUserRow["role"]) {
   switch (role) {
@@ -55,16 +61,6 @@ function getRoleTone(role: AdminUserRow["role"]) {
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
-}
-
-function getNextSortDirection(currentSort: AdminUsersSortField, currentDir: AdminUsersSortDirection, column: AdminUsersSortField) {
-  if (currentSort !== column) return column === "createdAt" ? "descending" : "ascending";
-  return currentDir === "ascending" ? "descending" : "ascending";
-}
-
-function SortableHeader({ label, column, activeSort, activeDir, onSort }: { label: string; column: AdminUsersSortField; activeSort: AdminUsersSortField; activeDir: AdminUsersSortDirection; onSort: (column: AdminUsersSortField) => void }) {
-  const isActive = activeSort === column;
-  return <button type="button" className="inline-flex items-center gap-1 font-inherit" onClick={() => onSort(column)}><span>{label}</span><span aria-hidden="true">{isActive ? (activeDir === "ascending" ? "↑" : "↓") : "↕"}</span></button>;
 }
 
 export default function AdminUsersTable({ users, total, page, pageSize, statusCounts, filters }: AdminUsersTableProps) {
@@ -118,9 +114,10 @@ export default function AdminUsersTable({ users, total, page, pageSize, statusCo
     return () => window.clearTimeout(timeoutId);
   }, [filters.query, queryInput, updateFilters]);
 
-  function handleSortChange(column: AdminUsersSortField) {
-    if (!SORTABLE_COLUMNS.has(column)) return;
-    updateFilters({ sort: column, dir: getNextSortDirection(filters.sort, filters.dir, column), page: 1 });
+  function handleSortChange(sortDescriptor: { column: Key; direction: "ascending" | "descending" }) {
+    const column = sortDescriptor.column as AdminUsersSortField;
+    const nextDirection = filters.sort !== column && column === "createdAt" ? "descending" : sortDescriptor.direction;
+    updateFilters({ sort: column, dir: nextDirection, page: 1 });
   }
 
   return (
@@ -136,14 +133,31 @@ export default function AdminUsersTable({ users, total, page, pageSize, statusCo
       </section>
 
       <section className={ADMIN_TABLE_PANEL_CLASS}>
-        <div className={ADMIN_TABLE_SCROLLER_CLASS}>
-          <table className="adminDataTableTable adminUsersDataTableTable w-full min-w-[860px] border-collapse">
-            <thead><tr><th className="adminDataTableHeadCell text-left"><SortableHeader label="User" column="username" activeSort={filters.sort} activeDir={filters.dir} onSort={handleSortChange} /></th><th className="adminDataTableHeadCell text-left"><SortableHeader label="Role" column="role" activeSort={filters.sort} activeDir={filters.dir} onSort={handleSortChange} /></th><th className="adminDataTableHeadCell text-left"><SortableHeader label="Status" column="status" activeSort={filters.sort} activeDir={filters.dir} onSort={handleSortChange} /></th><th className="adminDataTableHeadCell text-left">Email</th><th className="adminDataTableHeadCell text-left"><SortableHeader label="Created" column="createdAt" activeSort={filters.sort} activeDir={filters.dir} onSort={handleSortChange} /></th></tr></thead>
-            <tbody>
-              {users.length === 0 ? <tr><td className="adminDataTableCell px-4 py-6 text-[color:var(--admin-muted)]" colSpan={5}>{isPending ? "Updating users..." : "No users match the current filters."}</td></tr> : users.map((user, index) => <tr key={user.id} className="adminDataTableRow" data-last={index === users.length - 1 ? "true" : undefined} tabIndex={0} onClick={() => router.push(`/admin/users/${user.id}/edit`)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); router.push(`/admin/users/${user.id}/edit`); } }}><td className="adminDataTableCell px-4 py-4"><div className="adminListingPrimaryCell"><strong>{user.username}</strong></div></td><td className="adminDataTableCell px-4 py-4"><Badge tone={getRoleTone(user.role)}>{formatRole(user.role)}</Badge></td><td className="adminDataTableCell px-4 py-4"><Badge tone={user.isActive ? "success" : "neutral"}>{user.isActive ? "Active" : "Inactive"}</Badge></td><td className="adminDataTableCell px-4 py-4"><span className={ADMIN_TABLE_CLAMP_CLASS}>{user.email}</span></td><td className="adminDataTableCell px-4 py-4">{formatDate(user.createdAt)}</td></tr>)}
-            </tbody>
-          </table>
-        </div>
+        <Table
+          aria-label="Users"
+          className="min-w-[860px]"
+          sortDescriptor={{ column: filters.sort, direction: filters.dir }}
+          onSortChange={handleSortChange}
+          onRowAction={(key) => router.push(`/admin/users/${String(key)}/edit`)}
+        >
+          <Table.Header columns={TABLE_COLUMNS}>
+            {(column) => <Table.Head id={column.id} label={column.label} allowsSorting={column.sortable} isRowHeader={column.id === "username"} />}
+          </Table.Header>
+          <Table.Body
+            items={users}
+            renderEmptyState={() => <div className="px-6 py-6 text-sm text-tertiary">{isPending ? "Updating users..." : "No users match the current filters."}</div>}
+          >
+            {(user) => (
+              <Table.Row id={user.id} className="cursor-pointer">
+                <Table.Cell><div className="adminListingPrimaryCell"><strong className="text-primary">{user.username}</strong></div></Table.Cell>
+                <Table.Cell><Badge tone={getRoleTone(user.role)}>{formatRole(user.role)}</Badge></Table.Cell>
+                <Table.Cell><Badge tone={user.isActive ? "success" : "neutral"}>{user.isActive ? "Active" : "Inactive"}</Badge></Table.Cell>
+                <Table.Cell><span className={ADMIN_TABLE_CLAMP_CLASS}>{user.email}</span></Table.Cell>
+                <Table.Cell>{formatDate(user.createdAt)}</Table.Cell>
+              </Table.Row>
+            )}
+          </Table.Body>
+        </Table>
         <div className={ADMIN_TABLE_FOOTER_CLASS}><p className="muted">Showing {total === 0 ? 0 : (page - 1) * pageSize + 1}-{Math.min(page * pageSize, total)} of {total} users</p><AdminPagination page={page} total={totalPages} onChange={(nextPage) => updateFilters({ page: nextPage })} /></div>
       </section>
     </>

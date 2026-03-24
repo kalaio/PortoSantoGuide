@@ -1,9 +1,10 @@
 "use client";
 
 import { SearchMd } from "@untitledui/icons";
-import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import { type Key, useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import AdminPagination from "@/components/admin/AdminPagination";
+import { Table } from "@/components/application/table/table";
 import {
   ADMIN_HEADER_ROW_DENSE_CLASS,
   ADMIN_DRAFT_CHIP_CLASS,
@@ -13,7 +14,6 @@ import {
   ADMIN_TABLE_FILTERS_CLASS,
   ADMIN_TABLE_FOOTER_CLASS,
   ADMIN_TABLE_PANEL_CLASS,
-  ADMIN_TABLE_SCROLLER_CLASS,
   ADMIN_TOOLBAR_PANEL_CLASS
 } from "@/components/admin/admin-tailwind";
 import { Badge, SelectInput, TextInput } from "@/components/ui";
@@ -44,7 +44,14 @@ type AdminListingsTableProps = {
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50];
 const SEARCH_DEBOUNCE_MS = 280;
-const SORTABLE_COLUMNS: ReadonlySet<AdminListingsSortField> = new Set(["updatedAt", "title", "status"]);
+const TABLE_COLUMNS = [
+  { id: "title", label: "Listing", sortable: true },
+  { id: "status", label: "Status", sortable: true },
+  { id: "section", label: "Section", sortable: false },
+  { id: "primaryCategory", label: "Primary Category", sortable: false },
+  { id: "moreCategories", label: "More Categories", sortable: false },
+  { id: "updatedAt", label: "Updated", sortable: true }
+] as const satisfies ReadonlyArray<{ id: string; label: string; sortable: boolean }>;
 
 function getStatusTone(status: AdminListingRow["status"]) {
   switch (status) {
@@ -73,45 +80,6 @@ function formatDate(value: string) {
     dateStyle: "medium",
     timeStyle: "short"
   }).format(new Date(value));
-}
-
-function getNextSortDirection(
-  currentSort: AdminListingsSortField,
-  currentDir: AdminListingsSortDirection,
-  column: AdminListingsSortField
-) {
-  if (currentSort !== column) {
-    return column === "updatedAt" ? "descending" : "ascending";
-  }
-
-  return currentDir === "ascending" ? "descending" : "ascending";
-}
-
-function SortableHeader({
-  label,
-  column,
-  activeSort,
-  activeDir,
-  onSort
-}: {
-  label: string;
-  column: AdminListingsSortField;
-  activeSort: AdminListingsSortField;
-  activeDir: AdminListingsSortDirection;
-  onSort: (column: AdminListingsSortField) => void;
-}) {
-  const isActive = activeSort === column;
-
-  return (
-    <button
-      type="button"
-      className="inline-flex items-center gap-1 font-inherit"
-      onClick={() => onSort(column)}
-    >
-      <span>{label}</span>
-      <span aria-hidden="true">{isActive ? (activeDir === "ascending" ? "↑" : "↓") : "↕"}</span>
-    </button>
-  );
 }
 
 export default function AdminListingsTable({
@@ -190,14 +158,13 @@ export default function AdminListingsTable({
     return () => window.clearTimeout(timeoutId);
   }, [filters.query, queryInput, updateFilters]);
 
-  function handleSortChange(column: AdminListingsSortField) {
-    if (!SORTABLE_COLUMNS.has(column)) {
-      return;
-    }
+  function handleSortChange(sortDescriptor: { column: Key; direction: "ascending" | "descending" }) {
+    const column = sortDescriptor.column as AdminListingsSortField;
+    const nextDirection = filters.sort !== column && column === "updatedAt" ? "descending" : sortDescriptor.direction;
 
     updateFilters({
       sort: column,
-      dir: getNextSortDirection(filters.sort, filters.dir, column),
+      dir: nextDirection,
       page: 1
     });
   }
@@ -256,74 +223,54 @@ export default function AdminListingsTable({
       </section>
 
       <section className={ADMIN_TABLE_PANEL_CLASS}>
-        <div className={ADMIN_TABLE_SCROLLER_CLASS}>
-          <table className="adminDataTableTable min-w-[900px] w-full border-collapse">
-            <thead>
-              <tr>
-                <th className="adminDataTableHeadCell text-left">
-                  <SortableHeader label="Listing" column="title" activeSort={filters.sort} activeDir={filters.dir} onSort={handleSortChange} />
-                </th>
-                <th className="adminDataTableHeadCell text-left">
-                  <SortableHeader label="Status" column="status" activeSort={filters.sort} activeDir={filters.dir} onSort={handleSortChange} />
-                </th>
-                <th className="adminDataTableHeadCell text-left">Section</th>
-                <th className="adminDataTableHeadCell text-left">Primary Category</th>
-                <th className="adminDataTableHeadCell text-left">More Categories</th>
-                <th className="adminDataTableHeadCell text-left">
-                  <SortableHeader label="Updated" column="updatedAt" activeSort={filters.sort} activeDir={filters.dir} onSort={handleSortChange} />
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {listings.length === 0 ? (
-                <tr>
-                  <td className="adminDataTableCell px-4 py-6 text-[color:var(--admin-muted)]" colSpan={6}>
-                    {isPending ? "Updating listings..." : "No listings match the current filters."}
-                  </td>
-                </tr>
-              ) : (
-                listings.map((listing, index) => {
-                  const additionalCategories = listing.categoryLabels.filter((label) => label !== listing.primaryCategoryLabel);
+        <Table
+          aria-label="Listings"
+          className="min-w-[900px]"
+          sortDescriptor={{ column: filters.sort, direction: filters.dir }}
+          onSortChange={handleSortChange}
+          onRowAction={(key) => router.push(`/admin/listings/${String(key)}/edit`)}
+        >
+          <Table.Header columns={TABLE_COLUMNS}>
+            {(column) => (
+              <Table.Head id={column.id} label={column.label} allowsSorting={column.sortable} isRowHeader={column.id === "title"} />
+            )}
+          </Table.Header>
+          <Table.Body
+            items={listings}
+            renderEmptyState={() => (
+              <div className="px-6 py-6 text-sm text-tertiary">
+                {isPending ? "Updating listings..." : "No listings match the current filters."}
+              </div>
+            )}
+          >
+            {(listing) => {
+              const additionalCategories = listing.categoryLabels.filter((label) => label !== listing.primaryCategoryLabel);
 
-                  return (
-                    <tr
-                      key={listing.id}
-                      className="adminDataTableRow"
-                      data-last={index === listings.length - 1 ? "true" : undefined}
-                      tabIndex={0}
-                      onClick={() => router.push(`/admin/listings/${listing.id}/edit`)}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter" || event.key === " ") {
-                          event.preventDefault();
-                          router.push(`/admin/listings/${listing.id}/edit`);
-                        }
-                      }}
-                    >
-                      <td className="adminDataTableCell px-4 py-4">
-                        <div className="adminListingPrimaryCell">
-                          <strong>{listing.title}</strong>
-                          <span className="muted">{listing.slug}</span>
-                        </div>
-                      </td>
-                      <td className="adminDataTableCell px-4 py-4">
-                        <div className="adminListingStatusCell">
-                          <Badge tone={getStatusTone(listing.status)}>{getStatusLabel(listing.status)}</Badge>
-                          {listing.hasDraftRevision ? <Badge className={ADMIN_DRAFT_CHIP_CLASS} tone="primary">Draft changes</Badge> : null}
-                        </div>
-                      </td>
-                      <td className="adminDataTableCell px-4 py-4">{listing.sectionLabel}</td>
-                      <td className="adminDataTableCell px-4 py-4">{listing.primaryCategoryLabel}</td>
-                      <td className="adminDataTableCell px-4 py-4">
-                        <span className={ADMIN_TABLE_CLAMP_CLASS}>{additionalCategories.length > 0 ? additionalCategories.join(", ") : "-"}</span>
-                      </td>
-                      <td className="adminDataTableCell px-4 py-4">{formatDate(listing.updatedAt)}</td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+              return (
+                <Table.Row id={listing.id} className="cursor-pointer">
+                  <Table.Cell>
+                    <div className="adminListingPrimaryCell">
+                      <strong className="text-primary">{listing.title}</strong>
+                      <span className="muted">{listing.slug}</span>
+                    </div>
+                  </Table.Cell>
+                  <Table.Cell>
+                    <div className="adminListingStatusCell">
+                      <Badge tone={getStatusTone(listing.status)}>{getStatusLabel(listing.status)}</Badge>
+                      {listing.hasDraftRevision ? <Badge className={ADMIN_DRAFT_CHIP_CLASS} tone="primary">Draft changes</Badge> : null}
+                    </div>
+                  </Table.Cell>
+                  <Table.Cell>{listing.sectionLabel}</Table.Cell>
+                  <Table.Cell>{listing.primaryCategoryLabel}</Table.Cell>
+                  <Table.Cell>
+                    <span className={ADMIN_TABLE_CLAMP_CLASS}>{additionalCategories.length > 0 ? additionalCategories.join(", ") : "-"}</span>
+                  </Table.Cell>
+                  <Table.Cell>{formatDate(listing.updatedAt)}</Table.Cell>
+                </Table.Row>
+              );
+            }}
+          </Table.Body>
+        </Table>
 
         <div className={ADMIN_TABLE_FOOTER_CLASS}>
           <p className="muted">

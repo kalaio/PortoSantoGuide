@@ -56,7 +56,7 @@ export const ADMIN_TABLE_CLAMP_CLASS =
   "overflow-hidden [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]";
 
 export const ADMIN_SHELL_CLASS =
-  "grid min-h-screen grid-cols-[280px_minmax(0,1fr)] bg-[radial-gradient(circle_at_top_left,rgba(15,118,110,0.08),transparent_32%),var(--admin-bg)] max-[960px]:grid-cols-1";
+  "grid min-h-screen grid-cols-[296px_minmax(0,1fr)] bg-[radial-gradient(circle_at_top_left,rgba(15,118,110,0.08),transparent_32%),var(--admin-bg)] max-[960px]:grid-cols-1";
 
 export const ADMIN_CONTENT_CLASS = "min-w-0 px-0 pb-10 pt-3 max-[960px]:pb-8 max-[960px]:pt-0";
 

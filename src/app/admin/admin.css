@@ -47,53 +47,6 @@
 }
 
 
-.adminRoute .adminDataTable {
-  min-width: 0;
-}
-
-.adminRoute .adminDataTableTable {
-  min-width: 860px;
-}
-
-.adminRoute .adminCategoriesDataTableTable {
-  min-width: 980px;
-}
-
-.adminRoute .adminSchemasDataTableTable {
-  min-width: 860px;
-}
-
-.adminRoute .adminUsersDataTableTable {
-  min-width: 860px;
-}
-
-.adminRoute .adminDataTableHeadCell {
-  font-size: 0.77rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--admin-muted);
-  border-bottom: 1px solid var(--admin-border);
-}
-
-.adminRoute .adminDataTableCell {
-  vertical-align: middle;
-  border-bottom: 1px solid var(--admin-border);
-  transition: background-color 160ms ease;
-}
-
-.adminRoute .adminDataTableRow {
-  cursor: pointer;
-}
-
-.adminRoute .adminDataTableRow:hover .adminDataTableCell,
-.adminRoute .adminDataTableRow[data-hover="true"] .adminDataTableCell {
-  background: rgba(15, 118, 110, 0.05);
-}
-
-.adminRoute .adminDataTableRow[data-last="true"] .adminDataTableCell {
-  border-bottom: none;
-}
-
 .adminRoute .adminListingPrimaryCell {
   display: grid;
   gap: 4px;

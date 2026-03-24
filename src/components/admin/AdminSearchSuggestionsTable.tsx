@@ -17,14 +17,13 @@ import {
 } from "@/components/admin/admin-tailwind";
 import { Badge, SelectInput, TextInput } from "@/components/ui";
 import type {
-  AdminCategoriesSortDirection,
-  AdminCategoriesSortField,
-  AdminCategoryFilterOption,
-  AdminCategoryRow
-} from "@/lib/admin-categories";
+  AdminSearchSuggestionRow,
+  AdminSearchSuggestionsSortDirection,
+  AdminSearchSuggestionsSortField
+} from "@/lib/admin-search-suggestions";
 
-type AdminCategoriesTableProps = {
-  categories: AdminCategoryRow[];
+type AdminSearchSuggestionsTableProps = {
+  suggestions: AdminSearchSuggestionRow[];
   total: number;
   page: number;
   pageSize: number;
@@ -33,28 +32,20 @@ type AdminCategoriesTableProps = {
     active: number;
     inactive: number;
   };
-  sectionOptions: AdminCategoryFilterOption[];
-  schemaOptions: AdminCategoryFilterOption[];
-  hasUnassignedSchema: boolean;
   filters: {
     query: string;
     status: string;
-    section: string;
-    schema: string;
-    sort: AdminCategoriesSortField;
-    dir: AdminCategoriesSortDirection;
+    sort: AdminSearchSuggestionsSortField;
+    dir: AdminSearchSuggestionsSortDirection;
   };
 };
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50];
 const SEARCH_DEBOUNCE_MS = 280;
 const TABLE_COLUMNS = [
-  { id: "label", label: "Category", sortable: true },
+  { id: "label", label: "Suggestion", sortable: true },
   { id: "status", label: "Status", sortable: true },
-  { id: "section", label: "Section", sortable: false },
-  { id: "schema", label: "Schema", sortable: false },
-  { id: "icon", label: "Icon", sortable: false },
-  { id: "sortOrder", label: "Order", sortable: true },
+  { id: "priority", label: "Priority", sortable: true },
   { id: "updatedAt", label: "Updated", sortable: true }
 ] as const satisfies ReadonlyArray<{ id: string; label: string; sortable: boolean }>;
 
@@ -65,17 +56,14 @@ function formatDate(value: string) {
   }).format(new Date(value));
 }
 
-export default function AdminCategoriesTable({
-  categories,
+export default function AdminSearchSuggestionsTable({
+  suggestions,
   total,
   page,
   pageSize,
   statusCounts,
-  sectionOptions,
-  schemaOptions,
-  hasUnassignedSchema,
   filters
-}: AdminCategoriesTableProps) {
+}: AdminSearchSuggestionsTableProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -90,14 +78,12 @@ export default function AdminCategoriesTable({
   }, [filters.query]);
 
   const updateFilters = useCallback(
-    (next: Partial<AdminCategoriesTableProps["filters"] & { page?: number; pageSize?: number }>) => {
+    (next: Partial<AdminSearchSuggestionsTableProps["filters"] & { page?: number; pageSize?: number }>) => {
       const params = new URLSearchParams(searchParams.toString());
       const nextPage = next.page ?? 1;
       const nextPageSize = next.pageSize ?? pageSize;
       const nextQuery = next.query ?? queryInput;
       const nextStatus = next.status ?? filters.status;
-      const nextSection = next.section ?? filters.section;
-      const nextSchema = next.schema ?? filters.schema;
       const nextSort = next.sort ?? filters.sort;
       const nextDir = next.dir ?? filters.dir;
 
@@ -107,13 +93,9 @@ export default function AdminCategoriesTable({
       else params.delete("q");
       if (nextStatus !== "all") params.set("status", nextStatus);
       else params.delete("status");
-      if (nextSection !== "all") params.set("section", nextSection);
-      else params.delete("section");
-      if (nextSchema !== "all") params.set("schema", nextSchema);
-      else params.delete("schema");
-      if (nextSort !== "sortOrder") params.set("sort", nextSort);
+      if (nextSort !== "priority") params.set("sort", nextSort);
       else params.delete("sort");
-      if (nextDir !== "ascending") params.set("dir", nextDir);
+      if (nextDir !== "descending") params.set("dir", nextDir);
       else params.delete("dir");
       if (nextPage > 1) params.set("page", String(nextPage));
       else params.delete("page");
@@ -126,7 +108,7 @@ export default function AdminCategoriesTable({
         });
       });
     },
-    [filters.dir, filters.schema, filters.section, filters.sort, filters.status, pageSize, pathname, queryInput, router, searchParams]
+    [filters.dir, filters.sort, filters.status, pageSize, pathname, queryInput, router, searchParams]
   );
 
   useEffect(() => {
@@ -139,9 +121,12 @@ export default function AdminCategoriesTable({
   }, [filters.query, queryInput, updateFilters]);
 
   function handleSortChange(sortDescriptor: { column: Key; direction: "ascending" | "descending" }) {
+    const column = sortDescriptor.column as AdminSearchSuggestionsSortField;
+    const nextDirection = filters.sort !== column && column === "priority" ? "descending" : sortDescriptor.direction;
+
     updateFilters({
-      sort: sortDescriptor.column as AdminCategoriesSortField,
-      dir: sortDescriptor.direction,
+      sort: column,
+      dir: nextDirection,
       page: 1
     });
   }
@@ -162,25 +147,12 @@ export default function AdminCategoriesTable({
 
         <div className={ADMIN_TABLE_FILTERS_CLASS}>
           <TextInput
-            aria-label="Search categories"
+            aria-label="Search suggestions"
             icon={SearchMd}
-            placeholder="Search label, slug, section, schema, or icon"
+            placeholder="Search label or query"
             value={queryInput}
             onChange={setQueryInput}
           />
-          <SelectInput aria-label="Filter by schema" value={filters.schema} onChange={(event) => updateFilters({ schema: event.target.value, page: 1 })}>
-            <option value="all">All schemas</option>
-            {hasUnassignedSchema ? <option value="none">No schema</option> : null}
-            {schemaOptions.map((schema) => (
-              <option key={schema.value} value={schema.value}>{schema.label}</option>
-            ))}
-          </SelectInput>
-          <SelectInput aria-label="Filter by section" value={filters.section} onChange={(event) => updateFilters({ section: event.target.value, page: 1 })}>
-            <option value="all">All sections</option>
-            {sectionOptions.map((section) => (
-              <option key={section.value} value={section.value}>{section.label}</option>
-            ))}
-          </SelectInput>
           <SelectInput aria-label="Filter by status" value={filters.status} onChange={(event) => updateFilters({ status: event.target.value, page: 1 })}>
             <option value="all">All statuses</option>
             <option value="active">Active</option>
@@ -196,35 +168,39 @@ export default function AdminCategoriesTable({
 
       <section className={ADMIN_TABLE_PANEL_CLASS}>
         <Table
-          aria-label="Categories"
-          className="min-w-[980px]"
+          aria-label="Search suggestions"
+          className="min-w-[860px]"
           sortDescriptor={{ column: filters.sort, direction: filters.dir }}
           onSortChange={handleSortChange}
-          onRowAction={(key) => router.push(`/admin/categories/${String(key)}/edit`)}
+          onRowAction={(key) => router.push(`/admin/search-suggestions/${String(key)}/edit`)}
         >
           <Table.Header columns={TABLE_COLUMNS}>
             {(column) => <Table.Head id={column.id} label={column.label} allowsSorting={column.sortable} isRowHeader={column.id === "label"} />}
           </Table.Header>
           <Table.Body
-            items={categories}
-            renderEmptyState={() => <div className="px-6 py-6 text-sm text-tertiary">{isPending ? "Updating categories..." : "No categories match the current filters."}</div>}
+            items={suggestions}
+            renderEmptyState={() => <div className="px-6 py-6 text-sm text-tertiary">{isPending ? "Updating suggestions..." : "No search suggestions match the current filters."}</div>}
           >
-            {(category) => (
-              <Table.Row id={category.id} className="cursor-pointer">
-                <Table.Cell><div className="adminListingPrimaryCell"><strong className="text-primary">{category.label}</strong><span className="muted">{category.slug}</span></div></Table.Cell>
-                <Table.Cell><Badge tone={category.isActive ? "success" : "neutral"}>{category.isActive ? "Active" : "Inactive"}</Badge></Table.Cell>
-                <Table.Cell>{category.section.label}</Table.Cell>
-                <Table.Cell>{category.schema?.label ?? "No schema"}</Table.Cell>
-                <Table.Cell><span className={ADMIN_TABLE_CLAMP_CLASS}>{category.iconName ?? "-"}</span></Table.Cell>
-                <Table.Cell>{category.sortOrder}</Table.Cell>
-                <Table.Cell>{formatDate(category.updatedAt)}</Table.Cell>
+            {(suggestion) => (
+              <Table.Row id={suggestion.id} className="cursor-pointer">
+                <Table.Cell>
+                  <div className="adminListingPrimaryCell">
+                    <strong className="text-primary">{suggestion.label}</strong>
+                    <span className={`muted ${ADMIN_TABLE_CLAMP_CLASS}`}>{suggestion.query}</span>
+                  </div>
+                </Table.Cell>
+                <Table.Cell>
+                  <Badge tone={suggestion.isActive ? "success" : "neutral"}>{suggestion.isActive ? "Active" : "Inactive"}</Badge>
+                </Table.Cell>
+                <Table.Cell>{suggestion.priority}</Table.Cell>
+                <Table.Cell>{formatDate(suggestion.updatedAt)}</Table.Cell>
               </Table.Row>
             )}
           </Table.Body>
         </Table>
 
         <div className={ADMIN_TABLE_FOOTER_CLASS}>
-          <p className="muted">Showing {total === 0 ? 0 : (page - 1) * pageSize + 1}-{Math.min(page * pageSize, total)} of {total} categories</p>
+          <p className="muted">Showing {total === 0 ? 0 : (page - 1) * pageSize + 1}-{Math.min(page * pageSize, total)} of {total} suggestions</p>
           <AdminPagination page={page} total={totalPages} onChange={(nextPage) => updateFilters({ page: nextPage })} />
         </div>
       </section>

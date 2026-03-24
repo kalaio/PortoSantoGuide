@@ -1,9 +1,10 @@
 "use client";
 
 import { SearchMd } from "@untitledui/icons";
-import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import { type Key, useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import AdminPagination from "@/components/admin/AdminPagination";
+import { Table } from "@/components/application/table/table";
 import {
   ADMIN_HEADER_ROW_DENSE_CLASS,
   ADMIN_METRICS_CLASS,
@@ -12,7 +13,6 @@ import {
   ADMIN_TABLE_FILTERS_COMPACT_CLASS,
   ADMIN_TABLE_FOOTER_CLASS,
   ADMIN_TABLE_PANEL_CLASS,
-  ADMIN_TABLE_SCROLLER_CLASS,
   ADMIN_TOOLBAR_PANEL_CLASS
 } from "@/components/admin/admin-tailwind";
 import { Badge, SelectInput, TextInput } from "@/components/ui";
@@ -35,22 +35,16 @@ type AdminSchemasTableProps = {
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50];
 const SEARCH_DEBOUNCE_MS = 280;
-const SORTABLE_COLUMNS: ReadonlySet<AdminSchemasSortField> = new Set(["updatedAt", "label", "status", "sortOrder", "fieldCount"]);
+const TABLE_COLUMNS = [
+  { id: "label", label: "Schema", sortable: true },
+  { id: "status", label: "Status", sortable: true },
+  { id: "fieldCount", label: "Fields", sortable: true },
+  { id: "sortOrder", label: "Order", sortable: true },
+  { id: "updatedAt", label: "Updated", sortable: true }
+] as const satisfies ReadonlyArray<{ id: string; label: string; sortable: boolean }>;
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
-}
-
-function getNextSortDirection(currentSort: AdminSchemasSortField, currentDir: AdminSchemasSortDirection, column: AdminSchemasSortField) {
-  if (currentSort !== column) {
-    return "ascending";
-  }
-  return currentDir === "ascending" ? "descending" : "ascending";
-}
-
-function SortableHeader({ label, column, activeSort, activeDir, onSort }: { label: string; column: AdminSchemasSortField; activeSort: AdminSchemasSortField; activeDir: AdminSchemasSortDirection; onSort: (column: AdminSchemasSortField) => void }) {
-  const isActive = activeSort === column;
-  return <button type="button" className="inline-flex items-center gap-1 font-inherit" onClick={() => onSort(column)}><span>{label}</span><span aria-hidden="true">{isActive ? (activeDir === "ascending" ? "↑" : "↓") : "↕"}</span></button>;
 }
 
 export default function AdminSchemasTable({ schemas, total, page, pageSize, statusCounts, filters }: AdminSchemasTableProps) {
@@ -104,9 +98,8 @@ export default function AdminSchemasTable({ schemas, total, page, pageSize, stat
     return () => window.clearTimeout(timeoutId);
   }, [filters.query, queryInput, updateFilters]);
 
-  function handleSortChange(column: AdminSchemasSortField) {
-    if (!SORTABLE_COLUMNS.has(column)) return;
-    updateFilters({ sort: column, dir: getNextSortDirection(filters.sort, filters.dir, column), page: 1 });
+  function handleSortChange(sortDescriptor: { column: Key; direction: "ascending" | "descending" }) {
+    updateFilters({ sort: sortDescriptor.column as AdminSchemasSortField, dir: sortDescriptor.direction, page: 1 });
   }
 
   return (
@@ -122,14 +115,31 @@ export default function AdminSchemasTable({ schemas, total, page, pageSize, stat
       </section>
 
       <section className={ADMIN_TABLE_PANEL_CLASS}>
-        <div className={ADMIN_TABLE_SCROLLER_CLASS}>
-          <table className="adminDataTableTable adminSchemasDataTableTable w-full min-w-[860px] border-collapse">
-            <thead><tr><th className="adminDataTableHeadCell text-left"><SortableHeader label="Schema" column="label" activeSort={filters.sort} activeDir={filters.dir} onSort={handleSortChange} /></th><th className="adminDataTableHeadCell text-left"><SortableHeader label="Status" column="status" activeSort={filters.sort} activeDir={filters.dir} onSort={handleSortChange} /></th><th className="adminDataTableHeadCell text-left"><SortableHeader label="Fields" column="fieldCount" activeSort={filters.sort} activeDir={filters.dir} onSort={handleSortChange} /></th><th className="adminDataTableHeadCell text-left"><SortableHeader label="Order" column="sortOrder" activeSort={filters.sort} activeDir={filters.dir} onSort={handleSortChange} /></th><th className="adminDataTableHeadCell text-left"><SortableHeader label="Updated" column="updatedAt" activeSort={filters.sort} activeDir={filters.dir} onSort={handleSortChange} /></th></tr></thead>
-            <tbody>
-              {schemas.length === 0 ? <tr><td className="adminDataTableCell px-4 py-6 text-[color:var(--admin-muted)]" colSpan={5}>{isPending ? "Updating schemas..." : "No schemas match the current filters."}</td></tr> : schemas.map((schema, index) => <tr key={schema.id} className="adminDataTableRow" data-last={index === schemas.length - 1 ? "true" : undefined} tabIndex={0} onClick={() => router.push(`/admin/schemas/${schema.id}/edit`)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); router.push(`/admin/schemas/${schema.id}/edit`); } }}><td className="adminDataTableCell px-4 py-4"><div className="adminListingPrimaryCell"><strong>{schema.label}</strong><span className="muted">{schema.slug}</span>{schema.description?.trim() ? <span className={`muted ${ADMIN_TABLE_CLAMP_CLASS}`}>{schema.description}</span> : null}</div></td><td className="adminDataTableCell px-4 py-4"><Badge tone={schema.isActive ? "success" : "neutral"}>{schema.isActive ? "Active" : "Inactive"}</Badge></td><td className="adminDataTableCell px-4 py-4"><span className={ADMIN_TABLE_CLAMP_CLASS}>{schema.fieldCount} total{schema.frontendFilterCount > 0 ? ` · ${schema.frontendFilterCount} frontend` : ""}</span></td><td className="adminDataTableCell px-4 py-4">{schema.sortOrder}</td><td className="adminDataTableCell px-4 py-4">{formatDate(schema.updatedAt)}</td></tr>)}
-            </tbody>
-          </table>
-        </div>
+        <Table
+          aria-label="Schemas"
+          className="min-w-[860px]"
+          sortDescriptor={{ column: filters.sort, direction: filters.dir }}
+          onSortChange={handleSortChange}
+          onRowAction={(key) => router.push(`/admin/schemas/${String(key)}/edit`)}
+        >
+          <Table.Header columns={TABLE_COLUMNS}>
+            {(column) => <Table.Head id={column.id} label={column.label} allowsSorting={column.sortable} isRowHeader={column.id === "label"} />}
+          </Table.Header>
+          <Table.Body
+            items={schemas}
+            renderEmptyState={() => <div className="px-6 py-6 text-sm text-tertiary">{isPending ? "Updating schemas..." : "No schemas match the current filters."}</div>}
+          >
+            {(schema) => (
+              <Table.Row id={schema.id} className="cursor-pointer">
+                <Table.Cell><div className="adminListingPrimaryCell"><strong className="text-primary">{schema.label}</strong><span className="muted">{schema.slug}</span>{schema.description?.trim() ? <span className={`muted ${ADMIN_TABLE_CLAMP_CLASS}`}>{schema.description}</span> : null}</div></Table.Cell>
+                <Table.Cell><Badge tone={schema.isActive ? "success" : "neutral"}>{schema.isActive ? "Active" : "Inactive"}</Badge></Table.Cell>
+                <Table.Cell><span className={ADMIN_TABLE_CLAMP_CLASS}>{schema.fieldCount} total{schema.frontendFilterCount > 0 ? ` · ${schema.frontendFilterCount} frontend` : ""}</span></Table.Cell>
+                <Table.Cell>{schema.sortOrder}</Table.Cell>
+                <Table.Cell>{formatDate(schema.updatedAt)}</Table.Cell>
+              </Table.Row>
+            )}
+          </Table.Body>
+        </Table>
         <div className={ADMIN_TABLE_FOOTER_CLASS}><p className="muted">Showing {total === 0 ? 0 : (page - 1) * pageSize + 1}-{Math.min(page * pageSize, total)} of {total} schemas</p><AdminPagination page={page} total={totalPages} onChange={(nextPage) => updateFilters({ page: nextPage })} /></div>
       </section>
     </>

@@ -1,6 +1,6 @@
 "use client";
 
-import type { PropsWithChildren } from "react";
+import type { PropsWithChildren, ReactNode } from "react";
 import { X as CloseIcon, Menu02 } from "@untitledui/icons";
 import {
     Button as AriaButton,
@@ -12,11 +12,11 @@ import {
 import { UntitledLogo } from "@/components/foundations/logo/untitledui-logo";
 import { cx } from "@/utils/cx";
 
-export const MobileNavigationHeader = ({ children }: PropsWithChildren) => {
+export const MobileNavigationHeader = ({ children, brand }: PropsWithChildren<{ brand?: ReactNode }>) => {
     return (
         <AriaDialogTrigger>
-            <header className="flex h-16 items-center justify-between border-b border-secondary bg-primary py-3 pr-2 pl-4 lg:hidden">
-                <UntitledLogo />
+            <header className="flex h-16 items-center justify-between border-b border-secondary bg-primary pr-2 pl-4 lg:hidden">
+                {brand ?? <UntitledLogo />}
 
                 <AriaButton
                     aria-label="Expand navigation menu"

@@ -421,10 +421,10 @@ export default function GlobalSearch({ placeholder = "What are you looking for?"
             className={cn(
               "w-full rounded-full border bg-white pl-12 pr-12 text-base text-gray-900 outline-none transition placeholder:text-gray-400",
               isHomeRoute && !isMobileOpen
-                ? "h-[4.5rem] border-white/70 text-lg shadow-[0_18px_50px_rgba(10,13,18,0.12)]"
-                : "h-14 border-white shadow-[0_8px_24px_rgba(10,13,18,0.06)]",
+                ? "h-[4.5rem] border-white/70 text-lg"
+                : "h-14 border-white",
               !isMobileOpen && "focus:border-brand-600 focus:ring-4 focus:ring-brand-100",
-              isMobileOpen && "h-12 border-brand-600 shadow-none ring-4 ring-brand-50"
+              isMobileOpen && "h-12 border-brand-600 ring-4 ring-brand-50"
             )}
             placeholder={placeholder}
             value={query}

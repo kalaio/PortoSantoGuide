@@ -1,16 +1,10 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
+import { Inter } from "next/font/google";
 import AppProviders from "@/components/providers/AppProviders";
 import "./globals.css";
 
-const plusJakartaSans = localFont({
-  src: [
-    {
-      path: "../../public/fonts/plus-jakarta-sans/plus-jakarta-sans-latin.woff2",
-      weight: "400 700",
-      style: "normal"
-    }
-  ],
+const inter = Inter({
+  subsets: ["latin"],
   display: "swap",
   variable: "--font-inter"
 });
@@ -27,7 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="dns-prefetch" href="https://tiles.stadiamaps.com" />
         <link rel="preconnect" href="https://tiles.stadiamaps.com" crossOrigin="anonymous" />
       </head>
-      <body suppressHydrationWarning className={`${plusJakartaSans.variable} min-h-screen bg-gray-25 font-body text-gray-900 antialiased`}>
+      <body suppressHydrationWarning className={`${inter.variable} min-h-screen bg-gray-25 font-body text-gray-900 antialiased`}>
         <AppProviders>{children}</AppProviders>
       </body>
     </html>

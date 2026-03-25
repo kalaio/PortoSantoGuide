@@ -105,7 +105,7 @@ export default function FilterPopover<T>({
           "inline-flex min-h-12 items-center rounded-full border bg-white px-5 text-[1.0625rem] font-medium text-gray-900 transition",
           isOpen || isActive
             ? "border-gray-950 shadow-sm"
-            : "border-gray-warm-200 hover:border-brand-200 hover:bg-gray-warm-50"
+            : "border-gray-200 hover:border-brand-200 hover:bg-gray-50"
         )}
         onClick={() => {
           if (isOpen) {
@@ -127,7 +127,7 @@ export default function FilterPopover<T>({
       {isOpen ? (
         <div
           className={cn(
-            "absolute left-0 top-[calc(100%+0.75rem)] z-30 w-[min(22rem,calc(100vw-1.5rem))] rounded-[1.75rem] border border-gray-warm-200 bg-white p-4 shadow-[0_24px_60px_rgba(10,13,18,0.1)]",
+            "absolute left-0 top-[calc(100%+0.75rem)] z-30 w-[min(22rem,calc(100vw-1.5rem))] rounded-[1.75rem] border border-gray-200 bg-white p-4 shadow-[0_24px_60px_rgba(10,13,18,0.1)]",
             popoverClassName ?? ""
           )}
           id={popoverId}

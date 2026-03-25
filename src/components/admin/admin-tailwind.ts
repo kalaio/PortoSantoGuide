@@ -3,11 +3,11 @@ export function joinAdminClassNames(...values: Array<string | false | null | und
 }
 
 export const ADMIN_PAGE_CLASS =
-  "mx-auto w-[min(1120px,calc(100%-32px))] px-0 pb-12 pt-8 max-[640px]:w-[min(1120px,calc(100%-20px))] max-[640px]:pb-8 max-[640px]:pt-5";
+  "mx-auto w-full max-w-[1120px] px-4 pb-8 pt-5 md:px-5 md:pb-12 md:pt-8";
 
 export const ADMIN_HERO_CLASS = "mb-6 grid gap-2.5";
 
-export const ADMIN_TITLE_CLASS = "m-0 !text-5xl leading-none text-primary max-[640px]:!text-4xl";
+export const ADMIN_TITLE_CLASS = "m-0 !text-4xl leading-none text-primary max-[640px]:!text-3xl";
 
 export const ADMIN_HEADER_ROW_CLASS =
   "flex flex-wrap items-center justify-between gap-3";

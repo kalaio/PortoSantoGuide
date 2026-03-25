@@ -68,7 +68,7 @@ export default function MultiCheckboxFilterPopover({
             return (
               <label
                 key={option.value}
-                className={`relative inline-flex min-h-12 items-center rounded-full border px-5 text-base transition ${checked ? "border-brand-600 bg-brand-50 text-brand-800" : "border-gray-warm-200 bg-white text-gray-900 hover:border-brand-200 hover:bg-gray-warm-50"}`}
+                className={`relative inline-flex min-h-12 items-center rounded-full border px-5 text-base transition ${checked ? "border-brand-600 bg-brand-50 text-brand-800" : "border-gray-200 bg-white text-gray-900 hover:border-brand-200 hover:bg-gray-50"}`}
               >
                 <input
                   type="checkbox"

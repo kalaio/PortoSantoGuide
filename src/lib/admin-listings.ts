@@ -1,5 +1,6 @@
 import { Prisma, type ListingStatus } from "@prisma/client";
 import type { ListingDetails } from "@/lib/listing-details";
+import { formatAdminDateTime } from "@/lib/admin-date-format";
 import type { ListingSchemaFieldSummary } from "@/types/listing";
 import { toListingDetails } from "@/lib/listing-details";
 import type { AuthUser } from "@/lib/admin-auth";
@@ -11,7 +12,7 @@ export type AdminListingRow = {
   title: string;
   status: ListingStatus;
   hasDraftRevision: boolean;
-  updatedAt: string;
+  updatedAtLabel: string;
   primaryCategorySlug: string;
   primaryCategoryLabel: string;
   sectionLabel: string;
@@ -226,7 +227,7 @@ function toAdminListingRow(
     title: source.title,
     status: row.status,
     hasDraftRevision: Boolean(row.currentDraftRevisionId),
-    updatedAt: source.updatedAt.toISOString(),
+    updatedAtLabel: formatAdminDateTime(source.updatedAt),
     primaryCategorySlug: source.primaryCategory.slug,
     primaryCategoryLabel: source.primaryCategory.label,
     sectionLabel: source.primaryCategory.section.label,
@@ -289,8 +290,7 @@ export async function getAdminListings(user: AuthUser): Promise<AdminListingRow[
 
     return rows
       .map(toAdminListingRow)
-      .filter((row): row is AdminListingRow => row !== null)
-      .sort((left, right) => new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime());
+      .filter((row): row is AdminListingRow => row !== null);
   } catch {
     return [];
   }

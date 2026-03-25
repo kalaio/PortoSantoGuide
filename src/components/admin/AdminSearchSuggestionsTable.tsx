@@ -182,7 +182,7 @@ export default function AdminSearchSuggestionsTable({
             renderEmptyState={() => <div className="px-6 py-6 text-sm text-tertiary">{isPending ? "Updating suggestions..." : "No search suggestions match the current filters."}</div>}
           >
             {(suggestion) => (
-              <Table.Row id={suggestion.id} className="cursor-pointer">
+              <Table.Row id={suggestion.id} onRowClick={() => router.push(`/admin/search-suggestions/${suggestion.id}/edit`)}>
                 <Table.Cell>
                   <div className="adminListingPrimaryCell">
                     <strong className="text-primary">{suggestion.label}</strong>
@@ -193,7 +193,7 @@ export default function AdminSearchSuggestionsTable({
                   <Badge tone={suggestion.isActive ? "success" : "neutral"}>{suggestion.isActive ? "Active" : "Inactive"}</Badge>
                 </Table.Cell>
                 <Table.Cell>{suggestion.priority}</Table.Cell>
-                <Table.Cell>{formatDate(suggestion.updatedAt)}</Table.Cell>
+                <Table.Cell>{suggestion.updatedAtLabel}</Table.Cell>
               </Table.Row>
             )}
           </Table.Body>

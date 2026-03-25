@@ -214,18 +214,29 @@ interface TableRowProps<T extends object>
     extends AriaRowProps<T>,
         Omit<ComponentPropsWithRef<"tr">, "children" | "className" | "onClick" | "slot" | "style" | "id"> {
     highlightSelectedRow?: boolean;
+    /** Called when the row is clicked (using pointerup for better first-click support) */
+    onRowClick?: () => void;
 }
 
-const TableRow = <T extends object>({ columns, children, className, highlightSelectedRow = true, ...props }: TableRowProps<T>) => {
+const TableRow = <T extends object>({ columns, children, className, highlightSelectedRow = true, onRowClick, ...props }: TableRowProps<T>) => {
     const { size } = useContext(TableContext);
     const { selectionBehavior } = useTableOptions();
+
+    const handlePointerUp = (e: React.PointerEvent) => {
+        if (e.button !== 0) return;
+        const target = e.target as HTMLElement;
+        if (target.closest('input, button, a, [role="checkbox"]')) return;
+        onRowClick?.();
+    };
 
     return (
         <AriaRow
             {...props}
+            onPointerUp={onRowClick ? handlePointerUp : undefined}
             className={(state) =>
                 cx(
                     "relative outline-focus-ring transition-colors after:pointer-events-none hover:bg-secondary focus-visible:outline-2 focus-visible:-outline-offset-2",
+                    onRowClick && "cursor-pointer",
                     size === "sm" ? "h-14" : "h-18",
                     highlightSelectedRow && "selected:bg-secondary",
 

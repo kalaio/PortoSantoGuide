@@ -1,6 +1,7 @@
 "use client";
 
 import type { PropsWithChildren, ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { X as CloseIcon, Menu02 } from "@untitledui/icons";
 import {
     Button as AriaButton,
@@ -13,9 +14,27 @@ import { UntitledLogo } from "@/components/foundations/logo/untitledui-logo";
 import { cx } from "@/utils/cx";
 
 export const MobileNavigationHeader = ({ children, brand }: PropsWithChildren<{ brand?: ReactNode }>) => {
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
+    // Render placeholder on server to avoid hydration mismatch
+    if (!isMounted) {
+        return (
+            <header className="sticky top-0 z-50 flex h-16 items-center justify-between border-b border-secondary bg-primary pr-2 pl-4 lg:hidden">
+                {brand ?? <UntitledLogo />}
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary p-2">
+                    <div className="h-6 w-6" />
+                </div>
+            </header>
+        );
+    }
+
     return (
         <AriaDialogTrigger>
-            <header className="flex h-16 items-center justify-between border-b border-secondary bg-primary pr-2 pl-4 lg:hidden">
+            <header className="sticky top-0 z-50 flex h-16 items-center justify-between border-b border-secondary bg-primary pr-2 pl-4 lg:hidden">
                 {brand ?? <UntitledLogo />}
 
                 <AriaButton

@@ -11,7 +11,7 @@ export default async function WhatToDoPage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-[1280px] px-5 py-10 max-[640px]:px-3 max-[640px]:py-6">
+    <main className="mx-auto w-full max-w-[1280px] px-4 py-6 md:px-5 md:py-10">
       <section className="mb-8 grid gap-3 max-[640px]:mb-6">
         <h1 className="m-0 text-display-sm font-semibold tracking-[-0.04em] text-gray-950 max-[640px]:text-[2.5rem]">{section.label}</h1>
         <p className="max-w-[44rem] text-xl text-gray-600 max-[640px]:text-lg">
@@ -24,7 +24,7 @@ export default async function WhatToDoPage() {
           <Link
             key={category.slug}
             href={`/${encodeURIComponent(category.slug)}`}
-            className="grid gap-4 rounded-[1.75rem] border border-gray-warm-200 bg-white px-6 py-6 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-200"
+            className="grid gap-4 rounded-[1.75rem] border border-gray-200 bg-white px-6 py-6 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-200"
           >
             <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-50 text-brand-700">
               <ProjectIcon iconName={category.iconName} className="h-6 w-6" />

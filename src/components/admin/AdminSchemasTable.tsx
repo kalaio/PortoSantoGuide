@@ -130,12 +130,12 @@ export default function AdminSchemasTable({ schemas, total, page, pageSize, stat
             renderEmptyState={() => <div className="px-6 py-6 text-sm text-tertiary">{isPending ? "Updating schemas..." : "No schemas match the current filters."}</div>}
           >
             {(schema) => (
-              <Table.Row id={schema.id} className="cursor-pointer">
+              <Table.Row id={schema.id} onRowClick={() => router.push(`/admin/schemas/${schema.id}/edit`)}>
                 <Table.Cell><div className="adminListingPrimaryCell"><strong className="text-primary">{schema.label}</strong><span className="muted">{schema.slug}</span>{schema.description?.trim() ? <span className={`muted ${ADMIN_TABLE_CLAMP_CLASS}`}>{schema.description}</span> : null}</div></Table.Cell>
                 <Table.Cell><Badge tone={schema.isActive ? "success" : "neutral"}>{schema.isActive ? "Active" : "Inactive"}</Badge></Table.Cell>
                 <Table.Cell><span className={ADMIN_TABLE_CLAMP_CLASS}>{schema.fieldCount} total{schema.frontendFilterCount > 0 ? ` · ${schema.frontendFilterCount} frontend` : ""}</span></Table.Cell>
                 <Table.Cell>{schema.sortOrder}</Table.Cell>
-                <Table.Cell>{formatDate(schema.updatedAt)}</Table.Cell>
+                <Table.Cell>{schema.updatedAtLabel}</Table.Cell>
               </Table.Row>
             )}
           </Table.Body>

@@ -134,7 +134,7 @@ export default function MenuOverlay({ isOpen, onClose, menuLinks }: Props) {
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-[110] bg-[#f3eadf] px-6 py-6 max-[640px]:px-4 max-[640px]:py-4"
+      className="fixed inset-0 z-[110] bg-secondary px-6 py-6 max-[640px]:px-4 max-[640px]:py-4"
       role="dialog"
       aria-modal="true"
       aria-busy={isNavigating}
@@ -142,7 +142,7 @@ export default function MenuOverlay({ isOpen, onClose, menuLinks }: Props) {
       <button
         ref={closeButtonRef}
         type="button"
-        className="absolute right-6 top-6 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f8ebde] text-gray-700 transition hover:bg-white max-[640px]:right-4 max-[640px]:top-4"
+        className="absolute right-6 top-6 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-gray-700 transition hover:bg-white max-[640px]:right-4 max-[640px]:top-4"
         onClick={() => {
           setPendingHref(null);
           onClose();
@@ -161,8 +161,8 @@ export default function MenuOverlay({ isOpen, onClose, menuLinks }: Props) {
               key={link.href}
               href={link.href}
               className={cn(
-                "flex min-h-[4rem] items-center justify-between rounded-3xl border border-gray-warm-200 bg-white px-5 text-[1.125rem] font-semibold text-brand-900 transition hover:border-brand-200 hover:bg-gray-warm-25",
-                isPending && "pointer-events-none border-brand-200 bg-[#f6e7d4]"
+                "flex min-h-[4rem] items-center justify-between rounded-3xl border border-gray-200 bg-white px-5 text-[1.125rem] font-semibold text-brand-900 transition hover:border-brand-200 hover:bg-gray-25",
+                isPending && "pointer-events-none border-gray-200 bg-gray-50"
               )}
               onClick={(event) => handleLinkClick(event, link.href)}
               aria-disabled={isNavigating}

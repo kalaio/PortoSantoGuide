@@ -322,6 +322,9 @@ async function ensureListingCurrentRevisions() {
 }
 
 async function main() {
+  // SECURITY WARNING: These are TEST passwords for development only.
+  // DO NOT use these in production. In production, use strong, unique
+  // passwords and ensure ADMINISTRATOR accounts have MFA enabled.
   const adminPasswordHash = await bcrypt.hash("admin123", 10);
   const ownerPasswordHash = await bcrypt.hash("owner123", 10);
   const subscriberPasswordHash = await bcrypt.hash("subscriber123", 10);

@@ -113,7 +113,7 @@ export default function HomeHero({ slides, menuLinks }: HomeHeroProps) {
   };
 
   return (
-    <section className="relative bg-gray-warm-100 text-white">
+    <section className="relative bg-gray-100 text-white">
       <div className="relative flex min-h-[95svh] overflow-hidden">
         <div className="absolute inset-0 overflow-hidden bg-white">
           {renderSlideLayer(previousSlide, "previous")}
@@ -122,7 +122,7 @@ export default function HomeHero({ slides, menuLinks }: HomeHeroProps) {
         </div>
 
         <div className="relative z-10 flex flex-1 flex-col pb-14">
-          <div className="mx-auto flex min-h-full w-full max-w-[1280px] flex-col px-5 max-[640px]:px-4">
+          <div className="mx-auto flex min-h-full w-full max-w-[1280px] flex-col px-4 md:px-5">
             <div className="flex items-start justify-between gap-4 pt-3 max-[640px]:pt-2">
               <Image
                 src="/branding/porto-santo-guide.svg"
@@ -134,7 +134,7 @@ export default function HomeHero({ slides, menuLinks }: HomeHeroProps) {
               />
               <button
                 type="button"
-                className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-[#f8ebde]/90 text-gray-700 backdrop-blur-sm transition hover:bg-[#fff7ef] max-[640px]:h-12 max-[640px]:w-12"
+                className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-white/90 text-gray-700 backdrop-blur-sm transition hover:bg-white max-[640px]:h-12 max-[640px]:w-12"
                 onClick={() => setIsMenuOpen(true)}
                 aria-label="Open menu"
               >

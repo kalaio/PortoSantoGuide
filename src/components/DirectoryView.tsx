@@ -151,7 +151,7 @@ export default function DirectoryView({ listings, categorySchemaFields }: Direct
       {hasVisibleFilters ? (
         <div
           className={cn(
-            "sticky z-30 flex items-center justify-between gap-3 border-y border-gray-warm-200 bg-white/95 px-2 py-3 backdrop-blur",
+            "sticky z-30 flex items-center justify-between gap-3 border-y border-gray-200 bg-white/95 px-2 py-3 backdrop-blur",
             isMobileMapMode ? "top-16" : "top-20 max-[900px]:top-16"
           )}
           aria-label="Archive filters"
@@ -164,7 +164,7 @@ export default function DirectoryView({ listings, categorySchemaFields }: Direct
                   "inline-flex min-h-12 items-center rounded-full border bg-white px-5 text-[1.0625rem] font-medium text-gray-900 transition",
                   isOpenNowOnly
                     ? "border-gray-950 shadow-sm"
-                    : "border-gray-warm-200 hover:border-brand-200 hover:bg-gray-warm-50"
+                    : "border-gray-200 hover:border-brand-200 hover:bg-gray-50"
                 )}
                 type="button"
                 aria-pressed={isOpenNowOnly}
@@ -211,7 +211,7 @@ export default function DirectoryView({ listings, categorySchemaFields }: Direct
                       "rounded-[1.5rem] border bg-white px-5 py-4 shadow-sm transition",
                       isActive
                         ? "border-brand-500 shadow-md"
-                        : "border-gray-warm-200 hover:border-brand-200 hover:shadow-md"
+                        : "border-gray-200 hover:border-brand-200 hover:shadow-md"
                     )}
                     onMouseEnter={() => setHoveredListingId(listing.id)}
                     onMouseLeave={() => setHoveredListingId(null)}
@@ -224,7 +224,7 @@ export default function DirectoryView({ listings, categorySchemaFields }: Direct
               );
             })}
             {visibleListings.length === 0 ? (
-              <p className="rounded-[1.5rem] border border-dashed border-gray-warm-300 bg-white px-5 py-8 text-base text-gray-500">
+              <p className="rounded-[1.5rem] border border-dashed border-gray-300 bg-white px-5 py-8 text-base text-gray-500">
                 No places in this area.
               </p>
             ) : null}
@@ -234,7 +234,7 @@ export default function DirectoryView({ listings, categorySchemaFields }: Direct
         {showMap ? (
           <div
             className={cn(
-              "min-h-[44rem] overflow-hidden rounded-[1.75rem] border border-gray-warm-200 bg-white shadow-sm max-[900px]:min-h-[50vh]",
+              "min-h-[44rem] overflow-hidden rounded-[1.75rem] border border-gray-200 bg-white shadow-sm max-[900px]:min-h-[50vh]",
               isMobileMapMode && "fixed inset-x-0 bottom-0 top-[7.6rem] z-20 rounded-none border-x-0 border-b-0",
               isMobileMapMode && !hasVisibleFilters && "top-16"
             )}
@@ -249,7 +249,7 @@ export default function DirectoryView({ listings, categorySchemaFields }: Direct
 
         {showMap ? (
           <button
-            className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-1/2 z-30 inline-flex min-h-12 min-w-[120px] -translate-x-1/2 items-center justify-center rounded-full border border-gray-warm-200 bg-white px-8 text-[1.3rem] font-semibold text-brand-900 shadow-[0_20px_40px_rgba(10,13,18,0.12)] lg:hidden"
+            className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-1/2 z-30 inline-flex min-h-12 min-w-[120px] -translate-x-1/2 items-center justify-center rounded-full border border-gray-200 bg-white px-8 text-[1.3rem] font-semibold text-brand-900 shadow-[0_20px_40px_rgba(10,13,18,0.12)] lg:hidden"
             type="button"
             aria-pressed={mobileViewMode === "map"}
             aria-label={mobileViewMode === "map" ? "Show list" : "Show map"}

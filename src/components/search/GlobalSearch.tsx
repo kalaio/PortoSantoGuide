@@ -384,7 +384,7 @@ export default function GlobalSearch({ placeholder = "What are you looking for?"
         {isMobileOpen ? (
           <button
             type="button"
-            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-gray-warm-200 bg-white text-gray-500 transition hover:border-brand-300 hover:text-brand-700"
+            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 transition hover:border-brand-300 hover:text-brand-700"
             onClick={closeMobileOverlay}
             aria-label="Close"
           >
@@ -468,7 +468,7 @@ export default function GlobalSearch({ placeholder = "What are you looking for?"
 
           {query.trim().length > 0 ? (
             <button
-              className="absolute right-3 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-gray-warm-100 text-gray-500 transition hover:bg-gray-warm-200 hover:text-gray-700"
+              className="absolute right-3 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition hover:bg-gray-200 hover:text-gray-700"
               type="button"
               onClick={clearQuery}
               aria-label="Clear search"
@@ -483,7 +483,7 @@ export default function GlobalSearch({ placeholder = "What are you looking for?"
         <div
           key={isShowingResults ? `results-${searchVersion}-${resultsOpenVersion}` : "suggestions"}
           className={cn(
-            "overflow-hidden rounded-[1.75rem] border border-gray-warm-200 bg-white shadow-[0_24px_60px_rgba(10,13,18,0.08)]",
+            "overflow-hidden rounded-[1.75rem] border border-gray-200 bg-white shadow-[0_24px_60px_rgba(10,13,18,0.08)]",
             isMobileOpen ? "min-h-0" : "absolute left-0 right-0 top-[calc(100%+0.5rem)] z-50"
           )}
         >
@@ -499,7 +499,7 @@ export default function GlobalSearch({ placeholder = "What are you looking for?"
                   suggestions.map((suggestion) => (
                     <button
                       key={suggestion.id}
-                      className="rounded-2xl px-4 py-3 text-left text-lg text-gray-900 transition hover:bg-gray-warm-100"
+                      className="rounded-2xl px-4 py-3 text-left text-lg text-gray-900 transition hover:bg-gray-100"
                       type="button"
                       onClick={() => runSuggestionQuery(suggestion)}
                     >
@@ -524,8 +524,8 @@ export default function GlobalSearch({ placeholder = "What are you looking for?"
                       className={cn(
                         "grid gap-1 rounded-3xl border border-transparent px-4 py-3 text-left transition",
                         index === 0
-                          ? "border-[#f0c89f] bg-[#f6e7d4]"
-                          : "hover:border-gray-warm-200 hover:bg-gray-warm-50",
+                          ? "border-gray-200 bg-gray-50"
+                          : "hover:border-gray-200 hover:bg-gray-50",
                         pendingResultId === result.id && "pointer-events-none opacity-75"
                       )}
                       onClick={(event) => handleResultClick(event, result)}

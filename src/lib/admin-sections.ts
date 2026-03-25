@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import type { AuthUser } from "@/lib/admin-auth";
+import { formatAdminDateTime } from "@/lib/admin-date-format";
 import { prisma } from "@/lib/prisma";
 
 export type AdminSectionRecord = {
@@ -11,7 +12,7 @@ export type AdminSectionRecord = {
 };
 
 export type AdminSectionRow = AdminSectionRecord & {
-  updatedAt: string;
+  updatedAtLabel: string;
 };
 
 export type AdminSectionsQuery = {
@@ -87,7 +88,7 @@ function toAdminSectionRow(row: {
     label: row.label,
     sortOrder: row.sortOrder,
     isActive: row.isActive,
-    updatedAt: row.updatedAt.toISOString()
+    updatedAtLabel: formatAdminDateTime(row.updatedAt)
   };
 }
 

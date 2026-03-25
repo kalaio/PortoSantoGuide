@@ -167,7 +167,7 @@ export default function AdminSectionsTable({ sections, total, page, pageSize, st
             renderEmptyState={() => <div className="px-6 py-6 text-sm text-tertiary">{isPending ? "Updating sections..." : "No sections match the current filters."}</div>}
           >
             {(section) => (
-              <Table.Row id={section.id} className="cursor-pointer">
+              <Table.Row id={section.id} onRowClick={() => router.push(`/admin/sections/${section.id}/edit`)}>
                 <Table.Cell>
                   <div className="adminListingPrimaryCell">
                     <strong className="text-primary">{section.label}</strong>
@@ -178,7 +178,7 @@ export default function AdminSectionsTable({ sections, total, page, pageSize, st
                   <Badge tone={section.isActive ? "success" : "neutral"}>{section.isActive ? "Active" : "Inactive"}</Badge>
                 </Table.Cell>
                 <Table.Cell>{section.sortOrder}</Table.Cell>
-                <Table.Cell>{formatDate(section.updatedAt)}</Table.Cell>
+                <Table.Cell>{section.updatedAtLabel}</Table.Cell>
               </Table.Row>
             )}
           </Table.Body>

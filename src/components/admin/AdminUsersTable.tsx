@@ -148,12 +148,12 @@ export default function AdminUsersTable({ users, total, page, pageSize, statusCo
             renderEmptyState={() => <div className="px-6 py-6 text-sm text-tertiary">{isPending ? "Updating users..." : "No users match the current filters."}</div>}
           >
             {(user) => (
-              <Table.Row id={user.id} className="cursor-pointer">
+              <Table.Row id={user.id} onRowClick={() => router.push(`/admin/users/${user.id}/edit`)}>
                 <Table.Cell><div className="adminListingPrimaryCell"><strong className="text-primary">{user.username}</strong></div></Table.Cell>
                 <Table.Cell><Badge tone={getRoleTone(user.role)}>{formatRole(user.role)}</Badge></Table.Cell>
                 <Table.Cell><Badge tone={user.isActive ? "success" : "neutral"}>{user.isActive ? "Active" : "Inactive"}</Badge></Table.Cell>
                 <Table.Cell><span className={ADMIN_TABLE_CLAMP_CLASS}>{user.email}</span></Table.Cell>
-                <Table.Cell>{formatDate(user.createdAt)}</Table.Cell>
+                <Table.Cell>{user.createdAtLabel}</Table.Cell>
               </Table.Row>
             )}
           </Table.Body>

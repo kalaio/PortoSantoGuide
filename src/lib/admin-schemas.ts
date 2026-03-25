@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import type { AuthUser } from "@/lib/admin-auth";
+import { formatAdminDateTime } from "@/lib/admin-date-format";
 import { getListingFieldByKey } from "@/lib/listing-fields";
 import { prisma } from "@/lib/prisma";
 
@@ -29,7 +30,7 @@ export type AdminSchemaRow = {
   description: string | null;
   sortOrder: number;
   isActive: boolean;
-  updatedAt: string;
+  updatedAtLabel: string;
   fieldCount: number;
   frontendFilterCount: number;
 };
@@ -115,7 +116,7 @@ function toAdminSchemaRow(row: {
     description: row.description,
     sortOrder: row.sortOrder,
     isActive: row.isActive,
-    updatedAt: row.updatedAt.toISOString(),
+    updatedAtLabel: formatAdminDateTime(row.updatedAt),
     fieldCount: row.fields.length,
     frontendFilterCount: row.fields.filter((field) => field.isFrontendFilterEnabled).length
   };

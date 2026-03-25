@@ -1,6 +1,7 @@
 "use client";
 
 import type { FC, ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { Bell01, LifeBuoy01, SearchLg, Settings01 } from "@untitledui/icons";
 import { Button as AriaButton, DialogTrigger, Popover } from "react-aria-components";
 import { Avatar } from "@/components/base/avatar/avatar";
@@ -52,6 +53,12 @@ export const HeaderNavigationBase = ({
     showAvatarDropdown = true,
     hideBorder = false,
 }: HeaderNavigationBaseProps) => {
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
     const activeSubNavItems = subItems || items.find((item) => item.current && item.items && item.items.length > 0)?.items;
 
     const showSecondaryNav = activeSubNavItems && activeSubNavItems.length > 0;
@@ -146,7 +153,7 @@ export const HeaderNavigationBase = ({
                                 />
                             </div>
 
-                            {showAvatarDropdown && (
+                            {showAvatarDropdown && isMounted && (
                                 <DialogTrigger>
                                     <AriaButton
                                         className={({ isPressed, isFocused }) =>
@@ -174,6 +181,11 @@ export const HeaderNavigationBase = ({
                                         <NavAccountMenu />
                                     </Popover>
                                 </DialogTrigger>
+                            )}
+                            {showAvatarDropdown && !isMounted && (
+                                <div className="group relative inline-flex cursor-pointer">
+                                    <Avatar alt="Olivia Rhye" src="https://www.untitledui.com/images/avatars/olivia-rhye?bg=%23E0E0E0" size="md" />
+                                </div>
                             )}
                         </div>
                     </div>

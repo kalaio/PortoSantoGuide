@@ -210,14 +210,14 @@ export default function AdminCategoriesTable({
             renderEmptyState={() => <div className="px-6 py-6 text-sm text-tertiary">{isPending ? "Updating categories..." : "No categories match the current filters."}</div>}
           >
             {(category) => (
-              <Table.Row id={category.id} className="cursor-pointer">
+              <Table.Row id={category.id} onRowClick={() => router.push(`/admin/categories/${category.id}/edit`)}>
                 <Table.Cell><div className="adminListingPrimaryCell"><strong className="text-primary">{category.label}</strong><span className="muted">{category.slug}</span></div></Table.Cell>
                 <Table.Cell><Badge tone={category.isActive ? "success" : "neutral"}>{category.isActive ? "Active" : "Inactive"}</Badge></Table.Cell>
                 <Table.Cell>{category.section.label}</Table.Cell>
                 <Table.Cell>{category.schema?.label ?? "No schema"}</Table.Cell>
                 <Table.Cell><span className={ADMIN_TABLE_CLAMP_CLASS}>{category.iconName ?? "-"}</span></Table.Cell>
                 <Table.Cell>{category.sortOrder}</Table.Cell>
-                <Table.Cell>{formatDate(category.updatedAt)}</Table.Cell>
+                <Table.Cell>{category.updatedAtLabel}</Table.Cell>
               </Table.Row>
             )}
           </Table.Body>

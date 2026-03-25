@@ -16,7 +16,7 @@ export default async function CategoryArchivePage({ params }: CategoryArchivePag
   }
 
   return (
-    <main className="mx-auto w-full max-w-[1280px] px-5 py-10 max-[640px]:px-3 max-[640px]:py-6">
+    <main className="mx-auto w-full max-w-[1280px] px-4 py-6 md:px-5 md:py-10">
       <section className="mb-8 grid gap-3 max-[640px]:mb-6">
         <Link href={`/${archive.category.sectionSlug}`} className="text-lg text-gray-500 max-[640px]:text-base">
           {archive.category.sectionLabel}

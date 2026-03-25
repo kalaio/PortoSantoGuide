@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import type { AuthUser } from "@/lib/admin-auth";
+import { formatAdminDateTime } from "@/lib/admin-date-format";
 import { prisma } from "@/lib/prisma";
 import { normalizeUiIconName } from "@/lib/ui-icons";
 
@@ -10,7 +11,7 @@ export type AdminCategoryRow = {
   iconName: string | null;
   sortOrder: number;
   isActive: boolean;
-  updatedAt: string;
+  updatedAtLabel: string;
   section: {
     slug: string;
     label: string;
@@ -119,7 +120,7 @@ function toAdminCategoryRow(row: {
     iconName: normalizeUiIconName(row.iconName),
     sortOrder: row.sortOrder,
     isActive: row.isActive,
-    updatedAt: row.updatedAt.toISOString(),
+    updatedAtLabel: formatAdminDateTime(row.updatedAt),
     section: row.section,
     schema: row.schema
   };

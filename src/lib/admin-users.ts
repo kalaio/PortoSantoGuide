@@ -1,5 +1,6 @@
 import { Prisma, type Role } from "@prisma/client";
 import type { AuthUser } from "@/lib/admin-auth";
+import { formatAdminDateTime } from "@/lib/admin-date-format";
 import { prisma } from "@/lib/prisma";
 
 export type AdminUserRow = {
@@ -8,7 +9,7 @@ export type AdminUserRow = {
   email: string;
   role: Role;
   isActive: boolean;
-  createdAt: string;
+  createdAtLabel: string;
 };
 
 export type AdminUsersQuery = {
@@ -89,7 +90,7 @@ function toAdminUserRow(row: {
     email: row.email,
     role: row.role,
     isActive: row.isActive,
-    createdAt: row.createdAt.toISOString()
+    createdAtLabel: formatAdminDateTime(row.createdAt)
   };
 }
 

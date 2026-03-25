@@ -4,8 +4,12 @@ import { promises as fs } from "fs";
 import sharp from "sharp";
 import { hasRole, requireRequestAuthUser } from "@/lib/admin-auth";
 import { requireTrustedMutationOrigin } from "@/lib/api-security";
+import { consumeRateLimit, getClientIp } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
+
+const UPLOAD_RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
+const UPLOAD_RATE_LIMIT_MAX_ATTEMPTS = 30;
 
 async function ensureUploadsDir() {
   const uploadsDir = path.join(process.cwd(), "public", "uploads", "slides");
@@ -60,6 +64,22 @@ export async function POST(request: Request) {
   const originError = requireTrustedMutationOrigin(request);
   if (originError) {
     return originError;
+  }
+
+  const ip = getClientIp(request);
+  const rateLimitKey = `upload:${ip}`;
+  const rateLimitResult = await consumeRateLimit({
+    scope: "admin-upload",
+    key: rateLimitKey,
+    limit: UPLOAD_RATE_LIMIT_MAX_ATTEMPTS,
+    windowMs: UPLOAD_RATE_LIMIT_WINDOW_MS
+  });
+
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json(
+      { error: "Upload rate limit exceeded. Try again later." },
+      { status: 429, headers: { "Retry-After": String(rateLimitResult.retryAfterSeconds) } }
+    );
   }
 
   const authUser = await requireRequestAuthUser(request);

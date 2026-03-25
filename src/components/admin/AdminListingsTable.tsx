@@ -50,7 +50,7 @@ const TABLE_COLUMNS = [
   { id: "section", label: "Section", sortable: false },
   { id: "primaryCategory", label: "Primary Category", sortable: false },
   { id: "moreCategories", label: "More Categories", sortable: false },
-  { id: "updatedAt", label: "Updated", sortable: true }
+  { id: "updatedAt", label: "Updated", sortable: true },
 ] as const satisfies ReadonlyArray<{ id: string; label: string; sortable: boolean }>;
 
 function getStatusTone(status: AdminListingRow["status"]) {
@@ -247,7 +247,7 @@ export default function AdminListingsTable({
               const additionalCategories = listing.categoryLabels.filter((label) => label !== listing.primaryCategoryLabel);
 
               return (
-                <Table.Row id={listing.id} className="cursor-pointer">
+                <Table.Row id={listing.id} onRowClick={() => router.push(`/admin/listings/${listing.id}/edit`)}>
                   <Table.Cell>
                     <div className="adminListingPrimaryCell">
                       <strong className="text-primary">{listing.title}</strong>
@@ -265,7 +265,7 @@ export default function AdminListingsTable({
                   <Table.Cell>
                     <span className={ADMIN_TABLE_CLAMP_CLASS}>{additionalCategories.length > 0 ? additionalCategories.join(", ") : "-"}</span>
                   </Table.Cell>
-                  <Table.Cell>{formatDate(listing.updatedAt)}</Table.Cell>
+                  <Table.Cell>{listing.updatedAtLabel}</Table.Cell>
                 </Table.Row>
               );
             }}

@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import type { AuthUser } from "@/lib/admin-auth";
+import { formatAdminDateTime } from "@/lib/admin-date-format";
 import { prisma } from "@/lib/prisma";
 
 export type AdminSearchSuggestionRow = {
@@ -8,7 +9,7 @@ export type AdminSearchSuggestionRow = {
   query: string;
   priority: number;
   isActive: boolean;
-  updatedAt: string;
+  updatedAtLabel: string;
 };
 
 export type AdminSearchSuggestionsQuery = {
@@ -88,7 +89,7 @@ function toAdminSearchSuggestionRow(row: {
     query: row.query,
     priority: row.priority,
     isActive: row.isActive,
-    updatedAt: row.updatedAt.toISOString()
+    updatedAtLabel: formatAdminDateTime(row.updatedAt)
   };
 }
 

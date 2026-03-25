@@ -27,7 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="dns-prefetch" href="https://tiles.stadiamaps.com" />
         <link rel="preconnect" href="https://tiles.stadiamaps.com" crossOrigin="anonymous" />
       </head>
-      <body suppressHydrationWarning className={`${plusJakartaSans.variable} min-h-screen bg-gray-warm-25 font-body text-gray-900 antialiased`}>
+      <body suppressHydrationWarning className={`${plusJakartaSans.variable} min-h-screen bg-gray-25 font-body text-gray-900 antialiased`}>
         <AppProviders>{children}</AppProviders>
       </body>
     </html>

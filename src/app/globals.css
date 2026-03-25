@@ -13,7 +13,7 @@
 @custom-variant label (& [data-label]);
 @custom-variant focus-input-within (&:has(input:focus));
 
-/* Font faces */
+/* Single font for entire site */
 @font-face {
   font-family: "Plus Jakarta Sans";
   src: url("/fonts/plus-jakarta-sans/plus-jakarta-sans-latin.woff2") format("woff2");
@@ -41,11 +41,15 @@
 html,
 body {
   min-height: 100%;
-  font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-kerning: normal;
   font-variant-ligatures: contextual;
+}
+
+body {
+  margin: 0;
 }
 
 body {

@@ -2,10 +2,51 @@
 
 Porto Santo Guide is a directory platform for discovering where to eat and what to do across Porto Santo.
 
+## Project Architecture
+
+This project uses a domain-separated architecture with clear boundaries between admin and frontend:
+
+### Directory Structure
+
+```
+src/
+├── app/
+│   ├── (admin)/              # Admin panel routes
+│   │   ├── admin/           # /admin/* routes
+│   │   ├── components/      # Admin-specific components
+│   │   └── lib/            # Admin business logic
+│   │
+│   ├── (frontend)/          # Public frontend routes  
+│   │   ├── components/      # Frontend components
+│   │   ├── lib/            # Frontend logic
+│   │   └── ...             # Public pages
+│   │
+│   └── api/                 # API routes
+│
+├── components/              # Shared base components (UntitledUI)
+│   ├── base/              # Primitive components
+│   ├── ui/                # UI wrappers
+│   └── application/       # Application components
+│
+├── shared/                # Shared code
+│   ├── components/base/   # Copy of base components
+│   └── lib/               # Shared utilities
+│
+└── lib/                   # Shared lib (backward compat)
+```
+
+### Key Principles
+
+- **Admin** (`src/app/(admin)/`): Self-contained admin panel, can be reused across projects
+- **Frontend** (`src/app/(frontend)/`): Public site, customizable per deployment
+- **Shared** (`src/shared/`, `src/lib/`): Common code used by both domains
+- **Base Components** (`src/components/base/`): Reusable UI primitives (UntitledUI)
+
 ## Stack
-- Next.js (App Router) + TypeScript
+- Next.js 16 (App Router) + TypeScript
 - Prisma + SQLite (default local dev)
 - MapLibre GL + vector/raster tiles for interactive maps
+- Tailwind CSS v4
 
 ## Quick Start
 1. Install dependencies:
@@ -32,6 +73,10 @@ Open `http://localhost:3000`.
 - `npm run db:migrate` - sync Prisma schema to local DB
 - `npm run db:studio` - open Prisma Studio
 - `npm run db:seed` - insert/update sample listings
+
+## Documentation
+- `docs/architecture.md` - Detailed architecture documentation
+- See `/docs` folder for more guides
 
 ## API Endpoints
 - `GET /api/health` - basic health check
@@ -125,9 +170,3 @@ If you want managed cloud DB, use Supabase or Neon (PostgreSQL).
    `npm run db:generate && npm run db:migrate && npm run db:seed`
 
 Note: SQLite is used by default for zero-setup local development.
-
-## Next Steps
-- Replace `mockListings` with Prisma queries.
-- Add authentication and host dashboard.
-- Add image uploads and listing detail pages.
-- Add tests (unit + integration).

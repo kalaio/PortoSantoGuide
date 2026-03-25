@@ -20,7 +20,7 @@ import type {
   AdminSearchSuggestionRow,
   AdminSearchSuggestionsSortDirection,
   AdminSearchSuggestionsSortField
-} from "@/lib/admin-search-suggestions";
+} from "../lib/admin-search-suggestions";
 
 type AdminSearchSuggestionsTableProps = {
   suggestions: AdminSearchSuggestionRow[];

@@ -1,4 +1,4 @@
-import type { AdminCategoryOption } from "@/lib/admin-categories";
+import type { AdminCategoryOption } from "../../lib/admin-categories";
 import type { ListingFormState } from "@/app/(admin)/components/listing-editor/types";
 
 export const DEFAULT_LATITUDE = 33.072;

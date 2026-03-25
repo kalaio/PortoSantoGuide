@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { canManageAdmin, requireRequestAuthUser } from "@/lib/admin-auth";
+import { canManageAdmin, requireRequestAuthUser } from "@/app/(admin)/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
 
 function hasDatabaseUrl() {

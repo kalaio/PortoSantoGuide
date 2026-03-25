@@ -2,7 +2,7 @@ import { cache } from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import type { Role } from "@prisma/client";
-import { getSessionCookieName, verifySessionToken } from "@/lib/admin-auth";
+import { getSessionCookieName, verifySessionToken } from "./admin-auth";
 
 const getCachedServerAuthUser = cache(async () => {
   const cookieStore = await cookies();

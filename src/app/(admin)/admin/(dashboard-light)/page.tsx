@@ -15,7 +15,7 @@ import {
   ADMIN_SCOPE_BADGE_CLASS,
   ADMIN_TITLE_CLASS
 } from "@/app/(admin)/components/admin-tailwind";
-import { requireServerAdminUser } from "@/lib/admin-auth-server";
+import { requireServerAdminUser } from "@/app/(admin)/lib/admin-auth-server";
 
 type MenuItem = {
   title: string;

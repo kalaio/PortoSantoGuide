@@ -18,7 +18,7 @@ import {
 } from "@/app/(admin)/components/admin-tailwind";
 import DeleteConfirmModal from "@/app/(admin)/components/DeleteConfirmModal";
 import { Card, CheckboxField, Field, FormSection, TextInput } from "@/components/ui";
-import type { AdminSectionRecord } from "@/lib/admin-sections";
+import type { AdminSectionRecord } from "../lib/admin-sections";
 
 type ApiIssue = {
   path?: Array<string | number>;

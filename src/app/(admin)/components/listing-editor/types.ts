@@ -1,5 +1,5 @@
 import type { ListingStatus } from "@prisma/client";
-import type { AdminCategoryOption } from "@/lib/admin-categories";
+import type { AdminCategoryOption } from "../../lib/admin-categories";
 
 export type ApiIssue = {
   path?: Array<string | number>;

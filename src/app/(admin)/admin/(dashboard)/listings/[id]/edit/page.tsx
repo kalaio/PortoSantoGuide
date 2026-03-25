@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import EditListingClient from "@/app/(admin)/components/EditListingClient";
-import { getAdminCategoryOptions } from "@/lib/admin-categories";
-import { requireServerAdminUser } from "@/lib/admin-auth-server";
-import { getAdminListingById } from "@/lib/admin-listings";
+import { getAdminCategoryOptions } from "@/app/(admin)/lib/admin-categories";
+import { requireServerAdminUser } from "@/app/(admin)/lib/admin-auth-server";
+import { getAdminListingById } from "@/app/(admin)/lib/admin-listings";
 
 type EditListingPageProps = {
   params: Promise<{ id: string }>;

@@ -1,5 +1,5 @@
 import UserEditorClient from "@/app/(admin)/components/UserEditorClient";
-import { requireServerUserWithRole } from "@/lib/admin-auth-server";
+import { requireServerUserWithRole } from "@/app/(admin)/lib/admin-auth-server";
 
 export default async function NewUserPage() {
   const user = await requireServerUserWithRole(["ADMINISTRATOR"]);

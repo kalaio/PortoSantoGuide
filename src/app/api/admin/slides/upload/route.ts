@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import path from "path";
 import { promises as fs } from "fs";
 import sharp from "sharp";
-import { hasRole, requireRequestAuthUser } from "@/lib/admin-auth";
+import { hasRole, requireRequestAuthUser } from "@/app/(admin)/lib/admin-auth";
 import { requireTrustedMutationOrigin } from "@/lib/api-security";
 import { consumeRateLimit, getClientIp } from "@/lib/rate-limit";
 

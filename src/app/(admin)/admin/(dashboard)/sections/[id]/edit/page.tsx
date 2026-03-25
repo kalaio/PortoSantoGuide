@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import SectionEditorClient from "@/app/(admin)/components/SectionEditorClient";
-import { requireServerUserWithRole } from "@/lib/admin-auth-server";
-import { getAdminSections } from "@/lib/admin-sections";
+import { requireServerUserWithRole } from "@/app/(admin)/lib/admin-auth-server";
+import { getAdminSections } from "@/app/(admin)/lib/admin-sections";
 
 type EditSectionPageProps = {
   params: Promise<{ id: string }>;

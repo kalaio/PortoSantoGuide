@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireRequestAuthUser } from "@/lib/admin-auth";
+import { requireRequestAuthUser } from "@/app/(admin)/lib/admin-auth";
 import { requireTrustedMutationOrigin } from "@/lib/api-security";
 import { prisma } from "@/lib/prisma";
 

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { ListingRevisionStatus, ListingStatus, Prisma } from "@prisma/client";
-import { canManageAdmin, requireRequestAuthUser } from "@/lib/admin-auth";
+import { canManageAdmin, requireRequestAuthUser } from "@/app/(admin)/lib/admin-auth";
 import { requireTrustedMutationOrigin } from "@/lib/api-security";
 import { validateListingPayloadAgainstSchemaFields } from "@/lib/listing-schema-validation";
 import { normalizeDetailsIssues, parseDetailsBySchemaFields } from "@/lib/listing-details-validation";

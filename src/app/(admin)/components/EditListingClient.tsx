@@ -30,7 +30,7 @@ import {
 import { useListingMap } from "@/app/(admin)/components/listing-editor/useListingMap";
 import type { ApiErrorResponse, ListingFormState } from "@/app/(admin)/components/listing-editor/types";
 import { Badge } from "@/components/ui";
-import type { AdminCategoryOption } from "@/lib/admin-categories";
+import type { AdminCategoryOption } from "../lib/admin-categories";
 import { hasListingSchemaField } from "@/lib/listing-fields";
 import { validateListingPayloadAgainstSchemaFields } from "@/lib/listing-schema-validation";
 import type { ListingDetails } from "@/lib/listing-details";

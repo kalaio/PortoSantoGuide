@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { hash } from "bcryptjs";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
-import { hasRole, requireRequestAuthUser } from "@/lib/admin-auth";
+import { hasRole, requireRequestAuthUser } from "@/app/(admin)/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
 import { requireTrustedMutationOrigin } from "@/lib/api-security";
 

@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import SchemaEditorClient from "@/app/(admin)/components/SchemaEditorClient";
-import { requireServerUserWithRole } from "@/lib/admin-auth-server";
-import { getAdminSchemas } from "@/lib/admin-schemas";
+import { requireServerUserWithRole } from "@/app/(admin)/lib/admin-auth-server";
+import { getAdminSchemas } from "@/app/(admin)/lib/admin-schemas";
 
 type EditSchemaPageProps = {
   params: Promise<{ id: string }>;

@@ -1,9 +1,9 @@
 import { notFound } from "next/navigation";
 import CategoryEditorClient from "@/app/(admin)/components/CategoryEditorClient";
-import { getAdminCategoryOptions } from "@/lib/admin-categories";
-import { requireServerUserWithRole } from "@/lib/admin-auth-server";
-import { getAdminSchemas } from "@/lib/admin-schemas";
-import { getAdminSections } from "@/lib/admin-sections";
+import { getAdminCategoryOptions } from "@/app/(admin)/lib/admin-categories";
+import { requireServerUserWithRole } from "@/app/(admin)/lib/admin-auth-server";
+import { getAdminSchemas } from "@/app/(admin)/lib/admin-schemas";
+import { getAdminSections } from "@/app/(admin)/lib/admin-sections";
 
 type EditCategoryPageProps = {
   params: Promise<{ id: string }>;

@@ -8,12 +8,12 @@ import {
   ADMIN_PAGE_CLASS,
   ADMIN_TITLE_CLASS
 } from "@/app/(admin)/components/admin-tailwind";
-import { requireServerAdminUser } from "@/lib/admin-auth-server";
+import { requireServerAdminUser } from "@/app/(admin)/lib/admin-auth-server";
 import {
   getAdminCategoriesPageData,
   type AdminCategoriesSortDirection,
   type AdminCategoriesSortField
-} from "@/lib/admin-categories";
+} from "@/app/(admin)/lib/admin-categories";
 
 function normalizeSortField(value: string | string[] | undefined): AdminCategoriesSortField {
   return value === "updatedAt" || value === "label" || value === "status" ? value : "sortOrder";

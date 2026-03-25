@@ -1,6 +1,6 @@
 import NewListingClient from "@/app/(admin)/components/NewListingClient";
-import { getActiveAdminCategoryOptions } from "@/lib/admin-categories";
-import { requireServerAdminUser } from "@/lib/admin-auth-server";
+import { getActiveAdminCategoryOptions } from "@/app/(admin)/lib/admin-categories";
+import { requireServerAdminUser } from "@/app/(admin)/lib/admin-auth-server";
 
 export default async function NewListingPage() {
   const user = await requireServerAdminUser();

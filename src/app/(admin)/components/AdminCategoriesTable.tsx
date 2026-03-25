@@ -21,7 +21,7 @@ import type {
   AdminCategoriesSortField,
   AdminCategoryFilterOption,
   AdminCategoryRow
-} from "@/lib/admin-categories";
+} from "../lib/admin-categories";
 
 type AdminCategoriesTableProps = {
   categories: AdminCategoryRow[];

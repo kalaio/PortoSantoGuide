@@ -16,7 +16,7 @@ import {
   ADMIN_TOOLBAR_PANEL_CLASS
 } from "@/app/(admin)/components/admin-tailwind";
 import { Badge, SelectInput, TextInput } from "@/components/ui";
-import type { AdminUserRow, AdminUsersSortDirection, AdminUsersSortField } from "@/lib/admin-users";
+import type { AdminUserRow, AdminUsersSortDirection, AdminUsersSortField } from "../lib/admin-users";
 
 type AdminUsersTableProps = {
   users: AdminUserRow[];

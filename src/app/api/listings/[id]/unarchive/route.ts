@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { ListingStatus } from "@prisma/client";
-import { requireRequestAuthUser } from "@/lib/admin-auth";
+import { requireRequestAuthUser } from "@/app/(admin)/lib/admin-auth";
 import { requireTrustedMutationOrigin } from "@/lib/api-security";
 import { prisma } from "@/lib/prisma";
 

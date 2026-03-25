@@ -15,7 +15,7 @@ import {
   ADMIN_TOOLBAR_PANEL_CLASS
 } from "@/app/(admin)/components/admin-tailwind";
 import { Badge, SelectInput, TextInput } from "@/components/ui";
-import type { AdminSectionRow, AdminSectionsSortDirection, AdminSectionsSortField } from "@/lib/admin-sections";
+import type { AdminSectionRow, AdminSectionsSortDirection, AdminSectionsSortField } from "../lib/admin-sections";
 
 type AdminSectionsTableProps = {
   sections: AdminSectionRow[];

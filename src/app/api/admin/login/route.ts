@@ -6,7 +6,7 @@ import {
   getSessionCookieName,
   getSessionCookieOptions,
   isAuthConfigured
-} from "@/lib/admin-auth";
+} from "@/app/(admin)/lib/admin-auth";
 import { requireTrustedMutationOrigin } from "@/lib/api-security";
 import { prisma } from "@/lib/prisma";
 import { consumeRateLimit, getClientIp, resetRateLimit } from "@/lib/rate-limit";

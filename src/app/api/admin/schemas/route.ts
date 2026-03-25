@@ -1,7 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { requireRequestAuthUser } from "@/lib/admin-auth";
+import { requireRequestAuthUser } from "@/app/(admin)/lib/admin-auth";
 import { getListingFieldByKey, LISTING_FIELD_KEYS } from "@/lib/listing-fields";
 import { prisma } from "@/lib/prisma";
 import { requireTrustedMutationOrigin } from "@/lib/api-security";

@@ -27,7 +27,7 @@ import {
 } from "@/app/(admin)/components/listing-editor/helpers";
 import type { ApiErrorResponse, ListingFormState } from "@/app/(admin)/components/listing-editor/types";
 import { useListingMap } from "@/app/(admin)/components/listing-editor/useListingMap";
-import type { AdminCategoryOption } from "@/lib/admin-categories";
+import type { AdminCategoryOption } from "../lib/admin-categories";
 import { hasListingSchemaField } from "@/lib/listing-fields";
 import { validateListingPayloadAgainstSchemaFields } from "@/lib/listing-schema-validation";
 import { getCategorySchemaFields } from "@/lib/listing-schema-helpers";

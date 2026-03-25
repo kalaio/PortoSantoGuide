@@ -26,7 +26,7 @@ import {
 } from "@/app/(admin)/components/admin-tailwind";
 import DeleteConfirmModal from "@/app/(admin)/components/DeleteConfirmModal";
 import { Card, CheckboxField, Field, FormSection, TextArea, TextInput } from "@/components/ui";
-import type { AdminSchemaFieldRecord, AdminSchemaRecord } from "@/lib/admin-schemas";
+import type { AdminSchemaFieldRecord, AdminSchemaRecord } from "../lib/admin-schemas";
 import { LISTING_FIELDS, type ListingFieldDefinition } from "@/lib/listing-fields";
 
 type ApiIssue = {

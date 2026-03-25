@@ -4,7 +4,7 @@ import {
   decodeSessionTokenEdge,
   getSessionCookieNameEdge,
   isAuthConfiguredEdge
-} from "@/lib/admin-auth-edge";
+} from "@/app/(admin)/lib/admin-auth-edge";
 
 export async function middleware(request: NextRequest) {
   const { pathname, search } = request.nextUrl;

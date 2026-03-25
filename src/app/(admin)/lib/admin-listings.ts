@@ -1,9 +1,9 @@
 import { Prisma, type ListingStatus } from "@prisma/client";
 import type { ListingDetails } from "@/lib/listing-details";
-import { formatAdminDateTime } from "@/lib/admin-date-format";
+import { formatAdminDateTime } from "./admin-date-format";
 import type { ListingSchemaFieldSummary } from "@/types/listing";
 import { toListingDetails } from "@/lib/listing-details";
-import type { AuthUser } from "@/lib/admin-auth";
+import type { AuthUser } from "./admin-auth";
 import { prisma } from "@/lib/prisma";
 
 export type AdminListingRow = {

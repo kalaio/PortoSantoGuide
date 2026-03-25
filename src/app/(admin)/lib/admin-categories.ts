@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
-import type { AuthUser } from "@/lib/admin-auth";
-import { formatAdminDateTime } from "@/lib/admin-date-format";
+import type { AuthUser } from "./admin-auth";
+import { formatAdminDateTime } from "./admin-date-format";
 import { prisma } from "@/lib/prisma";
 import { normalizeUiIconName } from "@/lib/ui-icons";
 

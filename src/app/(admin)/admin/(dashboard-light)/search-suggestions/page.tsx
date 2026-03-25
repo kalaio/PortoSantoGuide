@@ -7,12 +7,12 @@ import {
   ADMIN_PAGE_CLASS,
   ADMIN_TITLE_CLASS
 } from "@/app/(admin)/components/admin-tailwind";
-import { requireServerUserWithRole } from "@/lib/admin-auth-server";
+import { requireServerUserWithRole } from "@/app/(admin)/lib/admin-auth-server";
 import {
   getAdminSearchSuggestionsPageData,
   type AdminSearchSuggestionsSortDirection,
   type AdminSearchSuggestionsSortField
-} from "@/lib/admin-search-suggestions";
+} from "@/app/(admin)/lib/admin-search-suggestions";
 
 function normalizeSortField(value: string | string[] | undefined): AdminSearchSuggestionsSortField {
   return value === "updatedAt" || value === "label" || value === "status" ? value : "priority";

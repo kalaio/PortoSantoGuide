@@ -7,12 +7,12 @@ import {
   ADMIN_PAGE_CLASS,
   ADMIN_TITLE_CLASS
 } from "@/app/(admin)/components/admin-tailwind";
-import { requireServerUserWithRole } from "@/lib/admin-auth-server";
+import { requireServerUserWithRole } from "@/app/(admin)/lib/admin-auth-server";
 import {
   getAdminUsersPageData,
   type AdminUsersSortDirection,
   type AdminUsersSortField
-} from "@/lib/admin-users";
+} from "@/app/(admin)/lib/admin-users";
 
 function normalizeSortField(value: string | string[] | undefined): AdminUsersSortField {
   return value === "username" || value === "role" || value === "status" ? value : "createdAt";

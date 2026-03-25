@@ -21,9 +21,9 @@ import {
 import DeleteConfirmModal from "@/app/(admin)/components/DeleteConfirmModal";
 import ProjectIcon from "@/components/icons/ProjectIcon";
 import { Card, CheckboxField, Field, FormSection, SelectInput, TextInput } from "@/components/ui";
-import type { AdminCategoryOption } from "@/lib/admin-categories";
-import type { AdminSchemaRecord } from "@/lib/admin-schemas";
-import type { AdminSectionRecord } from "@/lib/admin-sections";
+import type { AdminCategoryOption } from "../lib/admin-categories";
+import type { AdminSchemaRecord } from "../lib/admin-schemas";
+import type { AdminSectionRecord } from "../lib/admin-sections";
 import { getUiIconOptionsForCategories, normalizeUiIconName } from "@/lib/ui-icons";
 
 type SchemaOption = Pick<AdminSchemaRecord, "id" | "slug" | "label" | "isActive">;

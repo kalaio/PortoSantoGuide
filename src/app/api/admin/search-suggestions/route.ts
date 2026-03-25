@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { hasRole, requireRequestAuthUser } from "@/lib/admin-auth";
+import { hasRole, requireRequestAuthUser } from "@/app/(admin)/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
 import { requireTrustedMutationOrigin } from "@/lib/api-security";
 

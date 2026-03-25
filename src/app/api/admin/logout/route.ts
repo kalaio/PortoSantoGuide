@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getSessionCookieName, revokeRequestSession } from "@/lib/admin-auth";
+import { getSessionCookieName, revokeRequestSession } from "@/app/(admin)/lib/admin-auth";
 import { requireTrustedMutationOrigin } from "@/lib/api-security";
 
 export async function POST(request: Request) {

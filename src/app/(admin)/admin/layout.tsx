@@ -3,7 +3,7 @@ import "./admin.css";
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="adminRoute font-admin-body">
+    <div className="adminRoute">
       {children}
     </div>
   );

@@ -59,7 +59,7 @@ export default function HomeHero({ slides, menuLinks }: HomeHeroProps) {
       return null;
     }
 
-    const layerClass = `absolute inset-0 transition-opacity duration-500 ${state === "active" ? "z-[2] opacity-100" : "z-[1] opacity-0"}`;
+    const layerClass = state === "active" ? "homeHeroMediaLayer isActive" : "homeHeroMediaLayer isFadingOut";
 
     if (slide.videoUrl) {
       return (
@@ -121,9 +121,9 @@ export default function HomeHero({ slides, menuLinks }: HomeHeroProps) {
           {!activeSlide ? <div className="absolute inset-0 bg-gradient-to-br from-[#efdac7] via-[#f2e5d8] to-[#efe7de]" /> : null}
         </div>
 
-        <div className="relative z-10 flex flex-1 flex-col pb-14">
+        <div className="relative z-[5] flex flex-1 flex-col pb-[60px]">
           <div className="mx-auto flex min-h-full w-full max-w-[1280px] flex-col px-4 md:px-5">
-            <div className="flex items-start justify-between gap-4 pt-3 max-[640px]:pt-2">
+            <div className="flex items-center justify-between gap-4">
               <Image
                 src="/branding/porto-santo-guide.svg"
                 alt="Porto Santo Guide"
@@ -142,8 +142,8 @@ export default function HomeHero({ slides, menuLinks }: HomeHeroProps) {
               </button>
             </div>
 
-            <div className="my-auto flex max-w-[50rem] flex-col gap-6 pb-12 pt-16 max-[640px]:max-w-[20rem] max-[640px]:gap-5 max-[640px]:pb-16 max-[640px]:pt-10">
-              <h1 className="m-0 max-w-[8ch] text-[clamp(3.25rem,7vw,6.75rem)] font-semibold leading-[0.95] tracking-[-0.05em] text-white drop-shadow-[0_10px_35px_rgba(16,24,40,0.2)]">
+            <div className="my-auto flex max-w-[50rem] flex-col gap-6 py-12 max-[640px]:gap-5 max-[640px]:py-10">
+              <h1 className="m-0 max-w-[14ch] text-[clamp(2rem,5vw,4rem)] font-semibold leading-[0.95] tracking-[-0.05em] text-white drop-shadow-[0_10px_35px_rgba(16,24,40,0.2)]">
                 We are the
                 <br className="max-[640px]:hidden" />{" "}
                 local specialists
@@ -156,9 +156,9 @@ export default function HomeHero({ slides, menuLinks }: HomeHeroProps) {
           </div>
         </div>
 
-        <div className="absolute inset-x-0 bottom-0 z-10 bg-white/45 py-1.5 backdrop-blur-sm">
-          <div className="mx-auto flex max-w-[1280px] overflow-x-auto px-2 scrollbar-hide">
-            <div className="flex gap-1.5">
+        <div className="absolute inset-x-0 bottom-0 z-[5] flex h-[60px] items-center bg-white/45 py-1.5">
+          <div className="mx-auto flex max-w-[1280px] justify-center px-2">
+            <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
               {usableSlides.map((slide, index) => {
                 const thumbSrc =
                   slide.mediaDesktopThumb ??
@@ -171,7 +171,7 @@ export default function HomeHero({ slides, menuLinks }: HomeHeroProps) {
                   <button
                     key={slide.id}
                     type="button"
-                    className={`overflow-hidden rounded-sm transition ${index === activeIndex ? "opacity-100 ring-2 ring-white/80" : "opacity-90 hover:opacity-100"}`}
+                    className={`shrink-0 overflow-hidden transition ${index === activeIndex ? "opacity-100" : "opacity-90 hover:opacity-100"}`}
                     onClick={() => handleSelect(index)}
                     aria-label={slide.title ?? `Slide ${index + 1}`}
                   >

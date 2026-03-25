@@ -197,6 +197,21 @@ export default function GlobalSearch({ placeholder = "What are you looking for?"
   }, [isMobileOpen]);
 
   useEffect(() => {
+    if (!isMobileOpen) {
+      return;
+    }
+
+    if (query.trim().length === 0) {
+      setDisplayMode("suggestions");
+      openSuggestionsDropdown().catch(() => {
+        setSuggestions([]);
+        setError("Could not load suggestions.");
+        setIsOpen(true);
+      });
+    }
+  }, [isMobileOpen, query, openSuggestionsDropdown]);
+
+  useEffect(() => {
     return () => {
       searchAbortControllerRef.current?.abort();
     };
@@ -374,11 +389,11 @@ export default function GlobalSearch({ placeholder = "What are you looking for?"
   return (
     <div
       className={cn(
-        "relative w-full",
-        isHomeRoute ? "max-w-[50rem]" : "max-w-[35rem]",
-        isMobileOpen && "fixed inset-0 z-[120] flex max-w-none flex-col gap-4 bg-white px-4 py-4"
+        isMobileOpen
+          ? "fixed inset-0 z-[9999] flex max-w-none flex-col gap-4 bg-white px-4 py-4"
+          : cn("relative w-full", isHomeRoute ? "max-w-[50rem]" : "max-w-[35rem]")
       )}
-      ref={rootRef}
+      ref={isMobileOpen ? undefined : rootRef}
     >
       <div className={cn("flex items-center", isMobileOpen && "gap-3")}>
         {isMobileOpen ? (

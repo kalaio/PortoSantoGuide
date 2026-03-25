@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import CategoryEditorClient from "@/components/admin/CategoryEditorClient";
+import CategoryEditorClient from "@/app/(admin)/components/CategoryEditorClient";
 import { getAdminCategoryOptions } from "@/lib/admin-categories";
 import { requireServerUserWithRole } from "@/lib/admin-auth-server";
 import { getAdminSchemas } from "@/lib/admin-schemas";

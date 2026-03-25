@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import UserEditorClient from "@/components/admin/UserEditorClient";
+import UserEditorClient from "@/app/(admin)/components/UserEditorClient";
 import { requireServerUserWithRole } from "@/lib/admin-auth-server";
 import { prisma } from "@/lib/prisma";
 

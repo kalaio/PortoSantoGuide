@@ -11,7 +11,7 @@ import { Select } from "@/components/base/select/select";
 import {
   ADMIN_SELECT_CLASS,
   joinAdminClassNames
-} from "@/components/admin/admin-tailwind";
+} from "@/app/(admin)/components/admin-tailwind";
 import { HintText } from "@/components/base/input/hint-text";
 import { cx } from "@/utils/cx";
 

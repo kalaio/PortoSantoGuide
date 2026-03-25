@@ -1,4 +1,4 @@
-import NewListingClient from "@/components/admin/NewListingClient";
+import NewListingClient from "@/app/(admin)/components/NewListingClient";
 import { getActiveAdminCategoryOptions } from "@/lib/admin-categories";
 import { requireServerAdminUser } from "@/lib/admin-auth-server";
 

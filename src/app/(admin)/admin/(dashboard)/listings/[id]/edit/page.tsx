@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import EditListingClient from "@/components/admin/EditListingClient";
+import EditListingClient from "@/app/(admin)/components/EditListingClient";
 import { getAdminCategoryOptions } from "@/lib/admin-categories";
 import { requireServerAdminUser } from "@/lib/admin-auth-server";
 import { getAdminListingById } from "@/lib/admin-listings";

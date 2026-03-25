@@ -1,5 +1,5 @@
-import SlidesAdminClient from "@/components/admin/SlidesAdminClient";
-import { ADMIN_HEADER_ROW_CLASS, ADMIN_HERO_CLASS, ADMIN_PAGE_CLASS, ADMIN_TITLE_CLASS } from "@/components/admin/admin-tailwind";
+import SlidesAdminClient from "@/app/(admin)/components/SlidesAdminClient";
+import { ADMIN_HEADER_ROW_CLASS, ADMIN_HERO_CLASS, ADMIN_PAGE_CLASS, ADMIN_TITLE_CLASS } from "@/app/(admin)/components/admin-tailwind";
 import { requireServerUserWithRole } from "@/lib/admin-auth-server";
 import { prisma } from "@/lib/prisma";
 

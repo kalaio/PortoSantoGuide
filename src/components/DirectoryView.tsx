@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import MultiCheckboxFilterPopover from "@/components/filters/MultiCheckboxFilterPopover";
+import MultiCheckboxFilterPopover from "@/app/(frontend)/components/MultiCheckboxFilterPopover";
 import type { MapBounds } from "@/components/ListingMap";
 import ListingMapLazy from "@/components/ListingMapLazy";
 import { cn } from "@/lib/cn";

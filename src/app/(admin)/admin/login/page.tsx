@@ -11,7 +11,7 @@ import {
   ADMIN_LOGIN_CARD_CLASS,
   ADMIN_LOGIN_PAGE_CLASS,
   ADMIN_PAGE_CLASS
-} from "@/components/admin/admin-tailwind";
+} from "@/app/(admin)/components/admin-tailwind";
 import { Card, Field, FormSection, TextInput } from "@/components/ui";
 
 const DEFAULT_ADMIN_REDIRECT_PATH = "/admin/listings";

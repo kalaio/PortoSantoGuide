@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import SearchSuggestionEditorClient from "@/components/admin/SearchSuggestionEditorClient";
+import SearchSuggestionEditorClient from "@/app/(admin)/components/SearchSuggestionEditorClient";
 import { requireServerUserWithRole } from "@/lib/admin-auth-server";
 import { prisma } from "@/lib/prisma";
 

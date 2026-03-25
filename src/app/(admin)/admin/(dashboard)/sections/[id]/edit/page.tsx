@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import SectionEditorClient from "@/components/admin/SectionEditorClient";
+import SectionEditorClient from "@/app/(admin)/components/SectionEditorClient";
 import { requireServerUserWithRole } from "@/lib/admin-auth-server";
 import { getAdminSections } from "@/lib/admin-sections";
 

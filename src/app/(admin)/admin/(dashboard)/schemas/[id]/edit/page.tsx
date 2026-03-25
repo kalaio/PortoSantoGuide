@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import SchemaEditorClient from "@/components/admin/SchemaEditorClient";
+import SchemaEditorClient from "@/app/(admin)/components/SchemaEditorClient";
 import { requireServerUserWithRole } from "@/lib/admin-auth-server";
 import { getAdminSchemas } from "@/lib/admin-schemas";
 

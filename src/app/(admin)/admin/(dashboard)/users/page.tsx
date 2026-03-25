@@ -1,12 +1,12 @@
 import { Button } from "@/components/base/buttons/button";
-import AdminUsersTable from "@/components/admin/AdminUsersTable";
+import AdminUsersTable from "@/app/(admin)/components/AdminUsersTable";
 import {
   ADMIN_HEADER_ACTIONS_CLASS,
   ADMIN_HEADER_ROW_CLASS,
   ADMIN_HERO_CLASS,
   ADMIN_PAGE_CLASS,
   ADMIN_TITLE_CLASS
-} from "@/components/admin/admin-tailwind";
+} from "@/app/(admin)/components/admin-tailwind";
 import { requireServerUserWithRole } from "@/lib/admin-auth-server";
 import {
   getAdminUsersPageData,

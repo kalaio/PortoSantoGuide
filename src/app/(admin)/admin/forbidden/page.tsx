@@ -11,7 +11,7 @@ import {
   ADMIN_LOGIN_CARD_CLASS,
   ADMIN_LOGIN_PAGE_CLASS,
   ADMIN_PAGE_CLASS
-} from "@/components/admin/admin-tailwind";
+} from "@/app/(admin)/components/admin-tailwind";
 
 export default function AdminForbiddenPage() {
   return (

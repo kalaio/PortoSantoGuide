@@ -1,13 +1,13 @@
 import { redirect } from "next/navigation";
 import { Button } from "@/components/base/buttons/button";
-import AdminCategoriesTable from "@/components/admin/AdminCategoriesTable";
+import AdminCategoriesTable from "@/app/(admin)/components/AdminCategoriesTable";
 import {
   ADMIN_HEADER_ACTIONS_CLASS,
   ADMIN_HEADER_ROW_CLASS,
   ADMIN_HERO_CLASS,
   ADMIN_PAGE_CLASS,
   ADMIN_TITLE_CLASS
-} from "@/components/admin/admin-tailwind";
+} from "@/app/(admin)/components/admin-tailwind";
 import { requireServerAdminUser } from "@/lib/admin-auth-server";
 import {
   getAdminCategoriesPageData,

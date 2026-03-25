@@ -1,5 +1,5 @@
-import AdminUiKitPreview from "@/components/admin/AdminUiKitPreview";
-import { ADMIN_HERO_CLASS, ADMIN_PAGE_CLASS, ADMIN_TITLE_CLASS } from "@/components/admin/admin-tailwind";
+import AdminUiKitPreview from "@/app/(admin)/components/AdminUiKitPreview";
+import { ADMIN_HERO_CLASS, ADMIN_PAGE_CLASS, ADMIN_TITLE_CLASS } from "@/app/(admin)/components/admin-tailwind";
 import { requireServerUserWithRole } from "@/lib/admin-auth-server";
 
 export default async function AdminUiKitPage() {

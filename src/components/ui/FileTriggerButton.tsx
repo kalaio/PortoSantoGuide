@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import { Button } from "@/components/base/buttons/button";
-import { ADMIN_NATIVE_HIDDEN_CLASS, joinAdminClassNames } from "@/components/admin/admin-tailwind";
+import { ADMIN_NATIVE_HIDDEN_CLASS, joinAdminClassNames } from "@/app/(admin)/components/admin-tailwind";
 
 type FileTriggerButtonProps = {
   accept?: string;

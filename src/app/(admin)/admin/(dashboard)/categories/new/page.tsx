@@ -1,4 +1,4 @@
-import CategoryEditorClient from "@/components/admin/CategoryEditorClient";
+import CategoryEditorClient from "@/app/(admin)/components/CategoryEditorClient";
 import { requireServerUserWithRole } from "@/lib/admin-auth-server";
 import { getAdminSchemas } from "@/lib/admin-schemas";
 import { getAdminSections } from "@/lib/admin-sections";

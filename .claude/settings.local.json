@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat \"/Users/joaoneves/Desktop/PortoSantoGuide/src/app/admin/\\(dashboard\\)/listings/page.tsx\")"
+    ]
+  }
+}

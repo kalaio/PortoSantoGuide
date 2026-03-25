@@ -1,4 +1,4 @@
-import SectionEditorClient from "@/components/admin/SectionEditorClient";
+import SectionEditorClient from "@/app/(admin)/components/SectionEditorClient";
 import { requireServerUserWithRole } from "@/lib/admin-auth-server";
 
 export default async function NewSectionPage() {

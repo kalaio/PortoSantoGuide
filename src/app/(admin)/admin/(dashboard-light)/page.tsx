@@ -14,7 +14,7 @@ import {
   ADMIN_PAGE_CLASS,
   ADMIN_SCOPE_BADGE_CLASS,
   ADMIN_TITLE_CLASS
-} from "@/components/admin/admin-tailwind";
+} from "@/app/(admin)/components/admin-tailwind";
 import { requireServerAdminUser } from "@/lib/admin-auth-server";
 
 type MenuItem = {

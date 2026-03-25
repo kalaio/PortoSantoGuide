@@ -1,5 +1,5 @@
 import Link from "next/link";
-import HomeHero from "@/components/home/HomeHero";
+import HomeHero from "@/app/(frontend)/components/HomeHero";
 import { getPublicMenuLinks } from "@/lib/listings";
 import { getSliderBySlug } from "@/lib/slides";
 

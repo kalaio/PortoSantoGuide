@@ -13,6 +13,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <link rel="dns-prefetch" href="https://tiles.stadiamaps.com" />
         <link rel="preconnect" href="https://tiles.stadiamaps.com" crossOrigin="anonymous" />
+        <link 
+          rel="preload" 
+          href="/fonts/plus-jakarta-sans/plus-jakarta-sans-latin.woff2" 
+          as="font" 
+          type="font/woff2" 
+          crossOrigin="anonymous"
+        />
       </head>
       <body suppressHydrationWarning className="min-h-screen bg-gray-25 text-gray-900 antialiased">
         <AppProviders>{children}</AppProviders>

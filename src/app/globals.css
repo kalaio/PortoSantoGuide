@@ -285,5 +285,5 @@ input[type="search"]::-webkit-search-cancel-button {
 }
 
 body.mobileSearchOpen .homeHeroThumbnails {
-  display: none;
+  display: none !important;
 }

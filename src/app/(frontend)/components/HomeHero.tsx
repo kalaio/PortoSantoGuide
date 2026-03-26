@@ -158,7 +158,7 @@ export default function HomeHero({ slides, menuLinks }: HomeHeroProps) {
           </div>
         </div>
 
-        <div className="relative z-[1] flex flex-1 flex-col pb-[60px]">
+        <div className="relative z-10 flex flex-1 flex-col pb-[60px]">
           <div className="mx-auto flex min-h-full w-full max-w-[1280px] flex-col px-4 md:px-5">
             <div className="flex items-center justify-between gap-4">
               <Image

@@ -152,12 +152,16 @@ export default function DirectoryView({ listings, categorySchemaFields }: Direct
         <div
           className={cn(
             "sticky z-30 flex items-center justify-between gap-3 border-y border-gray-200 bg-white/95 px-2 py-3 backdrop-blur",
+            isMobileMapMode && "fixed inset-x-0 h-14 py-0 justify-start flex-nowrap scrollbar-hide",
             isMobileMapMode ? "top-16" : "top-20 max-[900px]:top-16"
           )}
           aria-label="Archive filters"
           role="region"
         >
-          <div className="flex flex-wrap items-center gap-3 max-[900px]:overflow-x-auto max-[900px]:whitespace-nowrap">
+          <div className={cn(
+            "flex flex-wrap items-center gap-3",
+            isMobileMapMode ? "flex-nowrap overflow-x-auto whitespace-nowrap" : "max-[900px]:overflow-x-auto max-[900px]:whitespace-nowrap"
+          )}>
             {supportsOpenNowFilter ? (
               <button
                 className={cn(

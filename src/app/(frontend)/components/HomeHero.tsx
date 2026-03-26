@@ -115,13 +115,13 @@ export default function HomeHero({ slides, menuLinks }: HomeHeroProps) {
   return (
     <section className="relative bg-gray-100 text-white">
       <div className="relative flex min-h-[95svh] overflow-hidden">
-        <div className="absolute inset-0 z-0 overflow-hidden bg-white">
+<div className="absolute inset-0 overflow-hidden bg-white">
           {renderSlideLayer(previousSlide, "previous")}
           {renderSlideLayer(activeSlide, "active")}
           {!activeSlide ? <div className="absolute inset-0 bg-gradient-to-br from-[#efdac7] via-[#f2e5d8] to-[#efe7de]" /> : null}
         </div>
 
-        <div className="homeHeroThumbnails absolute inset-x-0 bottom-0 z-10 flex h-[60px] items-center bg-white/45 py-1.5">
+        <div className="homeHeroThumbnails absolute inset-x-0 bottom-0 flex h-[60px] items-center bg-white/45 py-1.5">
           <div className="mx-auto flex max-w-[1280px] justify-center px-2">
             <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
               {usableSlides.map((slide, index) => {
@@ -158,7 +158,7 @@ export default function HomeHero({ slides, menuLinks }: HomeHeroProps) {
           </div>
         </div>
 
-        <div className="relative z-20 flex flex-1 flex-col pb-[60px]">
+        <div className="relative flex flex-1 flex-col pb-[60px]">
           <div className="mx-auto flex min-h-full w-full max-w-[1280px] flex-col px-4 md:px-5">
             <div className="flex items-center justify-between gap-4">
               <Image

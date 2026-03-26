@@ -121,7 +121,7 @@ export default function HomeHero({ slides, menuLinks }: HomeHeroProps) {
           {!activeSlide ? <div className="absolute inset-0 bg-gradient-to-br from-[#efdac7] via-[#f2e5d8] to-[#efe7de]" /> : null}
         </div>
 
-        <div className="relative z-[5] flex flex-1 flex-col pb-[60px]">
+        <div className="relative flex flex-1 flex-col pb-[60px]">
           <div className="mx-auto flex min-h-full w-full max-w-[1280px] flex-col px-4 md:px-5">
             <div className="flex items-center justify-between gap-4">
               <Image
@@ -156,7 +156,7 @@ export default function HomeHero({ slides, menuLinks }: HomeHeroProps) {
           </div>
         </div>
 
-        <div className="homeHeroThumbnails absolute inset-x-0 bottom-0 z-[1] flex h-[60px] items-center bg-white/45 py-1.5">
+        <div className="homeHeroThumbnails absolute inset-x-0 bottom-0 z-10 flex h-[60px] items-center bg-white/45 py-1.5">
           <div className="mx-auto flex max-w-[1280px] justify-center px-2">
             <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
               {usableSlides.map((slide, index) => {

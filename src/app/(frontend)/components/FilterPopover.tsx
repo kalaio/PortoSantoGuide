@@ -102,7 +102,7 @@ export default function FilterPopover<T>({
       <button
         type="button"
         className={cn(
-          "inline-flex min-h-12 items-center rounded-full border bg-white px-5 text-[1.0625rem] font-medium text-gray-900 transition",
+          "inline-flex min-h-12 items-center rounded-full border bg-white px-5 text-[1.0625rem] font-medium text-gray-900 transition cursor-pointer",
           isOpen || isActive
             ? "border-gray-950 shadow-sm"
             : "border-gray-200 hover:border-brand-200 hover:bg-gray-50"
@@ -144,7 +144,7 @@ export default function FilterPopover<T>({
           <div className="mt-4 flex items-center justify-between gap-3">
             <button
               type="button"
-              className="text-base font-semibold text-gray-500 transition hover:text-gray-800"
+              className="text-base font-semibold text-gray-500 transition hover:text-gray-800 cursor-pointer"
               onClick={() => {
                 const nextValue = normalize(clearValue);
                 onApply(nextValue);
@@ -156,7 +156,7 @@ export default function FilterPopover<T>({
 
             <button
               type="button"
-              className="inline-flex min-h-11 items-center justify-center rounded-full bg-brand-900 px-5 text-base font-semibold text-white transition hover:bg-brand-800"
+              className="inline-flex min-h-11 items-center justify-center rounded-full bg-brand-900 px-5 text-base font-semibold text-white transition hover:bg-brand-800 cursor-pointer"
               onClick={() => {
                 const nextValue = normalize(draftValue);
                 onApply(nextValue);

@@ -142,7 +142,7 @@ export default function MenuOverlay({ isOpen, onClose, menuLinks }: Props) {
       <button
         ref={closeButtonRef}
         type="button"
-        className="absolute right-6 top-6 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-gray-700 transition hover:bg-white max-[640px]:right-4 max-[640px]:top-4"
+        className="absolute right-6 top-6 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-gray-700 transition hover:bg-white cursor-pointer max-[640px]:right-4 max-[640px]:top-4"
         onClick={() => {
           setPendingHref(null);
           onClose();

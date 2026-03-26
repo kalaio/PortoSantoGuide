@@ -399,7 +399,7 @@ export default function GlobalSearch({ placeholder = "What are you looking for?"
         {isMobileOpen ? (
           <button
             type="button"
-            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 transition hover:border-brand-300 hover:text-brand-700"
+            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 transition hover:border-brand-300 hover:text-brand-700 cursor-pointer"
             onClick={closeMobileOverlay}
             aria-label="Close"
           >
@@ -483,7 +483,7 @@ export default function GlobalSearch({ placeholder = "What are you looking for?"
 
           {query.trim().length > 0 ? (
             <button
-              className="absolute right-3 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition hover:bg-gray-200 hover:text-gray-700"
+              className="absolute right-3 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition hover:bg-gray-200 hover:text-gray-700 cursor-pointer"
               type="button"
               onClick={clearQuery}
               aria-label="Clear search"
@@ -514,7 +514,7 @@ export default function GlobalSearch({ placeholder = "What are you looking for?"
                   suggestions.map((suggestion) => (
                     <button
                       key={suggestion.id}
-                      className="rounded-2xl px-4 py-3 text-left text-lg text-gray-900 transition hover:bg-gray-100"
+                      className="rounded-2xl px-4 py-3 text-left text-lg text-gray-900 transition hover:bg-gray-100 cursor-pointer"
                       type="button"
                       onClick={() => runSuggestionQuery(suggestion)}
                     >

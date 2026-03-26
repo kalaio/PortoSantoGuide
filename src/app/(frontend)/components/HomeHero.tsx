@@ -136,7 +136,7 @@ export default function HomeHero({ slides, menuLinks }: HomeHeroProps) {
                   <button
                     key={slide.id}
                     type="button"
-                    className={`shrink-0 overflow-hidden transition ${index === activeIndex ? "opacity-100" : "opacity-90 hover:opacity-100"}`}
+                    className={`shrink-0 overflow-hidden transition cursor-pointer ${index === activeIndex ? "opacity-100" : "opacity-90 hover:opacity-100"}`}
                     onClick={() => handleSelect(index)}
                     aria-label={slide.title ?? `Slide ${index + 1}`}
                   >
@@ -171,7 +171,7 @@ export default function HomeHero({ slides, menuLinks }: HomeHeroProps) {
               />
               <button
                 type="button"
-                className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-white/90 text-gray-700 backdrop-blur-sm transition hover:bg-white max-[640px]:h-12 max-[640px]:w-12"
+                className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-white/90 text-gray-700 backdrop-blur-sm transition hover:bg-white cursor-pointer max-[640px]:h-12 max-[640px]:w-12"
                 onClick={() => setIsMenuOpen(true)}
                 aria-label="Open menu"
               >

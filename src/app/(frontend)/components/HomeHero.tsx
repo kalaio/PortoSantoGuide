@@ -156,7 +156,7 @@ export default function HomeHero({ slides, menuLinks }: HomeHeroProps) {
           </div>
         </div>
 
-        <div className="homeHeroThumbnails absolute inset-x-0 bottom-0 z-[5] flex h-[60px] items-center bg-white/45 py-1.5">
+        <div className="homeHeroThumbnails absolute inset-x-0 bottom-0 z-[1] flex h-[60px] items-center bg-white/45 py-1.5">
           <div className="mx-auto flex max-w-[1280px] justify-center px-2">
             <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
               {usableSlides.map((slide, index) => {

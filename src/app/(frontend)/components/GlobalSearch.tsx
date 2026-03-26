@@ -537,10 +537,7 @@ export default function GlobalSearch({ placeholder = "What are you looking for?"
                       key={result.id}
                       href={getListingPath(result)}
                       className={cn(
-                        "grid gap-1 rounded-3xl border border-transparent px-4 py-3 text-left transition",
-                        index === 0
-                          ? "border-gray-200 bg-gray-50"
-                          : "hover:border-gray-200 hover:bg-gray-50",
+                        "grid gap-1 rounded-3xl border border-transparent px-4 py-3 text-left transition hover:border-gray-200 hover:bg-gray-50",
                         pendingResultId === result.id && "pointer-events-none opacity-75"
                       )}
                       onClick={(event) => handleResultClick(event, result)}

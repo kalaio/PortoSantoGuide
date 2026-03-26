@@ -231,7 +231,7 @@ export default function DirectoryView({ listings, categorySchemaFields }: Direct
           </div>
         </aside>
 
-        {showMap ? (
+        {showMap && (!isMobileViewport || mobileViewMode === "map") ? (
           <div
             className={cn(
               "min-h-[44rem] overflow-hidden rounded-[1.75rem] border border-gray-200 bg-white shadow-sm max-[900px]:min-h-[50vh]",
@@ -247,9 +247,9 @@ export default function DirectoryView({ listings, categorySchemaFields }: Direct
           </div>
         ) : null}
 
-        {showMap ? (
+        {showMap && isMobileViewport ? (
           <button
-            className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-1/2 z-30 inline-flex min-h-12 min-w-[120px] -translate-x-1/2 items-center justify-center rounded-full border border-gray-200 bg-white px-8 text-[1.3rem] font-semibold text-brand-900 shadow-[0_20px_40px_rgba(10,13,18,0.12)] lg:hidden"
+            className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-1/2 z-30 inline-flex min-h-12 min-w-[120px] -translate-x-1/2 items-center justify-center rounded-full border border-gray-200 bg-white px-8 text-[1.3rem] font-semibold text-brand-900 shadow-[0_20px_40px_rgba(10,13,18,0.12)] cursor-pointer"
             type="button"
             aria-pressed={mobileViewMode === "map"}
             aria-label={mobileViewMode === "map" ? "Show list" : "Show map"}

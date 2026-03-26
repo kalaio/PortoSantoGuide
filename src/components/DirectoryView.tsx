@@ -153,7 +153,7 @@ export default function DirectoryView({ listings, categorySchemaFields }: Direct
           className={cn(
             "flex items-center justify-between gap-3 border-y border-gray-200 bg-white/95 px-2 py-3 backdrop-blur",
             isMobileMapMode
-              ? "fixed inset-x-0 top-16 z-50 h-[60px] py-0 justify-start flex-nowrap scrollbar-hide"
+              ? "fixed inset-x-0 top-16 z-30 h-[60px] py-0 justify-start flex-nowrap scrollbar-hide"
               : "sticky z-30 top-20 max-[900px]:top-16"
           )}
           aria-label="Archive filters"

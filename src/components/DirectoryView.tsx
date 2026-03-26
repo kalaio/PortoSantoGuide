@@ -240,8 +240,9 @@ export default function DirectoryView({ listings, categorySchemaFields }: Direct
           <div
             className={cn(
               "min-h-[44rem] overflow-hidden rounded-[1.75rem] border border-gray-200 bg-white shadow-sm",
-              "max-[900px]:hidden max-[900px]:min-h-[50vh]",
-              isMobileMapMode && "max-[900px]:fixed max-[900px]:inset-x-0 max-[900px]:bottom-0 max-[900px]:top-[7.6rem] max-[900px]:z-20 max-[900px]:block max-[900px]:rounded-none max-[900px]:border-x-0 max-[900px]:border-b-0",
+              isMobileMapMode
+                ? "max-[900px]:fixed max-[900px]:inset-x-0 max-[900px]:bottom-0 max-[900px]:top-[7.6rem] max-[900px]:z-20 max-[900px]:block max-[900px]:min-h-[50vh] max-[900px]:rounded-none max-[900px]:border-x-0 max-[900px]:border-b-0"
+                : "max-[900px]:hidden",
               isMobileMapMode && !hasVisibleFilters && "max-[900px]:top-16"
             )}
           >

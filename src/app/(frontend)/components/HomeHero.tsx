@@ -114,7 +114,7 @@ export default function HomeHero({ slides, menuLinks }: HomeHeroProps) {
 
   return (
     <section className="relative bg-gray-100 text-white">
-      <div className="relative flex min-h-[95svh] overflow-hidden">
+      <div className="relative flex min-h-[95svh]">
 <div className="absolute inset-0 overflow-hidden bg-white">
           {renderSlideLayer(previousSlide, "previous")}
           {renderSlideLayer(activeSlide, "active")}

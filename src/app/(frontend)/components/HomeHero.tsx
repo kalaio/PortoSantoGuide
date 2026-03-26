@@ -158,9 +158,9 @@ export default function HomeHero({ slides, menuLinks }: HomeHeroProps) {
           </div>
         </div>
 
-        <div className="relative z-10 flex flex-1 flex-col pb-[60px]">
+        <div className="relative z-10 flex flex-1 flex-col pb-[60px] pointer-events-none">
           <div className="mx-auto flex min-h-full w-full max-w-[1280px] flex-col px-4 md:px-5">
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center justify-between gap-4 pointer-events-auto">
               <Image
                 src="/branding/porto-santo-guide.svg"
                 alt="Porto Santo Guide"
@@ -179,7 +179,7 @@ export default function HomeHero({ slides, menuLinks }: HomeHeroProps) {
               </button>
             </div>
 
-            <div className="my-auto flex max-w-[50rem] flex-col gap-6 py-12 max-[640px]:gap-5 max-[640px]:py-10">
+            <div className="my-auto flex max-w-[50rem] flex-col gap-6 py-12 max-[640px]:gap-5 max-[640px]:py-10 pointer-events-auto">
               <h1 className="m-0 max-w-[14ch] text-[clamp(2rem,5vw,4rem)] font-semibold leading-[0.95] tracking-[-0.05em] text-white drop-shadow-[0_10px_35px_rgba(16,24,40,0.2)]">
                 We are the
                 <br className="max-[640px]:hidden" />{" "}

@@ -231,10 +231,11 @@ export default function DirectoryView({ listings, categorySchemaFields }: Direct
           </div>
         </aside>
 
-        {showMap && (!isMobileViewport || mobileViewMode === "map") ? (
+        {showMap ? (
           <div
             className={cn(
               "min-h-[44rem] overflow-hidden rounded-[1.75rem] border border-gray-200 bg-white shadow-sm max-[900px]:min-h-[50vh]",
+              isMobileViewport && mobileViewMode === "list" && "hidden",
               isMobileMapMode && "fixed inset-x-0 bottom-0 top-[7.6rem] z-20 rounded-none border-x-0 border-b-0",
               isMobileMapMode && !hasVisibleFilters && "top-16"
             )}

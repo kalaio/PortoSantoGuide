@@ -121,42 +121,7 @@ export default function HomeHero({ slides, menuLinks }: HomeHeroProps) {
           {!activeSlide ? <div className="absolute inset-0 bg-gradient-to-br from-[#efdac7] via-[#f2e5d8] to-[#efe7de]" /> : null}
         </div>
 
-        <div className="relative flex flex-1 flex-col pb-[60px]">
-          <div className="mx-auto flex min-h-full w-full max-w-[1280px] flex-col px-4 md:px-5">
-            <div className="flex items-center justify-between gap-4">
-              <Image
-                src="/branding/porto-santo-guide.svg"
-                alt="Porto Santo Guide"
-                width={120}
-                height={104}
-                className="h-auto w-[120px] max-[640px]:w-[112px]"
-                priority
-              />
-              <button
-                type="button"
-                className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-white/90 text-gray-700 backdrop-blur-sm transition hover:bg-white max-[640px]:h-12 max-[640px]:w-12"
-                onClick={() => setIsMenuOpen(true)}
-                aria-label="Open menu"
-              >
-                <Menu02 className="h-6 w-6" aria-hidden="true" />
-              </button>
-            </div>
-
-            <div className="my-auto flex max-w-[50rem] flex-col gap-6 py-12 max-[640px]:gap-5 max-[640px]:py-10">
-              <h1 className="m-0 max-w-[14ch] text-[clamp(2rem,5vw,4rem)] font-semibold leading-[0.95] tracking-[-0.05em] text-white drop-shadow-[0_10px_35px_rgba(16,24,40,0.2)]">
-                We are the
-                <br className="max-[640px]:hidden" />{" "}
-                local specialists
-              </h1>
-
-              <div className="w-full">
-                <GlobalSearch placeholder="What are you looking for?" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="homeHeroThumbnails absolute inset-x-0 bottom-0 z-10 flex h-[60px] items-center bg-white/45 py-1.5">
+        <div className="homeHeroThumbnails absolute inset-x-0 bottom-0 flex h-[60px] items-center bg-white/45 py-1.5">
           <div className="mx-auto flex max-w-[1280px] justify-center px-2">
             <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
               {usableSlides.map((slide, index) => {
@@ -189,6 +154,41 @@ export default function HomeHero({ slides, menuLinks }: HomeHeroProps) {
                   </button>
                 );
               })}
+            </div>
+          </div>
+        </div>
+
+        <div className="relative flex flex-1 flex-col pb-[60px]">
+          <div className="mx-auto flex min-h-full w-full max-w-[1280px] flex-col px-4 md:px-5">
+            <div className="flex items-center justify-between gap-4">
+              <Image
+                src="/branding/porto-santo-guide.svg"
+                alt="Porto Santo Guide"
+                width={120}
+                height={104}
+                className="h-auto w-[120px] max-[640px]:w-[112px]"
+                priority
+              />
+              <button
+                type="button"
+                className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-white/90 text-gray-700 backdrop-blur-sm transition hover:bg-white max-[640px]:h-12 max-[640px]:w-12"
+                onClick={() => setIsMenuOpen(true)}
+                aria-label="Open menu"
+              >
+                <Menu02 className="h-6 w-6" aria-hidden="true" />
+              </button>
+            </div>
+
+            <div className="my-auto flex max-w-[50rem] flex-col gap-6 py-12 max-[640px]:gap-5 max-[640px]:py-10">
+              <h1 className="m-0 max-w-[14ch] text-[clamp(2rem,5vw,4rem)] font-semibold leading-[0.95] tracking-[-0.05em] text-white drop-shadow-[0_10px_35px_rgba(16,24,40,0.2)]">
+                We are the
+                <br className="max-[640px]:hidden" />{" "}
+                local specialists
+              </h1>
+
+              <div className="w-full">
+                <GlobalSearch placeholder="What are you looking for?" />
+              </div>
             </div>
           </div>
         </div>

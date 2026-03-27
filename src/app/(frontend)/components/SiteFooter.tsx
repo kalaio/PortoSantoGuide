@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export default function SiteFooter() {
   return (
-    <footer className="border-t border-secondary bg-secondary px-4 py-8 text-center text-gray-900">
+    <footer className="bg-[var(--psg-sand-shell)] px-4 py-8 text-center text-black">
       <Image
         src="/branding/porto-santo-guide.svg"
         alt="Porto Santo Guide"

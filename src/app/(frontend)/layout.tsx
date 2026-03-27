@@ -7,10 +7,10 @@ export default async function PublicLayout({ children }: { children: ReactNode }
   const menuLinks = await getPublicMenuLinks();
 
   return (
-    <>
+    <div className="publicTheme">
       <PublicSearchBar menuLinks={menuLinks} />
       {children}
       <SiteFooter />
-    </>
+    </div>
   );
 }

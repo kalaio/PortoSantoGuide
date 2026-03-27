@@ -52,6 +52,20 @@ body {
   margin: 0;
 }
 
+.publicTheme {
+  --psg-brand: #076d70;
+  --psg-brand-hover: #088488;
+  --psg-brand-secondary: #1a4660;
+  --psg-accent-surface: #d9bd9c;
+  --psg-accent-surface-soft: #f3e6d8;
+  --psg-accent-surface-strong: #ead5bd;
+  --psg-sand-shell: #efe2d3;
+  --psg-border-subtle: rgb(0 0 0 / 0.12);
+  --psg-text-primary: #000000;
+  --psg-text-secondary: #616161;
+  color: var(--psg-text-primary);
+}
+
 body {
   margin: 0;
 }
@@ -191,7 +205,7 @@ input[type="search"]::-webkit-search-cancel-button {
   padding: 0;
   border: 2px solid rgb(255 255 255);
   border-radius: 9999px;
-  background: rgb(14 147 132);
+  background: rgb(7 109 112);
   color: rgb(255 255 255);
   box-shadow: 0px 12px 16px -4px rgba(10, 13, 18, 0.08), 0px 4px 6px -2px rgba(10, 13, 18, 0.03),
     0px 2px 2px -1px rgba(10, 13, 18, 0.04);
@@ -205,8 +219,8 @@ input[type="search"]::-webkit-search-cancel-button {
 .listingMapMarker.isVisited {
   transform: translateY(-1px);
   background: rgb(255 255 255);
-  color: rgb(14 147 132);
-  border-color: rgb(14 147 132);
+  color: rgb(7 109 112);
+  border-color: rgb(7 109 112);
 }
 
 .listingMapMarkerIcon {

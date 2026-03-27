@@ -1,6 +1,7 @@
 "use client";
 
 import FilterPopover from "@/app/(frontend)/components/FilterPopover";
+import PublicFilterCheckbox from "@/components/frontend/PublicFilterCheckbox";
 
 type MultiCheckboxFilterOption = {
   value: string;
@@ -66,27 +67,31 @@ export default function MultiCheckboxFilterPopover({
             const checked = draftValue.includes(option.value);
 
             return (
-              <label
+              <PublicFilterCheckbox
                 key={option.value}
-                className={`relative inline-flex min-h-12 items-center rounded-full border px-5 text-base transition ${checked ? "border-brand-600 bg-brand-50 text-brand-800" : "border-gray-200 bg-white text-gray-900 hover:border-brand-200 hover:bg-gray-50"}`}
-              >
-                <input
-                  type="checkbox"
-                  checked={checked}
-                  onChange={() => {
-                    setDraftWith((previous) => {
-                      const hasValue = previous.includes(option.value);
+                className={({ isFocusVisible, isSelected }: { isFocusVisible: boolean; isSelected: boolean }) =>
+                  [
+                    "relative inline-flex min-h-12 items-center rounded-full border bg-white px-5 text-base transition cursor-pointer",
+                    isSelected
+                      ? "border-[var(--psg-brand)] bg-[var(--psg-brand)] text-white"
+                      : "border-black/10 text-black hover:bg-black/[0.025]",
+                    isFocusVisible ? "outline-2 outline-offset-2 outline-[var(--psg-brand)]" : ""
+                  ].join(" ")
+                }
+                isSelected={checked}
+                label={option.label}
+                onChange={() => {
+                  setDraftWith((previous) => {
+                    const hasValue = previous.includes(option.value);
 
-                      if (hasValue) {
-                        return previous.filter((item) => item !== option.value);
-                      }
+                    if (hasValue) {
+                      return previous.filter((item) => item !== option.value);
+                    }
 
-                      return [...previous, option.value];
-                    });
-                  }}
-                />
-                <span>{option.label}</span>
-              </label>
+                    return [...previous, option.value];
+                  });
+                }}
+              />
             );
           })}
         </div>

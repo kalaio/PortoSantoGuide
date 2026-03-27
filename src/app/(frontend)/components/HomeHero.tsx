@@ -180,7 +180,7 @@ export default function HomeHero({ slides, menuLinks }: HomeHeroProps) {
             </div>
 
             <div className="my-auto flex max-w-[50rem] flex-col gap-6 py-12 max-[640px]:gap-5 max-[640px]:py-10 pointer-events-auto">
-              <h1 className="m-0 max-w-[14ch] text-[clamp(2rem,5vw,4rem)] font-semibold leading-[0.95] tracking-[-0.05em] text-white drop-shadow-[0_10px_35px_rgba(16,24,40,0.2)]">
+              <h1 className="m-0 max-w-[14ch] text-[clamp(2rem,5vw,4rem)] font-semibold leading-[0.95] tracking-[-0.05em] text-white">
                 We are the
                 <br className="max-[640px]:hidden" />{" "}
                 local specialists

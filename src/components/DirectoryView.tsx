@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import MultiCheckboxFilterPopover from "@/app/(frontend)/components/MultiCheckboxFilterPopover";
+import PublicFilterButton from "@/components/frontend/PublicFilterButton";
 import type { MapBounds } from "@/components/ListingMap";
 import ListingMapLazy from "@/components/ListingMapLazy";
 import { cn } from "@/lib/cn";
@@ -151,7 +152,7 @@ export default function DirectoryView({ listings, categorySchemaFields }: Direct
       {hasVisibleFilters ? (
         <div
           className={cn(
-            "flex items-center justify-between gap-3 border-y border-gray-200 bg-white/95 px-2 py-3 backdrop-blur",
+            "flex items-center justify-between gap-3 border-y border-black/10 bg-white px-2 py-3",
             isMobileMapMode
               ? "fixed inset-x-0 top-16 z-30 h-[60px] py-0 justify-start flex-nowrap scrollbar-hide"
               : "sticky z-30 top-20 max-[900px]:top-16"
@@ -164,19 +165,14 @@ export default function DirectoryView({ listings, categorySchemaFields }: Direct
             isMobileMapMode ? "flex-nowrap overflow-x-auto whitespace-nowrap" : "max-[900px]:overflow-x-auto max-[900px]:whitespace-nowrap"
           )}>
             {supportsOpenNowFilter ? (
-              <button
-                className={cn(
-                  "inline-flex min-h-12 items-center rounded-full border bg-white px-5 text-[1.0625rem] font-medium text-gray-900 transition",
-                  isOpenNowOnly
-                    ? "border-gray-950 shadow-sm"
-                    : "border-gray-200 hover:border-brand-200 hover:bg-gray-50"
-                )}
-                type="button"
+              <PublicFilterButton
                 aria-pressed={isOpenNowOnly}
+                className="shrink-0"
+                isActive={isOpenNowOnly}
                 onClick={() => setIsOpenNowOnly((currentValue) => !currentValue)}
               >
                 Open now
-              </button>
+              </PublicFilterButton>
             ) : null}
             {cuisineFilterOptions.length > 0 ? (
               <MultiCheckboxFilterPopover
@@ -213,17 +209,17 @@ export default function DirectoryView({ listings, categorySchemaFields }: Direct
                 >
                   <article
                     className={cn(
-                      "rounded-[1.5rem] border bg-white px-5 py-4 shadow-sm transition",
+                      "rounded-[1.5rem] border bg-white px-5 py-4 transition",
                       isActive
-                        ? "border-brand-500 shadow-md"
-                        : "border-gray-200 hover:border-brand-200 hover:shadow-md"
+                        ? "border-[var(--psg-brand)]"
+                        : "border-black/10 hover:border-[color:rgb(7_109_112_/_0.28)]"
                     )}
                     onMouseEnter={() => setHoveredListingId(listing.id)}
                     onMouseLeave={() => setHoveredListingId(null)}
                   >
-                    <h3 className="m-0 text-[1.2rem] font-semibold text-gray-950">{listing.title}</h3>
-                    <p className="mt-1 text-base text-gray-500">{listing.categories.map((item) => item.label).join(" · ")}</p>
-                    {detailsSummary ? <p className="mt-1 text-base leading-8 text-gray-500">{detailsSummary}</p> : null}
+                    <h3 className="m-0 text-[1.2rem] font-semibold text-black">{listing.title}</h3>
+                    <p className="mt-1 text-base text-[color:var(--psg-text-secondary)]">{listing.categories.map((item) => item.label).join(" · ")}</p>
+                    {detailsSummary ? <p className="mt-1 text-base leading-8 text-[color:var(--psg-text-secondary)]">{detailsSummary}</p> : null}
                   </article>
                 </Link>
               );
@@ -239,7 +235,7 @@ export default function DirectoryView({ listings, categorySchemaFields }: Direct
         {showMap ? (
           <div
             className={cn(
-              "min-h-[44rem] overflow-hidden rounded-[1.75rem] border border-gray-200 bg-white shadow-sm",
+              "min-h-[44rem] overflow-hidden rounded-[1.75rem] border border-black/10 bg-white",
               isMobileMapMode
                 ? "max-[900px]:fixed max-[900px]:inset-x-0 max-[900px]:bottom-0 max-[900px]:top-[7.6rem] max-[900px]:z-20 max-[900px]:block max-[900px]:min-h-[50vh] max-[900px]:rounded-none max-[900px]:border-x-0 max-[900px]:border-b-0"
                 : "max-[900px]:hidden",
@@ -255,17 +251,16 @@ export default function DirectoryView({ listings, categorySchemaFields }: Direct
         ) : null}
 
         {showMap ? (
-          <button
-            className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-1/2 z-30 hidden min-h-12 min-w-[120px] -translate-x-1/2 items-center justify-center rounded-full border border-gray-200 bg-white px-8 text-[1.3rem] font-semibold text-brand-900 shadow-[0_20px_40px_rgba(10,13,18,0.12)] cursor-pointer max-[900px]:inline-flex"
-            type="button"
+          <PublicFilterButton
             aria-pressed={mobileViewMode === "map"}
             aria-label={mobileViewMode === "map" ? "Show list" : "Show map"}
+            className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-1/2 z-30 hidden min-h-12 min-w-[120px] -translate-x-1/2 justify-center px-8 text-[1.3rem] font-semibold max-[900px]:inline-flex"
             onClick={() => {
               setMobileViewMode((currentMode) => (currentMode === "list" ? "map" : "list"));
             }}
           >
             {mobileViewMode === "map" ? "List" : "Map"}
-          </button>
+          </PublicFilterButton>
         ) : null}
       </section>
     </div>

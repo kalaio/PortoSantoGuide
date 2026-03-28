@@ -71,7 +71,7 @@ export default function MultiCheckboxFilterPopover({
                 key={option.value}
                 className={({ isFocusVisible, isSelected }: { isFocusVisible: boolean; isSelected: boolean }) =>
                   [
-                    "relative inline-flex min-h-12 items-center rounded-full border bg-white px-5 text-base transition cursor-pointer",
+                    "relative inline-flex items-center rounded-full border bg-white transition cursor-pointer",
                     isSelected
                       ? "border-[var(--psg-brand)] bg-[var(--psg-brand)] text-white"
                       : "border-black/10 text-black hover:bg-black/[0.025]",
@@ -80,6 +80,7 @@ export default function MultiCheckboxFilterPopover({
                 }
                 isSelected={checked}
                 label={option.label}
+                size="sm"
                 onChange={() => {
                   setDraftWith((previous) => {
                     const hasValue = previous.includes(option.value);

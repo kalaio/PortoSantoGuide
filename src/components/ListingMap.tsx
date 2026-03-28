@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { RefreshCw05 } from "@untitledui/icons";
 import maplibregl from "maplibre-gl";
+import PublicFilterButton from "@/components/frontend/PublicFilterButton";
 import { getDetailsSummaryByFields, getFoodOpeningState, hasSchemaField } from "@/lib/listing-details";
 import { renderUiIconSvg } from "@/lib/ui-icons";
 import type { Listing } from "@/types/listing";
@@ -425,9 +427,9 @@ export default function ListingMap({ listings, hoveredListingId, onSearchInArea 
         <div className="absolute inset-0 grid place-items-center bg-white text-sm text-gray-500">Loading map...</div>
       ) : null}
       {isMapReady && isSearchInAreaVisible && onSearchInArea ? (
-        <button
-          className="absolute left-1/2 top-5 z-10 inline-flex -translate-x-1/2 items-center justify-center rounded-full bg-brand-900 px-6 py-3 text-base font-semibold text-white shadow-[0_20px_40px_rgba(10,13,18,0.12)] transition hover:bg-brand-800"
-          type="button"
+        <PublicFilterButton
+          className="absolute left-1/2 top-5 z-10 -translate-x-1/2"
+          iconLeading={RefreshCw05}
           onClick={() => {
             if (!pendingBoundsRef.current || !onSearchInArea) {
               return;
@@ -435,9 +437,11 @@ export default function ListingMap({ listings, hoveredListingId, onSearchInArea 
             setIsSearchInAreaVisible(false);
             onSearchInArea(pendingBoundsRef.current);
           }}
+          size="md"
+          variant="primary"
         >
           Search in this area
-        </button>
+        </PublicFilterButton>
       ) : null}
     </div>
   );

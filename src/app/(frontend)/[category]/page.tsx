@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import DirectoryView from "@/components/DirectoryView";
+import PublicBreadcrumbs from "@/components/frontend/PublicBreadcrumbs";
 import { getListingsByCategorySlug } from "@/lib/listings";
 
 type CategoryArchivePageProps = {
@@ -18,9 +19,12 @@ export default async function CategoryArchivePage({ params }: CategoryArchivePag
   return (
     <main className="mx-auto w-full max-w-[1280px] px-4 py-6 md:px-5 md:py-10">
       <section className="mb-8 grid gap-3 max-[640px]:mb-6">
-        <Link href={`/${archive.category.sectionSlug}`} className="text-lg text-[color:var(--psg-text-secondary)] max-[640px]:text-base">
-          {archive.category.sectionLabel}
-        </Link>
+        <PublicBreadcrumbs
+          items={[
+            { href: `/${archive.category.sectionSlug}`, label: archive.category.sectionLabel },
+            { label: archive.category.label }
+          ]}
+        />
         <h1 className="m-0 text-display-sm font-semibold tracking-[-0.04em] text-black max-[640px]:text-[2.5rem]">
           {archive.category.label}
         </h1>

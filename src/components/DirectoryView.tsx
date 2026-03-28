@@ -170,6 +170,7 @@ export default function DirectoryView({ listings, categorySchemaFields }: Direct
                 className="shrink-0"
                 isActive={isOpenNowOnly}
                 onClick={() => setIsOpenNowOnly((currentValue) => !currentValue)}
+                size="md"
               >
                 Open now
               </PublicFilterButton>
@@ -254,10 +255,11 @@ export default function DirectoryView({ listings, categorySchemaFields }: Direct
           <PublicFilterButton
             aria-pressed={mobileViewMode === "map"}
             aria-label={mobileViewMode === "map" ? "Show list" : "Show map"}
-            className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-1/2 z-30 hidden min-h-12 min-w-[120px] -translate-x-1/2 justify-center px-8 text-[1.3rem] font-semibold max-[900px]:inline-flex"
+            className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-1/2 z-30 hidden min-w-[120px] -translate-x-1/2 justify-center px-8 max-[900px]:inline-flex"
             onClick={() => {
               setMobileViewMode((currentMode) => (currentMode === "list" ? "map" : "list"));
             }}
+            size="md"
           >
             {mobileViewMode === "map" ? "List" : "Map"}
           </PublicFilterButton>

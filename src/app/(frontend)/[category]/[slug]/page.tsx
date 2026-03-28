@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import PublicBreadcrumbs from "@/components/frontend/PublicBreadcrumbs";
 import ListingMapLazy from "@/components/ListingMapLazy";
 import {
   FOOD_OPENING_HOURS_DAY_KEYS,
@@ -43,12 +44,13 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
   return (
     <main className="mx-auto w-full max-w-[1280px] px-4 py-6 md:px-5 md:py-10">
       <section className="mb-8 grid gap-2 max-[640px]:mb-6">
-        <Link href={`/${listing.primaryCategory.sectionSlug}`} className="text-lg text-[color:var(--psg-text-secondary)] max-[640px]:text-base">
-          {listing.primaryCategory.sectionLabel}
-        </Link>
-        <Link href={`/${listing.primaryCategory.slug}`} className="text-lg text-[color:var(--psg-text-secondary)] max-[640px]:text-base">
-          {listing.primaryCategory.label}
-        </Link>
+        <PublicBreadcrumbs
+          items={[
+            { href: `/${listing.primaryCategory.sectionSlug}`, label: listing.primaryCategory.sectionLabel },
+            { href: `/${listing.primaryCategory.slug}`, label: listing.primaryCategory.label },
+            { label: listing.title }
+          ]}
+        />
         <h1 className="m-0 text-display-sm font-semibold tracking-[-0.04em] text-black max-[640px]:text-[2.5rem]">
           {listing.title}
         </h1>

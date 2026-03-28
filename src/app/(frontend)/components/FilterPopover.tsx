@@ -116,6 +116,7 @@ export default function FilterPopover<T>({
           }}
           aria-expanded={isOpen}
           aria-controls={popoverId}
+          size="md"
         >
           {buttonLabel}
         </PublicFilterButton>
@@ -146,19 +147,21 @@ export default function FilterPopover<T>({
                 onApply(nextValue);
                 setDraftValue(getDraft(nextValue));
               }}
+              size="md"
               variant="ghost"
             >
               {clearLabel}
             </PublicFilterButton>
 
             <PublicFilterButton
-              className="min-h-11 cursor-pointer"
+              className="cursor-pointer"
               onClick={() => {
                 const nextValue = normalize(draftValue);
                 onApply(nextValue);
                 setDraftValue(getDraft(nextValue));
                 setIsOpen(false);
               }}
+              size="md"
               variant="primary"
             >
               {applyLabel}

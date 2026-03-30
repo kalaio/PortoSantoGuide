@@ -16,7 +16,7 @@ export default async function HomePage() {
             href="/where-to-eat"
             className="grid gap-2 rounded-[1.75rem] border border-black/10 bg-white px-6 py-7 transition hover:-translate-y-0.5 hover:border-[color:rgb(7_109_112_/_0.28)]"
           >
-            <strong className="text-xl font-semibold text-black">Where to eat</strong>
+            <strong className="text-display-xs font-semibold text-black">Where to eat</strong>
             <p className="text-md text-[color:var(--psg-text-secondary)]">Restaurants, pizzerias, bars, bakeries and more.</p>
           </Link>
 
@@ -24,7 +24,7 @@ export default async function HomePage() {
             href="/what-to-do"
             className="grid gap-2 rounded-[1.75rem] border border-black/10 bg-white px-6 py-7 transition hover:-translate-y-0.5 hover:border-[color:rgb(7_109_112_/_0.28)]"
           >
-            <strong className="text-xl font-semibold text-black">What to do</strong>
+            <strong className="text-display-xs font-semibold text-black">What to do</strong>
             <p className="text-md text-[color:var(--psg-text-secondary)]">Activities, viewpoints, and local plans.</p>
           </Link>
         </div>

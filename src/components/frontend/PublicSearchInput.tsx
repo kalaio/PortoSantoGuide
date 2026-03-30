@@ -20,6 +20,26 @@ type PublicSearchInputProps = {
   variant?: PublicSearchInputVariant;
 };
 
+function getNormalizedInputValue(value: unknown) {
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (value && typeof value === "object") {
+    const eventTarget = "target" in value ? value.target : undefined;
+    if (eventTarget && typeof eventTarget === "object" && "value" in eventTarget && typeof eventTarget.value === "string") {
+      return eventTarget.value;
+    }
+
+    const currentTarget = "currentTarget" in value ? value.currentTarget : undefined;
+    if (currentTarget && typeof currentTarget === "object" && "value" in currentTarget && typeof currentTarget.value === "string") {
+      return currentTarget.value;
+    }
+  }
+
+  return "";
+}
+
 const INPUT_VARIANTS = {
   hero: {
     clearButton: "right-4 h-10 w-10",
@@ -66,7 +86,9 @@ export default function PublicSearchInput({
           "w-full text-[var(--psg-text-primary)] placeholder:font-normal placeholder:text-black/35",
           styles.input
         )}
-        onChange={onChange}
+        onChange={(nextValue) => {
+          onChange(getNormalizedInputValue(nextValue));
+        }}
         onFocus={onFocus}
         placeholder={placeholder}
         type="search"

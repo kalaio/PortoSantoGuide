@@ -22,8 +22,13 @@ function loadListingMap() {
 
 function MapLoadingFallback() {
   return (
-    <div className="mapViewport">
-      <div className="mapLoading" role="status" aria-live="polite" aria-label="Loading map">
+    <div className="relative h-full w-full bg-white">
+      <div
+        className="absolute inset-0 grid place-items-center bg-white text-sm text-gray-500"
+        role="status"
+        aria-live="polite"
+        aria-label="Loading map"
+      >
         Loading map...
       </div>
     </div>

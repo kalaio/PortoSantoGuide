@@ -70,6 +70,7 @@ function getMarkerOpeningState(listing: Listing): "open" | "closed" | null {
 type ListingMapProps = {
   listings: Listing[];
   hoveredListingId: string | null;
+  onReadyChange?: (isReady: boolean) => void;
   onSearchInArea?: (bounds: MapBounds) => void;
 };
 
@@ -154,7 +155,7 @@ function createMarkerEntry(
   };
 }
 
-export default function ListingMap({ listings, hoveredListingId, onSearchInArea }: ListingMapProps) {
+export default function ListingMap({ listings, hoveredListingId, onReadyChange, onSearchInArea }: ListingMapProps) {
   const listingsWithCoordinates = listings.filter(hasListingCoordinates);
   const mapNodeRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -197,6 +198,8 @@ export default function ListingMap({ listings, hoveredListingId, onSearchInArea 
     if (!mapNodeRef.current || mapRef.current) {
       return;
     }
+
+    onReadyChange?.(false);
 
     const initialListings = initialListingsRef.current ?? [];
     let mapOptions: maplibregl.MapOptions;
@@ -249,6 +252,7 @@ export default function ListingMap({ listings, hoveredListingId, onSearchInArea 
 
     const onMapReady = () => {
       setIsMapReady(true);
+      onReadyChange?.(true);
       if (!didRunInitialMarkerRefreshRef.current && shouldRunInitialMarkerRefresh()) {
         didRunInitialMarkerRefreshRef.current = true;
         markersRef.current.forEach((entry) => {
@@ -312,9 +316,10 @@ export default function ListingMap({ listings, hoveredListingId, onSearchInArea 
       didRunInitialMarkerRefreshRef.current = false;
       previousHoveredListingIdRef.current = null;
       setIsMapReady(false);
+      onReadyChange?.(false);
       setIsSearchInAreaVisible(false);
     };
-  }, [styleDefinition]);
+  }, [onReadyChange, styleDefinition]);
 
   useEffect(() => {
     const handleReset = () => {
@@ -423,9 +428,6 @@ export default function ListingMap({ listings, hoveredListingId, onSearchInArea 
   return (
     <div className="relative h-full w-full bg-white">
       <div ref={mapNodeRef} className={`h-full w-full transition-opacity duration-200 ${isMapReady ? "opacity-100" : "opacity-0"}`} />
-      {!isMapReady ? (
-        <div className="absolute inset-0 grid place-items-center bg-white text-sm text-gray-500">Loading map...</div>
-      ) : null}
       {isMapReady && isSearchInAreaVisible && onSearchInArea ? (
         <PublicFilterButton
           className="absolute left-1/2 top-5 z-10 -translate-x-1/2"

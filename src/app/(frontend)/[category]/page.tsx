@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import DirectoryView from "@/components/DirectoryView";
 import PublicBreadcrumbs from "@/components/frontend/PublicBreadcrumbs";
@@ -25,10 +24,10 @@ export default async function CategoryArchivePage({ params }: CategoryArchivePag
             { label: archive.category.label }
           ]}
         />
-        <h1 className="m-0 text-display-sm font-semibold tracking-[-0.04em] text-black max-[640px]:text-[2.5rem]">
+        <h1 className="m-0 text-display-sm font-semibold tracking-[-0.04em] text-black">
           {archive.category.label}
         </h1>
-        <p className="max-w-[46rem] text-xl text-black max-[640px]:text-lg">
+        <p className="max-w-[46rem] text-lg text-black">
           Discover curated places in Porto Santo, map-first and easy to explore.
         </p>
       </section>

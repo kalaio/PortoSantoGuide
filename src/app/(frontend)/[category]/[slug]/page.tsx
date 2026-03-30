@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import PublicBreadcrumbs from "@/components/frontend/PublicBreadcrumbs";
 import ListingMapLazy from "@/components/ListingMapLazy";
@@ -51,7 +50,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
             { label: listing.title }
           ]}
         />
-        <h1 className="m-0 text-display-sm font-semibold tracking-[-0.04em] text-black max-[640px]:text-[2.5rem]">
+        <h1 className="m-0 text-display-sm font-semibold tracking-[-0.04em] text-black">
           {listing.title}
         </h1>
       </section>
@@ -59,29 +58,29 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
       <section className="grid gap-5 lg:grid-cols-[minmax(18rem,22rem)_minmax(0,1fr)]">
         <article className="grid gap-5 rounded-[1.75rem] border border-black/10 bg-white p-6 max-[640px]:rounded-[1.5rem] max-[640px]:p-5">
           <div className="grid gap-2">
-            <h2 className="m-0 text-[2rem] font-semibold tracking-[-0.04em] text-black max-[640px]:text-[1.7rem]">About this place</h2>
+            <h2 className="m-0 text-display-xs font-semibold tracking-[-0.04em] text-black">About this place</h2>
             {listing.description ? (
-              <p className="text-lg leading-8 text-black max-[640px]:text-base max-[640px]:leading-7">{listing.description}</p>
+              <p className="text-lg text-black">{listing.description}</p>
             ) : (
-              <p className="text-base text-[color:var(--psg-text-secondary)]">No description available.</p>
+              <p className="text-md text-[color:var(--psg-text-secondary)]">No description available.</p>
             )}
           </div>
 
           <div className="grid gap-2">
-            <h2 className="m-0 text-[2rem] font-semibold tracking-[-0.04em] text-black max-[640px]:text-[1.7rem]">Categories</h2>
-            <p className="text-base text-[color:var(--psg-text-secondary)]">{listing.categories.map((category) => category.label).join(" · ")}</p>
+            <h2 className="m-0 text-display-xs font-semibold tracking-[-0.04em] text-black">Categories</h2>
+            <p className="text-md text-[color:var(--psg-text-secondary)]">{listing.categories.map((category) => category.label).join(" · ")}</p>
           </div>
 
           {detailsSummary ? (
             <div className="grid gap-2">
-              <h2 className="m-0 text-[2rem] font-semibold tracking-[-0.04em] text-black max-[640px]:text-[1.7rem]">Highlights</h2>
-              <p className="text-base text-[color:var(--psg-text-secondary)]">{detailsSummary}</p>
+              <h2 className="m-0 text-display-xs font-semibold tracking-[-0.04em] text-black">Highlights</h2>
+              <p className="text-md text-[color:var(--psg-text-secondary)]">{detailsSummary}</p>
             </div>
           ) : null}
 
           {foodOpeningHoursWeek ? (
             <div className="grid gap-2">
-              <h2 className="m-0 text-[2rem] font-semibold tracking-[-0.04em] text-black max-[640px]:text-[1.7rem]">Opening hours</h2>
+              <h2 className="m-0 text-display-xs font-semibold tracking-[-0.04em] text-black">Opening hours</h2>
               <div className="grid gap-4 rounded-3xl border border-black/10 bg-gray-50 p-5">
                 <p className={`m-0 font-semibold ${foodOpeningState === "closed" ? "text-brand-800" : "text-brand-700"}`}>
                   {foodOpeningStatus ?? "Closed"}
@@ -105,22 +104,22 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
           ) : null}
 
           <div className="grid gap-2">
-            <h2 className="m-0 text-[2rem] font-semibold tracking-[-0.04em] text-black max-[640px]:text-[1.7rem]">Details</h2>
+            <h2 className="m-0 text-display-xs font-semibold tracking-[-0.04em] text-black">Details</h2>
             {detailsEntries.length > 0 ? (
               detailsEntries.map((entry) => (
-                <p key={entry.label} className="text-base text-[color:var(--psg-text-secondary)]">
+                <p key={entry.label} className="text-md text-[color:var(--psg-text-secondary)]">
                   {entry.label}: {entry.value}
                 </p>
               ))
             ) : (
-              <p className="text-base text-[color:var(--psg-text-secondary)]">No extra details yet.</p>
+              <p className="text-md text-[color:var(--psg-text-secondary)]">No extra details yet.</p>
             )}
           </div>
 
           {hasLocationField && listing.latitude !== null && listing.longitude !== null ? (
             <div className="grid gap-2">
-              <h2 className="m-0 text-[2rem] font-semibold tracking-[-0.04em] text-black max-[640px]:text-[1.7rem]">Coordinates</h2>
-              <p className="text-base text-[color:var(--psg-text-secondary)]">
+              <h2 className="m-0 text-display-xs font-semibold tracking-[-0.04em] text-black">Coordinates</h2>
+              <p className="text-md text-[color:var(--psg-text-secondary)]">
                 {listing.latitude.toFixed(6)}, {listing.longitude.toFixed(6)}
               </p>
             </div>

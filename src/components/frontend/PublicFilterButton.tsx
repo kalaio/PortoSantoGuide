@@ -17,6 +17,13 @@ type PublicFilterButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "co
   variant?: PublicFilterButtonVariant;
 };
 
+const CONTROL_TEXT_LEADING = {
+  sm: "leading-5",
+  md: "leading-5",
+  lg: "leading-6",
+  xl: "leading-6"
+} as const;
+
 export default function PublicFilterButton({
   children,
   className,
@@ -33,9 +40,10 @@ export default function PublicFilterButton({
         <Button
           {...props}
           className={cx(
-          "rounded-full border-0 bg-[var(--psg-brand)] text-white !shadow-none ring-0 before:hidden *:data-icon:text-white hover:bg-[var(--psg-brand-hover)] hover:*:data-icon:text-white focus-visible:outline-[var(--psg-brand)]",
-           className
-         )}
+            "rounded-full border-0 bg-[var(--psg-brand)] text-white !shadow-none ring-0 before:hidden *:data-icon:text-white hover:bg-[var(--psg-brand-hover)] hover:*:data-icon:text-white focus-visible:outline-[var(--psg-brand)]",
+            CONTROL_TEXT_LEADING[size],
+            className
+          )}
         iconLeading={iconLeading}
         iconTrailing={iconTrailing}
         size={size}
@@ -52,6 +60,7 @@ export default function PublicFilterButton({
         {...props}
         className={cx(
           "rounded-full border-0 text-[color:var(--psg-text-secondary)] !shadow-none ring-0 before:hidden *:data-text:text-[color:var(--psg-text-secondary)] hover:bg-transparent hover:text-black hover:*:data-text:text-black focus-visible:outline-[var(--psg-brand)]",
+          CONTROL_TEXT_LEADING[size],
           className
         )}
         color="tertiary"
@@ -69,10 +78,11 @@ export default function PublicFilterButton({
     <Button
       {...props}
       className={cx(
-        "rounded-full border-0 bg-white text-black !shadow-none before:hidden *:data-text:text-black hover:*:data-text:text-black",
+        "rounded-full border-0 bg-white text-black !shadow-none before:hidden !font-medium *:data-text:font-medium *:data-text:text-black hover:*:data-text:text-black",
+        CONTROL_TEXT_LEADING[size],
         isActive
-          ? "ring-1 ring-[var(--psg-brand)] ring-inset hover:bg-white hover:text-black"
-          : "ring-1 ring-black/10 ring-inset hover:bg-white hover:text-black hover:ring-[var(--psg-brand)]",
+          ? "!font-semibold bg-white text-[var(--psg-brand)] ring-1 ring-[var(--psg-brand)] ring-inset *:data-text:font-semibold *:data-text:text-[var(--psg-brand)] hover:bg-white hover:text-[var(--psg-brand)] hover:*:data-text:text-[var(--psg-brand)]"
+          : "ring-1 ring-black/10 ring-inset hover:bg-black/[0.025] hover:text-black",
         className
       )}
       color="secondary"

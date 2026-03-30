@@ -63,6 +63,54 @@ body {
   --psg-border-subtle: rgb(0 0 0 / 0.12);
   --psg-text-primary: #000000;
   --psg-text-secondary: #616161;
+  --step--1: clamp(0.8889rem, 0.8843rem + 0.0202vw, 0.9rem);
+  --step-0: clamp(1rem, 0.9489rem + 0.2273vw, 1.125rem);
+  --step-1: clamp(1.125rem, 1.0099rem + 0.5114vw, 1.4063rem);
+  --step-2: clamp(1.2656rem, 1.0643rem + 0.8949vw, 1.7578rem);
+  --step-3: clamp(1.4238rem, 1.1074rem + 1.4063vw, 2.1973rem);
+  --step-4: clamp(1.6018rem, 1.1335rem + 2.0814vw, 2.7466rem);
+  --step-5: clamp(1.802rem, 1.1347rem + 2.9658vw, 3.4332rem);
+  --step-6: clamp(2.0273rem, 1.101rem + 4.1168vw, 4.2915rem);
+  --step-7: clamp(2.2807rem, 1.0192rem + 5.6068vw, 5.3644rem);
+
+  --text-xs: 0.75rem;
+  --text-sm: var(--step--1);
+  --text-base: var(--step-0);
+  --text-md: var(--step-0);
+  --text-lg: var(--step-1);
+  --text-xl: var(--step-2);
+  --text-2xl: var(--step-3);
+  --text-3xl: var(--step-4);
+  --text-4xl: var(--step-5);
+  --text-5xl: var(--step-6);
+  --text-6xl: var(--step-7);
+
+  --text-display-xs: var(--text-xl);
+  --text-display-sm: var(--text-2xl);
+  --text-display-md: var(--text-3xl);
+  --text-display-lg: var(--text-4xl);
+  --text-display-xl: var(--text-5xl);
+  --text-display-2xl: var(--text-6xl);
+
+  --text-xs--line-height: 1.45;
+  --text-sm--line-height: 1.5;
+  --text-base--line-height: 1.5;
+  --text-md--line-height: 1.5;
+  --text-lg--line-height: 1.45;
+  --text-xl--line-height: 1.4;
+  --text-2xl--line-height: 1.25;
+  --text-3xl--line-height: 1.15;
+  --text-4xl--line-height: 1.1;
+  --text-5xl--line-height: 1.05;
+  --text-6xl--line-height: 1;
+
+  --text-display-xs--line-height: var(--text-xl--line-height);
+  --text-display-sm--line-height: var(--text-2xl--line-height);
+  --text-display-md--line-height: var(--text-3xl--line-height);
+  --text-display-lg--line-height: var(--text-4xl--line-height);
+  --text-display-xl--line-height: var(--text-5xl--line-height);
+  --text-display-2xl--line-height: var(--text-6xl--line-height);
+
   color: var(--psg-text-primary);
 }
 

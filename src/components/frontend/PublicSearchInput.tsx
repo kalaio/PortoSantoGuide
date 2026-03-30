@@ -24,7 +24,7 @@ const INPUT_VARIANTS = {
   hero: {
     clearButton: "right-4 h-10 w-10",
     icon: "left-5 h-6 w-6 text-black",
-    input: "pl-15 pr-18 text-[1.375rem] leading-none placeholder:text-black/38",
+    input: "pl-15 pr-18 text-xl leading-none placeholder:text-black/38",
     wrapper: "h-[4.5rem] rounded-full border-[1.5px] border-white/70 bg-white/98"
   },
   header: {
@@ -36,7 +36,7 @@ const INPUT_VARIANTS = {
   mobile: {
     clearButton: "right-2.5 h-8 w-8",
     icon: "left-3.5 h-5 w-5 text-black",
-    input: "pl-12 pr-13 text-[1.0625rem] leading-none placeholder:text-black/34",
+    input: "pl-12 pr-13 text-md leading-none placeholder:text-black/34",
     wrapper: "h-12 rounded-full border-2 border-[var(--psg-brand)] bg-white"
   }
 } as const;

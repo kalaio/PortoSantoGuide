@@ -490,7 +490,7 @@ export default function GlobalSearch({ placeholder = "What are you looking for?"
                   suggestions.map((suggestion) => (
                     <button
                       key={suggestion.id}
-                      className="rounded-[1.25rem] px-4 py-3 text-left text-lg text-black transition hover:bg-[var(--psg-accent-surface-soft)] cursor-pointer"
+                      className="rounded-[1.25rem] px-4 py-3 text-left text-md text-black transition hover:bg-[var(--psg-accent-surface-soft)] cursor-pointer"
                       type="button"
                       onClick={() => runSuggestionQuery(suggestion)}
                     >
@@ -519,18 +519,18 @@ export default function GlobalSearch({ placeholder = "What are you looking for?"
                       onClick={(event) => handleResultClick(event, result)}
                       aria-disabled={isResultNavigationPending}
                     >
-                      <strong className="inline-flex items-center gap-2 text-xl font-semibold text-black">
+                      <strong className="inline-flex items-center gap-2 text-lg font-semibold text-black">
                         {result.title}
                         {pendingResultId === result.id ? <span className="routeSpinner" aria-hidden="true" /> : null}
                       </strong>
-                      <span className="text-base text-[color:var(--psg-text-secondary)]">{result.primaryCategory.label}</span>
+                      <span className="text-md text-[color:var(--psg-text-secondary)]">{result.primaryCategory.label}</span>
                       {resultDetails.openingStatus ? (
-                        <span className="text-base text-[color:var(--psg-text-secondary)]">{resultDetails.openingStatus}</span>
+                        <span className="text-md text-[color:var(--psg-text-secondary)]">{resultDetails.openingStatus}</span>
                       ) : null}
                       {resultDetails.summary ? (
-                        <span className="text-base leading-7 text-[color:var(--psg-text-secondary)]">{resultDetails.summary}</span>
+                        <span className="text-md text-[color:var(--psg-text-secondary)]">{resultDetails.summary}</span>
                       ) : null}
-                      <span className="text-base text-[color:var(--psg-text-secondary)]">
+                      <span className="text-md text-[color:var(--psg-text-secondary)]">
                         {result.categories
                           .map((item) => item.category.label)
                           .filter((label, indexValue, all) => all.indexOf(label) === indexValue)

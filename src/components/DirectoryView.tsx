@@ -218,15 +218,15 @@ export default function DirectoryView({ listings, categorySchemaFields }: Direct
                     onMouseEnter={() => setHoveredListingId(listing.id)}
                     onMouseLeave={() => setHoveredListingId(null)}
                   >
-                    <h3 className="m-0 text-[1.2rem] font-semibold text-black">{listing.title}</h3>
-                    <p className="mt-1 text-base text-[color:var(--psg-text-secondary)]">{listing.categories.map((item) => item.label).join(" · ")}</p>
-                    {detailsSummary ? <p className="mt-1 text-base leading-8 text-[color:var(--psg-text-secondary)]">{detailsSummary}</p> : null}
+                    <h3 className="m-0 text-lg font-semibold text-black">{listing.title}</h3>
+                    <p className="mt-1 text-md text-[color:var(--psg-text-secondary)]">{listing.categories.map((item) => item.label).join(" · ")}</p>
+                    {detailsSummary ? <p className="mt-1 text-md text-[color:var(--psg-text-secondary)]">{detailsSummary}</p> : null}
                   </article>
                 </Link>
               );
             })}
             {visibleListings.length === 0 ? (
-              <p className="rounded-[1.5rem] border border-dashed border-gray-300 bg-white px-5 py-8 text-base text-gray-500">
+              <p className="rounded-[1.5rem] border border-dashed border-gray-300 bg-white px-5 py-8 text-md text-gray-500">
                 No places in this area.
               </p>
             ) : null}

@@ -15,7 +15,7 @@ type PublicBreadcrumbsProps = {
 export default function PublicBreadcrumbs({ className, items }: PublicBreadcrumbsProps) {
   return (
     <nav aria-label="Breadcrumb" className={className}>
-      <ol className={cx("flex flex-wrap items-center gap-1.5 text-sm text-[color:var(--psg-text-secondary)] md:text-lg", className)}>
+      <ol className={cx("flex flex-wrap items-center gap-1.5 text-md text-[color:var(--psg-text-secondary)]", className)}>
         <li className="inline-flex items-center gap-1.5">
           <Link href="/" aria-label="Home" className="inline-flex items-center text-black/35 transition-colors hover:!text-black">
             <HomeLine aria-hidden="true" className="h-4 w-4 md:h-5 md:w-5" />

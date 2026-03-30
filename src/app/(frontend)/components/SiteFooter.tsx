@@ -11,7 +11,7 @@ export default function SiteFooter() {
         loading="eager"
         className="mx-auto mb-4 h-auto w-[90px]"
       />
-      <p className="m-0 text-xl max-[640px]:text-base">© 2026 Porto Santo Guide. All rights reserved.</p>
+      <p className="m-0 text-sm">© 2026 Porto Santo Guide. All rights reserved.</p>
     </footer>
   );
 }

@@ -166,7 +166,7 @@ export default function HomeHero({ slides, menuLinks }: HomeHeroProps) {
                 alt="Porto Santo Guide"
                 width={120}
                 height={104}
-                className="h-auto w-[120px] max-[640px]:w-[112px]"
+                className="h-auto w-[120px] max-[640px]:w-[96px]"
                 priority
               />
               <button

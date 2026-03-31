@@ -392,7 +392,7 @@ export default function GlobalSearch({ placeholder = "What are you looking for?"
       className={cn(
         isMobileOpen
           ? "fixed inset-0 z-[9999] flex max-w-none flex-col gap-4 bg-white px-4 py-4"
-          : cn("relative w-full", isHomeRoute ? "max-w-[50rem]" : "max-w-[35rem]")
+          : cn("relative w-full", isHomeRoute ? "max-w-[44rem]" : "max-w-[35rem]")
       )}
       ref={isMobileOpen ? undefined : rootRef}
     >

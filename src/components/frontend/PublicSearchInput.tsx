@@ -42,21 +42,24 @@ function getNormalizedInputValue(value: unknown) {
 
 const INPUT_VARIANTS = {
   hero: {
-    clearButton: "right-4 h-10 w-10",
-    icon: "left-5 h-6 w-6 text-black",
-    input: "pl-15 pr-18 text-xl leading-none placeholder:text-black/38",
-    wrapper: "h-[4.5rem] rounded-full border-[1.5px] border-white/70 bg-white/98"
+    clearButton: "right-3 h-8 w-8 md:right-4 md:h-10 md:w-10",
+    icon: "left-4 h-5 w-5 text-black md:left-5 md:h-6 md:w-6",
+    input: "pl-[2.875rem] pr-4 md:pl-14 md:pr-4 text-md leading-none placeholder:text-black/38",
+    inputWithClear: "pr-12 md:pr-16",
+    wrapper: "h-14 md:h-16 rounded-full border-[1.5px] border-white/70 bg-white/98"
   },
   header: {
     clearButton: "right-3 h-8 w-8",
     icon: "left-4 h-5 w-5 text-black",
-    input: "pl-13 pr-14 text-lg leading-none placeholder:text-black/36",
-    wrapper: "h-14 rounded-full border border-black/10 bg-white"
+    input: "pl-[2.875rem] pr-4 md:pl-12 text-md leading-none placeholder:text-black/36",
+    inputWithClear: "pr-12",
+    wrapper: "h-12 rounded-full border-transparent bg-white"
   },
   mobile: {
     clearButton: "right-2.5 h-8 w-8",
-    icon: "left-3.5 h-5 w-5 text-black",
-    input: "pl-12 pr-13 text-md leading-none placeholder:text-black/34",
+    icon: "left-4 h-5 w-5 text-black",
+    input: "pl-[2.875rem] pr-4 text-md leading-none placeholder:text-black/34",
+    inputWithClear: "pr-11",
     wrapper: "h-12 rounded-full border-2 border-[var(--psg-brand)] bg-white"
   }
 } as const;
@@ -77,27 +80,32 @@ export default function PublicSearchInput({
 
   return (
     <div className={cx("relative", className)}>
-      <InputBase
-        ref={inputRef}
-        aria-label={placeholder}
-        icon={SearchMd}
-        iconClassName={styles.icon}
-        inputClassName={cx(
-          "w-full text-[var(--psg-text-primary)] placeholder:font-normal placeholder:text-black/35",
-          styles.input
-        )}
-        onChange={(nextValue) => {
-          onChange(getNormalizedInputValue(nextValue));
-        }}
-        onFocus={onFocus}
-        placeholder={placeholder}
-        type="search"
-        value={value}
-        wrapperClassName={cx(
-          "w-full rounded-full border bg-white shadow-none transition-[border-color,box-shadow,background-color] duration-150 ease-out focus-within:border-[var(--psg-brand)] focus-within:ring-2 focus-within:ring-[color:rgb(7_109_112_/_0.16)]",
+      <div
+        className={cx(
+          "w-full rounded-full border !bg-white transition-[border-color,background-color] duration-150 ease-out focus-within:border-[var(--psg-brand)]",
           styles.wrapper
         )}
-      />
+      >
+        <InputBase
+          ref={inputRef}
+          aria-label={placeholder}
+          icon={SearchMd}
+          iconClassName={styles.icon}
+          inputClassName={cx(
+            "h-full w-full appearance-none border-0 bg-transparent text-[var(--psg-text-primary)] shadow-none ring-0 outline-hidden placeholder:font-normal placeholder:text-black/35 [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none [&::-webkit-search-results-button]:appearance-none [&::-webkit-search-results-decoration]:appearance-none",
+            styles.input,
+            showClear && styles.inputWithClear
+          )}
+          onChange={(nextValue) => {
+            onChange(getNormalizedInputValue(nextValue));
+          }}
+          onFocus={onFocus}
+          placeholder={placeholder}
+          type="search"
+          value={value}
+          wrapperClassName="h-full !rounded-full !border-0 !bg-transparent !shadow-none !ring-0 ring-transparent focus-within:!ring-0 focus-within:ring-transparent"
+        />
+      </div>
 
       {showClear ? (
         <button

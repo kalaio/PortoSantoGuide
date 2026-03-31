@@ -1,7 +1,6 @@
 "use client";
 
 import { type ReactNode, useCallback, useEffect, useId, useRef, useState } from "react";
-import PublicFilterButton from "@/components/frontend/PublicFilterButton";
 import { cn } from "@/lib/cn";
 
 type FilterPopoverRenderArgs<T> = {
@@ -40,7 +39,7 @@ export default function FilterPopover<T>({
   popoverClassName
 }: FilterPopoverProps<T>) {
   const popoverId = useId();
-  const buttonRef = useRef<HTMLDivElement | null>(null);
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
   const popoverRef = useRef<HTMLDivElement | null>(null);
   const getDraft = useCallback((source: T) => (cloneValue ? cloneValue(source) : source), [cloneValue]);
   const normalize = useCallback(
@@ -100,32 +99,35 @@ export default function FilterPopover<T>({
 
   return (
     <div className="relative">
-      <div ref={buttonRef}>
-        <PublicFilterButton
-          className="cursor-pointer"
-          isActive={isOpen || isActive}
-          onClick={() => {
-            if (isOpen) {
-              setDraftValue(getDraft(value));
-              setIsOpen(false);
-              return;
-            }
-
+      <button
+        type="button"
+        className={cn(
+          "inline-flex min-h-12 items-center rounded-full border bg-white px-5 text-[1.0625rem] font-medium text-gray-900 transition cursor-pointer",
+          isOpen || isActive
+            ? "border-gray-950 shadow-sm"
+            : "border-gray-200 hover:border-brand-200 hover:bg-gray-50"
+        )}
+        onClick={() => {
+          if (isOpen) {
             setDraftValue(getDraft(value));
-            setIsOpen(true);
-          }}
-          aria-expanded={isOpen}
-          aria-controls={popoverId}
-          size="md"
-        >
-          {buttonLabel}
-        </PublicFilterButton>
-      </div>
+            setIsOpen(false);
+            return;
+          }
+
+          setDraftValue(getDraft(value));
+          setIsOpen(true);
+        }}
+        ref={buttonRef}
+        aria-expanded={isOpen}
+        aria-controls={popoverId}
+      >
+        {buttonLabel}
+      </button>
 
       {isOpen ? (
         <div
           className={cn(
-            "absolute left-0 top-[calc(100%+0.75rem)] z-30 w-[min(22rem,calc(100vw-1.5rem))] rounded-[1.75rem] border border-black/8 bg-white p-4 shadow-[0_24px_60px_-28px_rgba(10,13,18,0.38)]",
+            "absolute left-0 top-[calc(100%+0.75rem)] z-30 w-[min(22rem,calc(100vw-1.5rem))] rounded-[1.75rem] border border-gray-200 bg-white p-4 shadow-[0_24px_60px_rgba(10,13,18,0.1)]",
             popoverClassName ?? ""
           )}
           id={popoverId}
@@ -140,32 +142,30 @@ export default function FilterPopover<T>({
           })}
 
           <div className="mt-4 flex items-center justify-between gap-3">
-            <PublicFilterButton
-              className="cursor-pointer"
+            <button
+              type="button"
+              className="text-base font-semibold text-gray-500 transition hover:text-gray-800 cursor-pointer"
               onClick={() => {
                 const nextValue = normalize(clearValue);
                 onApply(nextValue);
                 setDraftValue(getDraft(nextValue));
               }}
-              size="md"
-              variant="ghost"
             >
               {clearLabel}
-            </PublicFilterButton>
+            </button>
 
-            <PublicFilterButton
-              className="cursor-pointer"
+            <button
+              type="button"
+              className="inline-flex min-h-11 items-center justify-center rounded-full bg-brand-900 px-5 text-base font-semibold text-white transition hover:bg-brand-800 cursor-pointer"
               onClick={() => {
                 const nextValue = normalize(draftValue);
                 onApply(nextValue);
                 setDraftValue(getDraft(nextValue));
                 setIsOpen(false);
               }}
-              size="md"
-              variant="primary"
             >
               {applyLabel}
-            </PublicFilterButton>
+            </button>
           </div>
         </div>
       ) : null}

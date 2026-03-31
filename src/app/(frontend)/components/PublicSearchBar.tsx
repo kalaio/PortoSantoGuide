@@ -22,7 +22,7 @@ export default function PublicSearchBar({ menuLinks }: { menuLinks: PublicMenuLi
   }
 
   return (
-    <header className="sticky top-0 z-40 bg-[var(--psg-sand-shell)]">
+    <header className="sticky top-0 z-40 border-b border-secondary bg-primary/95">
       <div className="mx-auto grid h-20 w-full max-w-[1280px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 px-4 max-[900px]:h-16 max-[900px]:gap-3 md:px-5">
         <Link
           href="/"
@@ -50,7 +50,7 @@ export default function PublicSearchBar({ menuLinks }: { menuLinks: PublicMenuLi
 
         <button
           type="button"
-          className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border-0 bg-white text-[color:var(--psg-text-secondary)] transition hover:text-[var(--psg-brand)] cursor-pointer max-[900px]:h-10 max-[900px]:w-10"
+          className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-secondary text-gray-700 transition hover:bg-white cursor-pointer max-[900px]:h-10 max-[900px]:w-10"
           onClick={() => setIsMenuOpen(true)}
           aria-label="Open menu"
         >

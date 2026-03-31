@@ -52,68 +52,6 @@ body {
   margin: 0;
 }
 
-.publicTheme {
-  --psg-brand: #076d70;
-  --psg-brand-hover: #088488;
-  --psg-brand-secondary: #1a4660;
-  --psg-accent-surface: #d9bd9c;
-  --psg-accent-surface-soft: #f3e6d8;
-  --psg-accent-surface-strong: #ead5bd;
-  --psg-sand-shell: #efe2d3;
-  --psg-border-subtle: rgb(0 0 0 / 0.12);
-  --psg-text-primary: #000000;
-  --psg-text-secondary: #616161;
-  --step--1: clamp(0.8889rem, 0.8843rem + 0.0202vw, 0.9rem);
-  --step-0: clamp(1rem, 0.9489rem + 0.2273vw, 1.125rem);
-  --step-1: clamp(1.125rem, 1.0099rem + 0.5114vw, 1.4063rem);
-  --step-2: clamp(1.2656rem, 1.0643rem + 0.8949vw, 1.7578rem);
-  --step-3: clamp(1.4238rem, 1.1074rem + 1.4063vw, 2.1973rem);
-  --step-4: clamp(1.6018rem, 1.1335rem + 2.0814vw, 2.7466rem);
-  --step-5: clamp(1.802rem, 1.1347rem + 2.9658vw, 3.4332rem);
-  --step-6: clamp(2.0273rem, 1.101rem + 4.1168vw, 4.2915rem);
-  --step-7: clamp(2.2807rem, 1.0192rem + 5.6068vw, 5.3644rem);
-
-  --text-xs: 0.75rem;
-  --text-sm: var(--step--1);
-  --text-base: var(--step-0);
-  --text-md: var(--step-0);
-  --text-lg: var(--step-1);
-  --text-xl: var(--step-2);
-  --text-2xl: var(--step-3);
-  --text-3xl: var(--step-4);
-  --text-4xl: var(--step-5);
-  --text-5xl: var(--step-6);
-  --text-6xl: var(--step-7);
-
-  --text-display-xs: var(--text-xl);
-  --text-display-sm: var(--text-2xl);
-  --text-display-md: var(--text-3xl);
-  --text-display-lg: var(--text-4xl);
-  --text-display-xl: var(--text-5xl);
-  --text-display-2xl: var(--text-6xl);
-
-  --text-xs--line-height: 1.45;
-  --text-sm--line-height: 1.5;
-  --text-base--line-height: 1.5;
-  --text-md--line-height: 1.5;
-  --text-lg--line-height: 1.45;
-  --text-xl--line-height: 1.4;
-  --text-2xl--line-height: 1.25;
-  --text-3xl--line-height: 1.15;
-  --text-4xl--line-height: 1.1;
-  --text-5xl--line-height: 1.05;
-  --text-6xl--line-height: 1;
-
-  --text-display-xs--line-height: var(--text-xl--line-height);
-  --text-display-sm--line-height: var(--text-2xl--line-height);
-  --text-display-md--line-height: var(--text-3xl--line-height);
-  --text-display-lg--line-height: var(--text-4xl--line-height);
-  --text-display-xl--line-height: var(--text-5xl--line-height);
-  --text-display-2xl--line-height: var(--text-6xl--line-height);
-
-  color: var(--psg-text-primary);
-}
-
 body {
   margin: 0;
 }
@@ -238,7 +176,7 @@ input[type="search"]::-webkit-search-cancel-button {
 
 .listingMapPopupSummary {
   margin: 0.375rem 0 0;
-  color: var(--psg-brand);
+  color: rgb(14 147 132);
   font-size: 0.875rem;
   font-weight: 600;
   line-height: 1.45;
@@ -248,15 +186,18 @@ input[type="search"]::-webkit-search-cancel-button {
   position: relative;
   display: inline-grid;
   place-items: center;
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 2.5rem;
+  height: 2.5rem;
   padding: 0;
-  border: 1px solid rgb(255 255 255);
+  border: 2px solid rgb(255 255 255);
   border-radius: 9999px;
-  background: var(--psg-brand);
+  background: rgb(14 147 132);
   color: rgb(255 255 255);
+  box-shadow: 0px 12px 16px -4px rgba(10, 13, 18, 0.08), 0px 4px 6px -2px rgba(10, 13, 18, 0.03),
+    0px 2px 2px -1px rgba(10, 13, 18, 0.04);
   cursor: pointer;
-  transition: transform 160ms ease, background-color 160ms ease, color 160ms ease, border-color 160ms ease;
+  transition: transform 160ms ease, box-shadow 160ms ease, background-color 160ms ease, color 160ms ease,
+    border-color 160ms ease;
 }
 
 .listingMapMarker:hover,
@@ -264,8 +205,8 @@ input[type="search"]::-webkit-search-cancel-button {
 .listingMapMarker.isVisited {
   transform: translateY(-1px);
   background: rgb(255 255 255);
-  color: var(--psg-brand);
-  border-color: var(--psg-brand);
+  color: rgb(14 147 132);
+  border-color: rgb(14 147 132);
 }
 
 .listingMapMarkerIcon {

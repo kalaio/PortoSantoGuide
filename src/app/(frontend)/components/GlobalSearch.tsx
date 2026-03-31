@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft } from "@untitledui/icons";
+import { ArrowLeft, SearchMd, XClose } from "@untitledui/icons";
 import { usePathname, useRouter } from "next/navigation";
 import {
   type MouseEvent as ReactMouseEvent,
@@ -16,7 +16,6 @@ import { cn } from "@/lib/cn";
 import { getDetailsSummaryByFields, getFoodOpeningStatus, hasSchemaField } from "@/lib/listing-details";
 import type { ListingSchemaFieldSummary } from "@/types/listing";
 import { getListingPath } from "@/lib/listing-path";
-import PublicSearchInput from "@/components/frontend/PublicSearchInput";
 
 type SearchSuggestion = {
   id: string;
@@ -392,7 +391,7 @@ export default function GlobalSearch({ placeholder = "What are you looking for?"
       className={cn(
         isMobileOpen
           ? "fixed inset-0 z-[9999] flex max-w-none flex-col gap-4 bg-white px-4 py-4"
-          : cn("relative w-full", isHomeRoute ? "max-w-[44rem]" : "max-w-[35rem]")
+          : cn("relative w-full", isHomeRoute ? "max-w-[50rem]" : "max-w-[35rem]")
       )}
       ref={isMobileOpen ? undefined : rootRef}
     >
@@ -400,7 +399,7 @@ export default function GlobalSearch({ placeholder = "What are you looking for?"
         {isMobileOpen ? (
           <button
             type="button"
-            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-black/10 bg-white text-[color:var(--psg-text-secondary)] transition hover:border-[var(--psg-brand)] hover:text-[var(--psg-brand)] cursor-pointer"
+            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 transition hover:border-brand-300 hover:text-brand-700 cursor-pointer"
             onClick={closeMobileOverlay}
             aria-label="Close"
           >
@@ -408,73 +407,98 @@ export default function GlobalSearch({ placeholder = "What are you looking for?"
           </button>
         ) : null}
 
-        <PublicSearchInput
-          className="flex-1"
-          inputRef={inputRef}
-          isMobile={isMobileOpen}
-          onChange={(nextValue) => {
-            setQuery(nextValue);
-            setSearchQuery(nextValue);
-            const trimmed = nextValue.trim();
-            if (trimmed.length === 0) {
-              searchRequestRef.current += 1;
-              setResults([]);
-              setError("");
-              setLastCompletedQuery("");
-              setDisplayMode("suggestions");
-              openSuggestionsDropdown().catch(() => {
-                setSuggestions([]);
-                setError("Could not load suggestions.");
+        <div className="relative flex-1">
+          <SearchMd
+            className={cn(
+              "pointer-events-none absolute left-4 top-1/2 z-[1] h-5 w-5 -translate-y-1/2 text-gray-500",
+              isHomeRoute && !isMobileOpen && "h-6 w-6"
+            )}
+            aria-hidden="true"
+          />
+
+          <input
+            ref={inputRef}
+            className={cn(
+              "w-full rounded-full border bg-white pl-12 pr-12 text-base text-gray-900 outline-none transition placeholder:text-gray-400",
+              isHomeRoute && !isMobileOpen
+                ? "h-[4.5rem] border-white/70 text-lg"
+                : "h-14 border-white",
+              !isMobileOpen && "focus:border-brand-600 focus:ring-4 focus:ring-brand-100",
+              isMobileOpen && "h-12 border-brand-600 ring-4 ring-brand-50"
+            )}
+            placeholder={placeholder}
+            value={query}
+            onFocus={() => {
+              if (isMobileViewport()) {
+                setIsMobileOpen(true);
+              }
+
+              if (query.trim().length === 0) {
+                setDisplayMode("suggestions");
+                openSuggestionsDropdown().catch(() => {
+                  setSuggestions([]);
+                  setError("Could not load suggestions.");
+                  setIsOpen(true);
+                });
+                return;
+              }
+
+              if (displayMode === "results") {
                 setIsOpen(true);
-              });
-              return;
-            }
+              }
+            }}
+            onChange={(event) => {
+              const nextValue = event.target.value;
+              setQuery(nextValue);
+              setSearchQuery(nextValue);
+              const trimmed = nextValue.trim();
+              if (trimmed.length === 0) {
+                searchRequestRef.current += 1;
+                setResults([]);
+                setError("");
+                setLastCompletedQuery("");
+                setDisplayMode("suggestions");
+                openSuggestionsDropdown().catch(() => {
+                  setSuggestions([]);
+                  setError("Could not load suggestions.");
+                  setIsOpen(true);
+                });
+                return;
+              }
 
-            if (trimmed.length < MIN_SEARCH_CHARACTERS) {
-              searchRequestRef.current += 1;
+              if (trimmed.length < MIN_SEARCH_CHARACTERS) {
+                searchRequestRef.current += 1;
+                setError("");
+                setIsOpen(false);
+                return;
+              }
+
               setError("");
-              setIsOpen(false);
-              return;
-            }
-
-            setError("");
-            if (trimmed === lastCompletedQuery) {
-              setDisplayMode("results");
-              setIsOpen(true);
-            }
-          }}
-          onClear={clearQuery}
-          onFocus={() => {
-            if (isMobileViewport()) {
-              setIsMobileOpen(true);
-            }
-
-            if (query.trim().length === 0) {
-              setDisplayMode("suggestions");
-              openSuggestionsDropdown().catch(() => {
-                setSuggestions([]);
-                setError("Could not load suggestions.");
+              if (trimmed === lastCompletedQuery) {
+                setDisplayMode("results");
                 setIsOpen(true);
-              });
-              return;
-            }
+              }
+            }}
+          />
 
-            if (displayMode === "results") {
-              setIsOpen(true);
-            }
-          }}
-          placeholder={placeholder}
-          showClear={query.trim().length > 0}
-          value={query}
-          variant={isHomeRoute ? "hero" : "header"}
-        />
+          {query.trim().length > 0 ? (
+            <button
+              className="absolute right-3 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition hover:bg-gray-200 hover:text-gray-700 cursor-pointer"
+              type="button"
+              onClick={clearQuery}
+              aria-label="Clear search"
+            >
+              <XClose className="h-4 w-4" aria-hidden="true" />
+            </button>
+          ) : null}
+        </div>
       </div>
 
       {isOpen ? (
         <div
           key={isShowingResults ? `results-${searchVersion}-${resultsOpenVersion}` : "suggestions"}
           className={cn(
-            "overflow-hidden rounded-[2rem] border border-black/10 bg-white shadow-[0_28px_70px_-30px_rgba(10,13,18,0.35)]",
+            "overflow-hidden rounded-[1.75rem] border border-gray-200 bg-white shadow-[0_24px_60px_rgba(10,13,18,0.08)]",
             isMobileOpen ? "min-h-0" : "absolute left-0 right-0 top-[calc(100%+0.5rem)] z-50"
           )}
         >
@@ -483,14 +507,14 @@ export default function GlobalSearch({ placeholder = "What are you looking for?"
 
             {displayMode === "suggestions" ? (
               <div className="grid gap-1">
-                <p className="px-3 pb-2 pt-1 text-xs font-bold uppercase tracking-[0.14em] text-black">Suggestions</p>
+                <p className="px-2 pb-2 pt-1 text-xs font-bold uppercase tracking-[0.12em] text-gray-700">Suggestions</p>
                 {suggestions.length === 0 ? (
-                  <p className="px-2 py-2 text-sm text-[color:var(--psg-text-secondary)]">No suggestions yet.</p>
+                  <p className="px-2 py-2 text-sm text-gray-500">No suggestions yet.</p>
                 ) : (
                   suggestions.map((suggestion) => (
                     <button
                       key={suggestion.id}
-                      className="rounded-[1.25rem] px-4 py-3 text-left text-md text-black transition hover:bg-[var(--psg-accent-surface-soft)] cursor-pointer"
+                      className="rounded-2xl px-4 py-3 text-left text-lg text-gray-900 transition hover:bg-gray-100 cursor-pointer"
                       type="button"
                       onClick={() => runSuggestionQuery(suggestion)}
                     >
@@ -502,10 +526,10 @@ export default function GlobalSearch({ placeholder = "What are you looking for?"
             ) : (
               <div className="grid gap-1" aria-busy={isResultNavigationPending}>
                 {results.length === 0 && lastCompletedQuery.length > 0 ? (
-                  <p className="px-2 py-2 text-sm text-[color:var(--psg-text-secondary)]">No matching places.</p>
+                  <p className="px-2 py-2 text-sm text-gray-500">No matching places.</p>
                 ) : null}
 
-                {results.map((result) => {
+                {results.map((result, index) => {
                   const resultDetails = getSearchResultDetails(result);
 
                   return (
@@ -513,24 +537,24 @@ export default function GlobalSearch({ placeholder = "What are you looking for?"
                       key={result.id}
                       href={getListingPath(result)}
                       className={cn(
-                        "grid gap-1 rounded-[1.5rem] border border-transparent px-4 py-3 text-left transition hover:border-[color:var(--psg-accent-surface)] hover:bg-[var(--psg-accent-surface-soft)]",
+                        "grid gap-1 rounded-3xl border border-transparent px-4 py-3 text-left transition hover:border-gray-200 hover:bg-gray-50",
                         pendingResultId === result.id && "pointer-events-none opacity-75"
                       )}
                       onClick={(event) => handleResultClick(event, result)}
                       aria-disabled={isResultNavigationPending}
                     >
-                      <strong className="inline-flex items-center gap-2 text-lg font-semibold text-black">
+                      <strong className="inline-flex items-center gap-2 text-xl font-semibold text-gray-950">
                         {result.title}
                         {pendingResultId === result.id ? <span className="routeSpinner" aria-hidden="true" /> : null}
                       </strong>
-                      <span className="text-md text-[color:var(--psg-text-secondary)]">{result.primaryCategory.label}</span>
+                      <span className="text-base text-gray-500">{result.primaryCategory.label}</span>
                       {resultDetails.openingStatus ? (
-                        <span className="text-md text-[color:var(--psg-text-secondary)]">{resultDetails.openingStatus}</span>
+                        <span className="text-base text-gray-500">{resultDetails.openingStatus}</span>
                       ) : null}
                       {resultDetails.summary ? (
-                        <span className="text-md text-[color:var(--psg-text-secondary)]">{resultDetails.summary}</span>
+                        <span className="text-base leading-7 text-gray-500">{resultDetails.summary}</span>
                       ) : null}
-                      <span className="text-md text-[color:var(--psg-text-secondary)]">
+                      <span className="text-base text-gray-500">
                         {result.categories
                           .map((item) => item.category.label)
                           .filter((label, indexValue, all) => all.indexOf(label) === indexValue)

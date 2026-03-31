@@ -114,6 +114,48 @@ body {
   color: var(--psg-text-primary);
 }
 
+.publicTheme .homeHeroThumbnailScrollArea {
+  -ms-overflow-style: none;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.publicTheme .homeHeroThumbnailScrollArea::-webkit-scrollbar {
+  display: none;
+  height: 0;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .publicTheme .homeHeroThumbnailScrollArea {
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
+
+  .publicTheme .homeHeroThumbnailScrollArea:hover {
+    scrollbar-color: var(--color-gray-300) transparent;
+  }
+
+  .publicTheme .homeHeroThumbnailScrollArea::-webkit-scrollbar {
+    display: block;
+    height: 8px;
+  }
+
+  .publicTheme .homeHeroThumbnailScrollArea::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .publicTheme .homeHeroThumbnailScrollArea::-webkit-scrollbar-thumb {
+    border-radius: 9999px;
+    background: transparent;
+  }
+
+  .publicTheme .homeHeroThumbnailScrollArea:hover::-webkit-scrollbar-thumb {
+    background: var(--color-gray-300);
+  }
+}
+
 body {
   margin: 0;
 }

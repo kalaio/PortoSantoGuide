@@ -122,8 +122,8 @@ export default function HomeHero({ slides, menuLinks }: HomeHeroProps) {
         </div>
 
         <div className="homeHeroThumbnails absolute inset-x-0 bottom-0 z-[5] flex h-[60px] items-center bg-white/45 py-1.5">
-          <div className="mx-auto flex max-w-[1280px] justify-center px-2">
-            <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
+          <div className="flex w-full justify-start px-1.5 md:justify-center">
+            <div className="homeHeroThumbnailScrollArea flex w-max max-w-full gap-1.5 overflow-x-auto overflow-y-hidden">
               {usableSlides.map((slide, index) => {
                 const thumbSrc =
                   slide.mediaDesktopThumb ??

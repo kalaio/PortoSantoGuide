@@ -169,6 +169,7 @@ export default function AdminSidebar({ user }: { user: SidebarUser }) {
           <SidebarBrand variant={mobile ? "drawer" : "default"} />
           <Input
             aria-label="Search admin navigation"
+            id="admin-navigation-search"
             icon={SearchLg}
             placeholder="Search"
             size="md"

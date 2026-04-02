@@ -474,7 +474,7 @@ export default function GlobalSearch({ placeholder = "What are you looking for?"
         <div
           key={isShowingResults ? `results-${searchVersion}-${resultsOpenVersion}` : "suggestions"}
           className={cn(
-            "overflow-hidden rounded-[2rem] border border-black/10 bg-white shadow-[0_28px_70px_-30px_rgba(10,13,18,0.35)]",
+            "overflow-hidden rounded-[1.5rem] border border-black/10 bg-white shadow-[0_28px_70px_-30px_rgba(10,13,18,0.35)]",
             isMobileOpen ? "min-h-0" : "absolute left-0 right-0 top-[calc(100%+0.5rem)] z-50"
           )}
         >
@@ -482,7 +482,7 @@ export default function GlobalSearch({ placeholder = "What are you looking for?"
             {error ? <p className="px-2 py-2 text-sm text-error-600">{error}</p> : null}
 
             {displayMode === "suggestions" ? (
-              <div className="grid gap-1">
+              <div className="grid gap-0">
                 <p className="px-3 pb-2 pt-1 text-xs font-bold uppercase tracking-[0.14em] text-black">Suggestions</p>
                 {suggestions.length === 0 ? (
                   <p className="px-2 py-2 text-sm text-[color:var(--psg-text-secondary)]">No suggestions yet.</p>
@@ -490,7 +490,7 @@ export default function GlobalSearch({ placeholder = "What are you looking for?"
                   suggestions.map((suggestion) => (
                     <button
                       key={suggestion.id}
-                      className="rounded-[1.25rem] px-4 py-3 text-left text-md text-black transition hover:bg-[var(--psg-accent-surface-soft)] cursor-pointer"
+                      className="rounded-[1rem] px-4 py-3 text-left text-md text-black transition hover:bg-[var(--psg-accent-surface-soft)] cursor-pointer"
                       type="button"
                       onClick={() => runSuggestionQuery(suggestion)}
                     >
@@ -513,29 +513,23 @@ export default function GlobalSearch({ placeholder = "What are you looking for?"
                       key={result.id}
                       href={getListingPath(result)}
                       className={cn(
-                        "grid gap-1 rounded-[1.5rem] border border-transparent px-4 py-3 text-left transition hover:border-[color:var(--psg-accent-surface)] hover:bg-[var(--psg-accent-surface-soft)]",
+                        "grid gap-0 rounded-[1rem] border border-transparent px-4 py-3 text-left transition hover:border-[color:var(--psg-accent-surface)] hover:bg-[var(--psg-accent-surface-soft)]",
                         pendingResultId === result.id && "pointer-events-none opacity-75"
                       )}
                       onClick={(event) => handleResultClick(event, result)}
                       aria-disabled={isResultNavigationPending}
                     >
-                      <strong className="inline-flex items-center gap-2 text-lg font-semibold text-black">
+                      <strong className="inline-flex items-center gap-2 text-md font-semibold text-black">
                         {result.title}
                         {pendingResultId === result.id ? <span className="routeSpinner" aria-hidden="true" /> : null}
                       </strong>
-                      <span className="text-md text-[color:var(--psg-text-secondary)]">{result.primaryCategory.label}</span>
+                      <span className="text-sm text-[color:var(--psg-text-secondary)]">{result.primaryCategory.label}</span>
                       {resultDetails.openingStatus ? (
-                        <span className="text-md text-[color:var(--psg-text-secondary)]">{resultDetails.openingStatus}</span>
+                        <span className="text-sm text-[color:var(--psg-text-secondary)]">{resultDetails.openingStatus}</span>
                       ) : null}
                       {resultDetails.summary ? (
-                        <span className="text-md text-[color:var(--psg-text-secondary)]">{resultDetails.summary}</span>
+                        <span className="text-sm text-[color:var(--psg-text-secondary)]">{resultDetails.summary}</span>
                       ) : null}
-                      <span className="text-md text-[color:var(--psg-text-secondary)]">
-                        {result.categories
-                          .map((item) => item.category.label)
-                          .filter((label, indexValue, all) => all.indexOf(label) === indexValue)
-                          .join(" · ")}
-                      </span>
                     </Link>
                   );
                 })}

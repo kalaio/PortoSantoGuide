@@ -75,13 +75,6 @@ function getStatusLabel(status: AdminListingRow["status"]) {
   }
 }
 
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en-GB", {
-    dateStyle: "medium",
-    timeStyle: "short"
-  }).format(new Date(value));
-}
-
 export default function AdminListingsTable({
   listings,
   total,
@@ -187,12 +180,18 @@ export default function AdminListingsTable({
         <div className={ADMIN_TABLE_FILTERS_CLASS}>
           <TextInput
             aria-label="Search listings"
+            id="admin-listings-search"
             icon={SearchMd}
             placeholder="Search title, slug, section, or category"
             value={queryInput}
             onChange={setQueryInput}
           />
-          <SelectInput aria-label="Filter by category" value={filters.category} onChange={(event) => updateFilters({ category: event.target.value, page: 1 })}>
+          <SelectInput
+            aria-label="Filter by category"
+            id="admin-listings-category-filter"
+            value={filters.category}
+            onChange={(event) => updateFilters({ category: event.target.value, page: 1 })}
+          >
             <option value="all">All categories</option>
             {categoryOptions.map((category) => (
               <option key={category} value={category}>
@@ -200,7 +199,12 @@ export default function AdminListingsTable({
               </option>
             ))}
           </SelectInput>
-          <SelectInput aria-label="Filter by section" value={filters.section} onChange={(event) => updateFilters({ section: event.target.value, page: 1 })}>
+          <SelectInput
+            aria-label="Filter by section"
+            id="admin-listings-section-filter"
+            value={filters.section}
+            onChange={(event) => updateFilters({ section: event.target.value, page: 1 })}
+          >
             <option value="all">All sections</option>
             {sectionOptions.map((section) => (
               <option key={section} value={section}>
@@ -208,13 +212,23 @@ export default function AdminListingsTable({
               </option>
             ))}
           </SelectInput>
-          <SelectInput aria-label="Filter by status" value={filters.status} onChange={(event) => updateFilters({ status: event.target.value, page: 1 })}>
+          <SelectInput
+            aria-label="Filter by status"
+            id="admin-listings-status-filter"
+            value={filters.status}
+            onChange={(event) => updateFilters({ status: event.target.value, page: 1 })}
+          >
             <option value="all">All statuses</option>
             <option value="DRAFT">Draft</option>
             <option value="PUBLISHED">Published</option>
             <option value="ARCHIVED">Archived</option>
           </SelectInput>
-          <SelectInput aria-label="Rows per page" value={String(pageSize)} onChange={(event) => updateFilters({ pageSize: Number(event.target.value), page: 1 })}>
+          <SelectInput
+            aria-label="Rows per page"
+            id="admin-listings-page-size"
+            value={String(pageSize)}
+            onChange={(event) => updateFilters({ pageSize: Number(event.target.value), page: 1 })}
+          >
             {PAGE_SIZE_OPTIONS.map((option) => (
               <option key={option} value={option}>{`Show ${option}`}</option>
             ))}

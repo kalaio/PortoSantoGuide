@@ -63,17 +63,19 @@ body {
   --psg-border-subtle: rgb(0 0 0 / 0.12);
   --psg-text-primary: #000000;
   --psg-text-secondary: #616161;
-  --step--1: clamp(0.8889rem, 0.8843rem + 0.0202vw, 0.9rem);
+  --step--2: clamp(0.7813rem, 0.7938rem + -0.0161vw, 0.7901rem);
+  --step--1: clamp(0.8889rem, 0.869rem + 0.0884vw, 0.9375rem);
   --step-0: clamp(1rem, 0.9489rem + 0.2273vw, 1.125rem);
-  --step-1: clamp(1.125rem, 1.0099rem + 0.5114vw, 1.4063rem);
-  --step-2: clamp(1.2656rem, 1.0643rem + 0.8949vw, 1.7578rem);
-  --step-3: clamp(1.4238rem, 1.1074rem + 1.4063vw, 2.1973rem);
-  --step-4: clamp(1.6018rem, 1.1335rem + 2.0814vw, 2.7466rem);
-  --step-5: clamp(1.802rem, 1.1347rem + 2.9658vw, 3.4332rem);
-  --step-6: clamp(2.0273rem, 1.101rem + 4.1168vw, 4.2915rem);
-  --step-7: clamp(2.2807rem, 1.0192rem + 5.6068vw, 5.3644rem);
+  --step-1: clamp(1.125rem, 1.033rem + 0.4091vw, 1.35rem);
+  --step-2: clamp(1.2656rem, 1.1207rem + 0.6443vw, 1.62rem);
+  --step-3: clamp(1.4238rem, 1.211rem + 0.9458vw, 1.944rem);
+  --step-4: clamp(1.6018rem, 1.3028rem + 1.3291vw, 2.3328rem);
+  --step-5: clamp(1.802rem, 1.394rem + 1.8133vw, 2.7994rem);
+  --step-6: clamp(2.0273rem, 1.4824rem + 2.4217vw, 3.3592rem);
+  --step-7: clamp(2.2807rem, 1.5646rem + 3.1825vw, 4.0311rem);
+  --step-8: clamp(2.5658rem, 1.6365rem + 4.13vw, 4.8373rem);
 
-  --text-xs: 0.75rem;
+  --text-xs: var(--step--2);
   --text-sm: var(--step--1);
   --text-base: var(--step-0);
   --text-md: var(--step-0);
@@ -126,7 +128,7 @@ body {
   height: 0;
 }
 
-@media (hover: hover) and (pointer: fine) {
+@media (min-width: 768px) and (hover: hover) and (pointer: fine) {
   .publicTheme .homeHeroThumbnailScrollArea {
     scrollbar-gutter: stable;
     scrollbar-width: thin;
@@ -387,4 +389,10 @@ input[type="search"]::-webkit-search-cancel-button {
 
 body.mobileSearchOpen .homeHeroThumbnails {
   display: none !important;
+}
+
+@media (max-width: 900px) {
+  body.mobileMapMode .publicSearchBarRoot {
+    display: none !important;
+  }
 }

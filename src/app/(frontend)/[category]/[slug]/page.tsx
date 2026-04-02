@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import ExpandableDescription from "@/components/ExpandableDescription";
 import PublicBreadcrumbs from "@/components/frontend/PublicBreadcrumbs";
 import ListingMapLazy from "@/components/ListingMapLazy";
 import {
@@ -41,7 +42,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
     : null;
 
   return (
-    <main className="mx-auto w-full max-w-[1280px] px-4 py-6 md:px-5 md:py-10">
+    <main className="mx-auto w-full max-w-[1280px] px-4 pt-4 pb-6 md:px-5 md:pt-6 md:pb-10">
       <section className="mb-8 grid gap-2 max-[640px]:mb-6">
         <PublicBreadcrumbs
           items={[
@@ -60,9 +61,9 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
           <div className="grid gap-2">
             <h2 className="m-0 text-display-xs font-semibold tracking-[-0.04em] text-black">About this place</h2>
             {listing.description ? (
-              <p className="text-lg text-black">{listing.description}</p>
+              <ExpandableDescription text={listing.description} />
             ) : (
-              <p className="text-md text-[color:var(--psg-text-secondary)]">No description available.</p>
+              <p className="text-sm text-[color:var(--psg-text-secondary)]">No description available.</p>
             )}
           </div>
 

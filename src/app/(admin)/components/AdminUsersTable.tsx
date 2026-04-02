@@ -59,10 +59,6 @@ function getRoleTone(role: AdminUserRow["role"]) {
   }
 }
 
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
-}
-
 export default function AdminUsersTable({ users, total, page, pageSize, statusCounts, filters }: AdminUsersTableProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -125,10 +121,10 @@ export default function AdminUsersTable({ users, total, page, pageSize, statusCo
       <section className={ADMIN_TOOLBAR_PANEL_CLASS}>
         <div className={ADMIN_HEADER_ROW_DENSE_CLASS}><div><h2 className={ADMIN_SECTION_HEADING_CLASS}>Overview</h2></div><div className={ADMIN_METRICS_CLASS}><Badge>Total {statusCounts.total}</Badge><Badge tone="success">Active {statusCounts.active}</Badge><Badge>Inactive {statusCounts.inactive}</Badge></div></div>
         <div className={ADMIN_TABLE_FILTERS_COMPACT_CLASS}>
-          <TextInput aria-label="Search users" icon={SearchMd} placeholder="Search username or email" value={queryInput} onChange={setQueryInput} />
-          <SelectInput aria-label="Filter by role" value={filters.role} onChange={(event) => updateFilters({ role: event.target.value, page: 1 })}><option value="all">All roles</option><option value="ADMINISTRATOR">Administrators</option><option value="OWNER">Owners</option><option value="SUBSCRIBER">Subscribers</option></SelectInput>
-          <SelectInput aria-label="Filter by status" value={filters.status} onChange={(event) => updateFilters({ status: event.target.value, page: 1 })}><option value="all">All statuses</option><option value="active">Active</option><option value="inactive">Inactive</option></SelectInput>
-          <SelectInput aria-label="Rows per page" value={String(pageSize)} onChange={(event) => updateFilters({ pageSize: Number(event.target.value), page: 1 })}>{PAGE_SIZE_OPTIONS.map((option) => <option key={option} value={option}>{`Show ${option}`}</option>)}</SelectInput>
+          <TextInput id="admin-users-search" aria-label="Search users" icon={SearchMd} placeholder="Search username or email" value={queryInput} onChange={setQueryInput} />
+          <SelectInput id="admin-users-role-filter" aria-label="Filter by role" value={filters.role} onChange={(event) => updateFilters({ role: event.target.value, page: 1 })}><option value="all">All roles</option><option value="ADMINISTRATOR">Administrators</option><option value="OWNER">Owners</option><option value="SUBSCRIBER">Subscribers</option></SelectInput>
+          <SelectInput id="admin-users-status-filter" aria-label="Filter by status" value={filters.status} onChange={(event) => updateFilters({ status: event.target.value, page: 1 })}><option value="all">All statuses</option><option value="active">Active</option><option value="inactive">Inactive</option></SelectInput>
+          <SelectInput id="admin-users-page-size" aria-label="Rows per page" value={String(pageSize)} onChange={(event) => updateFilters({ pageSize: Number(event.target.value), page: 1 })}>{PAGE_SIZE_OPTIONS.map((option) => <option key={option} value={option}>{`Show ${option}`}</option>)}</SelectInput>
         </div>
       </section>
 

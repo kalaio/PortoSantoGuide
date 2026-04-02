@@ -43,10 +43,6 @@ const TABLE_COLUMNS = [
   { id: "updatedAt", label: "Updated", sortable: true }
 ] as const satisfies ReadonlyArray<{ id: string; label: string; sortable: boolean }>;
 
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
-}
-
 export default function AdminSchemasTable({ schemas, total, page, pageSize, statusCounts, filters }: AdminSchemasTableProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -107,10 +103,10 @@ export default function AdminSchemasTable({ schemas, total, page, pageSize, stat
       <section className={ADMIN_TOOLBAR_PANEL_CLASS}>
         <div className={ADMIN_HEADER_ROW_DENSE_CLASS}><div><h2 className={ADMIN_SECTION_HEADING_CLASS}>Overview</h2></div><div className={ADMIN_METRICS_CLASS}><Badge>Total {statusCounts.total}</Badge><Badge tone="success">Active {statusCounts.active}</Badge><Badge>Inactive {statusCounts.inactive}</Badge></div></div>
         <div className={ADMIN_TABLE_FILTERS_COMPACT_CLASS}>
-          <TextInput aria-label="Search schemas" icon={SearchMd} placeholder="Search label, slug, or description" value={queryInput} onChange={setQueryInput} />
-          <SelectInput aria-label="Filter by field setup" value={filters.frontendFilters} onChange={(event) => updateFilters({ frontendFilters: event.target.value, page: 1 })}><option value="all">All field setups</option><option value="enabled">With frontend filters</option><option value="disabled">Without frontend filters</option></SelectInput>
-          <SelectInput aria-label="Filter by status" value={filters.status} onChange={(event) => updateFilters({ status: event.target.value, page: 1 })}><option value="all">All statuses</option><option value="active">Active</option><option value="inactive">Inactive</option></SelectInput>
-          <SelectInput aria-label="Rows per page" value={String(pageSize)} onChange={(event) => updateFilters({ pageSize: Number(event.target.value), page: 1 })}>{PAGE_SIZE_OPTIONS.map((option) => <option key={option} value={option}>{`Show ${option}`}</option>)}</SelectInput>
+          <TextInput id="admin-schemas-search" aria-label="Search schemas" icon={SearchMd} placeholder="Search label, slug, or description" value={queryInput} onChange={setQueryInput} />
+          <SelectInput id="admin-schemas-field-setup-filter" aria-label="Filter by field setup" value={filters.frontendFilters} onChange={(event) => updateFilters({ frontendFilters: event.target.value, page: 1 })}><option value="all">All field setups</option><option value="enabled">With frontend filters</option><option value="disabled">Without frontend filters</option></SelectInput>
+          <SelectInput id="admin-schemas-status-filter" aria-label="Filter by status" value={filters.status} onChange={(event) => updateFilters({ status: event.target.value, page: 1 })}><option value="all">All statuses</option><option value="active">Active</option><option value="inactive">Inactive</option></SelectInput>
+          <SelectInput id="admin-schemas-page-size" aria-label="Rows per page" value={String(pageSize)} onChange={(event) => updateFilters({ pageSize: Number(event.target.value), page: 1 })}>{PAGE_SIZE_OPTIONS.map((option) => <option key={option} value={option}>{`Show ${option}`}</option>)}</SelectInput>
         </div>
       </section>
 

@@ -49,13 +49,6 @@ const TABLE_COLUMNS = [
   { id: "updatedAt", label: "Updated", sortable: true }
 ] as const satisfies ReadonlyArray<{ id: string; label: string; sortable: boolean }>;
 
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en-GB", {
-    dateStyle: "medium",
-    timeStyle: "short"
-  }).format(new Date(value));
-}
-
 export default function AdminSearchSuggestionsTable({
   suggestions,
   total,
@@ -148,17 +141,28 @@ export default function AdminSearchSuggestionsTable({
         <div className={ADMIN_TABLE_FILTERS_CLASS}>
           <TextInput
             aria-label="Search suggestions"
+            id="admin-search-suggestions-search"
             icon={SearchMd}
             placeholder="Search label or query"
             value={queryInput}
             onChange={setQueryInput}
           />
-          <SelectInput aria-label="Filter by status" value={filters.status} onChange={(event) => updateFilters({ status: event.target.value, page: 1 })}>
+          <SelectInput
+            aria-label="Filter by status"
+            id="admin-search-suggestions-status-filter"
+            value={filters.status}
+            onChange={(event) => updateFilters({ status: event.target.value, page: 1 })}
+          >
             <option value="all">All statuses</option>
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
           </SelectInput>
-          <SelectInput aria-label="Rows per page" value={String(pageSize)} onChange={(event) => updateFilters({ pageSize: Number(event.target.value), page: 1 })}>
+          <SelectInput
+            aria-label="Rows per page"
+            id="admin-search-suggestions-page-size"
+            value={String(pageSize)}
+            onChange={(event) => updateFilters({ pageSize: Number(event.target.value), page: 1 })}
+          >
             {PAGE_SIZE_OPTIONS.map((option) => (
               <option key={option} value={option}>{`Show ${option}`}</option>
             ))}

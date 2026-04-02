@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import ExpandableDescription from "@/components/ExpandableDescription";
 import ProjectIcon from "@/components/icons/ProjectIcon";
 import { getSectionSummaryBySlug } from "@/lib/listings";
 
@@ -11,12 +12,13 @@ export default async function WhereToEatPage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-[1280px] px-4 py-6 md:px-5 md:py-10">
+    <main className="mx-auto w-full max-w-[1280px] px-4 pt-4 pb-6 md:px-5 md:pt-6 md:pb-10">
       <section className="mb-8 grid gap-3 max-[640px]:mb-6">
         <h1 className="m-0 text-display-sm font-semibold tracking-[-0.04em] text-black">{section.label}</h1>
-        <p className="max-w-[44rem] text-lg text-black">
-          From traditional kitchens to quick bites, browse Porto Santo food spots by type.
-        </p>
+        <ExpandableDescription
+          className="max-w-[44rem]"
+          text="From traditional kitchens to quick bites, browse Porto Santo food spots by type."
+        />
       </section>
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">

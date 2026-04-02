@@ -22,8 +22,8 @@ export default function PublicSearchBar({ menuLinks }: { menuLinks: PublicMenuLi
   }
 
   return (
-    <header className="sticky top-0 z-40 bg-[var(--psg-sand-shell)]">
-      <div className="mx-auto grid h-20 w-full max-w-[1280px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 px-4 max-[900px]:h-16 max-[900px]:gap-3 md:px-5">
+    <header className="publicSearchBarRoot bg-[var(--psg-sand-shell)]">
+      <div className="mx-auto grid h-[72px] w-full max-w-[1280px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 px-4 max-[900px]:h-16 max-[900px]:gap-3 md:px-5">
         <Link
           href="/"
           className="inline-flex items-center"
@@ -40,7 +40,7 @@ export default function PublicSearchBar({ menuLinks }: { menuLinks: PublicMenuLi
             height={84}
             priority
             loading="eager"
-            className="block h-20 w-auto max-[900px]:h-16"
+            className="block h-[72px] w-auto max-[900px]:h-16"
           />
         </Link>
 
@@ -50,11 +50,11 @@ export default function PublicSearchBar({ menuLinks }: { menuLinks: PublicMenuLi
 
         <button
           type="button"
-          className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border-0 bg-white text-[color:var(--psg-text-secondary)] transition hover:text-[var(--psg-brand)] cursor-pointer max-[900px]:h-10 max-[900px]:w-10"
+          className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border-0 bg-transparent text-black transition hover:text-[var(--psg-brand)] cursor-pointer max-[900px]:h-11 max-[900px]:w-11"
           onClick={() => setIsMenuOpen(true)}
           aria-label="Open menu"
         >
-          <Menu02 className="h-5 w-5" aria-hidden="true" />
+          <Menu02 className="h-6 w-6 max-[900px]:h-5.5 max-[900px]:w-5.5" aria-hidden="true" />
         </button>
       </div>
 

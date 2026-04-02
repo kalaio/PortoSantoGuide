@@ -46,7 +46,7 @@ const INPUT_VARIANTS = {
     icon: "left-4 h-5 w-5 text-black md:left-5 md:h-6 md:w-6",
     input: "pl-[2.875rem] pr-4 md:pl-14 md:pr-4 text-md leading-none placeholder:text-black/38",
     inputWithClear: "pr-12 md:pr-16",
-    wrapper: "h-14 md:h-16 rounded-full border-[1.5px] border-white/70 bg-white/98"
+    wrapper: "h-14 md:h-16 rounded-full border-[1.5px] border-transparent bg-white"
   },
   header: {
     clearButton: "right-3 h-8 w-8",
@@ -82,7 +82,7 @@ export default function PublicSearchInput({
     <div className={cx("relative", className)}>
       <div
         className={cx(
-          "w-full rounded-full border !bg-white transition-[border-color,background-color] duration-150 ease-out focus-within:border-[var(--psg-brand)]",
+          "w-full rounded-full border !bg-white shadow-[inset_0_1px_2px_rgba(10,13,18,0.06)] transition-[border-color,background-color,box-shadow] duration-150 ease-out focus-within:border-[var(--psg-brand)] focus-within:shadow-[inset_0_1px_4px_rgba(10,13,18,0.14)]",
           styles.wrapper
         )}
       >

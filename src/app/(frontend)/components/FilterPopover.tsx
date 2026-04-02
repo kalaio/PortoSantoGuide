@@ -1,6 +1,7 @@
 "use client";
 
-import { type ReactNode, useCallback, useEffect, useId, useRef, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import PublicFilterButton from "@/components/frontend/PublicFilterButton";
 import { cn } from "@/lib/cn";
 
@@ -54,12 +55,41 @@ export default function FilterPopover<T>({
 
   const [isOpen, setIsOpen] = useState(false);
   const [draftValue, setDraftValue] = useState<T>(() => getDraft(value));
+  const [popoverPosition, setPopoverPosition] = useState({ left: 12, top: 12 });
+  const [isPositionReady, setIsPositionReady] = useState(false);
+
+  const updatePopoverPosition = useCallback(() => {
+    if (!buttonRef.current || !popoverRef.current) {
+      return false;
+    }
+
+    const buttonRect = buttonRef.current.getBoundingClientRect();
+    const popoverWidth = popoverRef.current.offsetWidth;
+    const maxLeft = Math.max(12, window.innerWidth - popoverWidth - 12);
+
+    setPopoverPosition({
+      left: Math.min(Math.max(12, buttonRect.left), maxLeft),
+      top: buttonRect.bottom + 12
+    });
+    setIsPositionReady(true);
+
+    return true;
+  }, []);
 
   useEffect(() => {
     if (!isOpen) {
       setDraftValue(getDraft(value));
     }
   }, [getDraft, isOpen, value]);
+
+  useLayoutEffect(() => {
+    if (!isOpen) {
+      setIsPositionReady(false);
+      return;
+    }
+
+    updatePopoverPosition();
+  }, [isOpen, updatePopoverPosition]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -91,12 +121,16 @@ export default function FilterPopover<T>({
 
     window.addEventListener("mousedown", handleClickOutside);
     window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("resize", updatePopoverPosition);
+    window.addEventListener("scroll", updatePopoverPosition, true);
 
     return () => {
       window.removeEventListener("mousedown", handleClickOutside);
       window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("resize", updatePopoverPosition);
+      window.removeEventListener("scroll", updatePopoverPosition, true);
     };
-  }, [draftValue, getDraft, isEqual, isOpen, normalize, onApply, value]);
+  }, [draftValue, getDraft, isEqual, isOpen, normalize, onApply, updatePopoverPosition, value]);
 
   return (
     <div className="relative">
@@ -107,11 +141,13 @@ export default function FilterPopover<T>({
           onClick={() => {
             if (isOpen) {
               setDraftValue(getDraft(value));
+              setIsPositionReady(false);
               setIsOpen(false);
               return;
             }
 
             setDraftValue(getDraft(value));
+            setIsPositionReady(false);
             setIsOpen(true);
           }}
           aria-expanded={isOpen}
@@ -122,53 +158,62 @@ export default function FilterPopover<T>({
         </PublicFilterButton>
       </div>
 
-      {isOpen ? (
-        <div
-          className={cn(
-            "absolute left-0 top-[calc(100%+0.75rem)] z-30 w-[min(22rem,calc(100vw-1.5rem))] rounded-[1.75rem] border border-black/8 bg-white p-4 shadow-[0_24px_60px_-28px_rgba(10,13,18,0.38)]",
-            popoverClassName ?? ""
-          )}
-          id={popoverId}
-          ref={popoverRef}
-        >
-          {children({
-            draftValue,
-            setDraftValue,
-            setDraftWith: (updater) => {
-              setDraftValue((previous) => updater(previous));
-            }
-          })}
-
-          <div className="mt-4 flex items-center justify-between gap-3">
-            <PublicFilterButton
-              className="cursor-pointer"
-              onClick={() => {
-                const nextValue = normalize(clearValue);
-                onApply(nextValue);
-                setDraftValue(getDraft(nextValue));
+      {isOpen && typeof document !== "undefined"
+        ? createPortal(
+            <div
+              className={cn(
+                "publicTheme fixed z-50 w-[min(22rem,calc(100vw-1.5rem))] rounded-[1.75rem] border border-black/8 bg-white p-4 shadow-[0_24px_60px_-28px_rgba(10,13,18,0.38)]",
+                popoverClassName ?? ""
+              )}
+              id={popoverId}
+              ref={popoverRef}
+              style={{
+                left: `${popoverPosition.left}px`,
+                top: `${popoverPosition.top}px`,
+                visibility: isPositionReady ? "visible" : "hidden"
               }}
-              size="md"
-              variant="ghost"
             >
-              {clearLabel}
-            </PublicFilterButton>
+              {children({
+                draftValue,
+                setDraftValue,
+                setDraftWith: (updater) => {
+                  setDraftValue((previous) => updater(previous));
+                }
+              })}
 
-            <PublicFilterButton
-              className="cursor-pointer"
-              onClick={() => {
-                const nextValue = normalize(draftValue);
-                onApply(nextValue);
-                setDraftValue(getDraft(nextValue));
-                setIsOpen(false);
-              }}
-              size="md"
-              variant="primary"
-            >
-              {applyLabel}
-            </PublicFilterButton>
-          </div>
-        </div>
-      ) : null}
+              <div className="mt-4 flex items-center justify-between gap-3">
+                <PublicFilterButton
+                  className="cursor-pointer"
+                  onClick={() => {
+                    const nextValue = normalize(clearValue);
+                    onApply(nextValue);
+                    setDraftValue(getDraft(nextValue));
+                  }}
+                  size="md"
+                  variant="ghost"
+                >
+                  {clearLabel}
+                </PublicFilterButton>
+
+                <PublicFilterButton
+                  className="cursor-pointer"
+                  onClick={() => {
+                    const nextValue = normalize(draftValue);
+                    onApply(nextValue);
+                    setDraftValue(getDraft(nextValue));
+                    setIsPositionReady(false);
+                    setIsOpen(false);
+                  }}
+                  size="md"
+                  variant="primary"
+                >
+                  {applyLabel}
+                </PublicFilterButton>
+              </div>
+            </div>,
+            document.body
+          )
+        : null}
     </div>
   );
 }

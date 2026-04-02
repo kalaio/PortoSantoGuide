@@ -58,13 +58,6 @@ const TABLE_COLUMNS = [
   { id: "updatedAt", label: "Updated", sortable: true }
 ] as const satisfies ReadonlyArray<{ id: string; label: string; sortable: boolean }>;
 
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en-GB", {
-    dateStyle: "medium",
-    timeStyle: "short"
-  }).format(new Date(value));
-}
-
 export default function AdminCategoriesTable({
   categories,
   total,
@@ -163,30 +156,51 @@ export default function AdminCategoriesTable({
         <div className={ADMIN_TABLE_FILTERS_CLASS}>
           <TextInput
             aria-label="Search categories"
+            id="admin-categories-search"
             icon={SearchMd}
             placeholder="Search label, slug, section, schema, or icon"
             value={queryInput}
             onChange={setQueryInput}
           />
-          <SelectInput aria-label="Filter by schema" value={filters.schema} onChange={(event) => updateFilters({ schema: event.target.value, page: 1 })}>
+          <SelectInput
+            aria-label="Filter by schema"
+            id="admin-categories-schema-filter"
+            value={filters.schema}
+            onChange={(event) => updateFilters({ schema: event.target.value, page: 1 })}
+          >
             <option value="all">All schemas</option>
             {hasUnassignedSchema ? <option value="none">No schema</option> : null}
             {schemaOptions.map((schema) => (
               <option key={schema.value} value={schema.value}>{schema.label}</option>
             ))}
           </SelectInput>
-          <SelectInput aria-label="Filter by section" value={filters.section} onChange={(event) => updateFilters({ section: event.target.value, page: 1 })}>
+          <SelectInput
+            aria-label="Filter by section"
+            id="admin-categories-section-filter"
+            value={filters.section}
+            onChange={(event) => updateFilters({ section: event.target.value, page: 1 })}
+          >
             <option value="all">All sections</option>
             {sectionOptions.map((section) => (
               <option key={section.value} value={section.value}>{section.label}</option>
             ))}
           </SelectInput>
-          <SelectInput aria-label="Filter by status" value={filters.status} onChange={(event) => updateFilters({ status: event.target.value, page: 1 })}>
+          <SelectInput
+            aria-label="Filter by status"
+            id="admin-categories-status-filter"
+            value={filters.status}
+            onChange={(event) => updateFilters({ status: event.target.value, page: 1 })}
+          >
             <option value="all">All statuses</option>
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
           </SelectInput>
-          <SelectInput aria-label="Rows per page" value={String(pageSize)} onChange={(event) => updateFilters({ pageSize: Number(event.target.value), page: 1 })}>
+          <SelectInput
+            aria-label="Rows per page"
+            id="admin-categories-page-size"
+            value={String(pageSize)}
+            onChange={(event) => updateFilters({ pageSize: Number(event.target.value), page: 1 })}
+          >
             {PAGE_SIZE_OPTIONS.map((option) => (
               <option key={option} value={option}>{`Show ${option}`}</option>
             ))}

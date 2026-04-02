@@ -114,7 +114,7 @@ export default function HomeHero({ slides, menuLinks }: HomeHeroProps) {
 
   return (
     <section className="relative bg-gray-100 text-white">
-      <div className="relative flex min-h-[95svh]">
+      <div className="relative flex min-h-[90svh]">
 <div className="absolute inset-0 overflow-hidden bg-white">
           {renderSlideLayer(previousSlide, "previous")}
           {renderSlideLayer(activeSlide, "active")}
@@ -166,12 +166,12 @@ export default function HomeHero({ slides, menuLinks }: HomeHeroProps) {
                 alt="Porto Santo Guide"
                 width={120}
                 height={104}
-                className="h-auto w-[120px] max-[640px]:w-[96px]"
+                className="h-auto w-[108px] max-[640px]:w-[88px]"
                 priority
               />
               <button
                 type="button"
-                className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-white/90 text-gray-700 backdrop-blur-sm transition hover:bg-white cursor-pointer max-[640px]:h-12 max-[640px]:w-12"
+                className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-white/90 text-gray-700 backdrop-blur-sm transition hover:bg-white cursor-pointer max-[640px]:h-10 max-[640px]:w-10"
                 onClick={() => setIsMenuOpen(true)}
                 aria-label="Open menu"
               >
@@ -180,7 +180,7 @@ export default function HomeHero({ slides, menuLinks }: HomeHeroProps) {
             </div>
 
             <div className="my-auto flex max-w-[50rem] flex-col gap-6 py-12 max-[640px]:gap-5 max-[640px]:py-10 pointer-events-auto">
-              <h1 className="m-0 max-w-[14ch] text-5xl font-semibold leading-[0.95] tracking-[-0.05em] text-white">
+              <h1 className="m-0 max-w-[14ch] text-5xl font-semibold tracking-[-0.05em] text-white">
                 We are the
                 <br className="max-[640px]:hidden" />{" "}
                 local specialists

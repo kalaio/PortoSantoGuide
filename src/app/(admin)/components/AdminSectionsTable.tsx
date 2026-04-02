@@ -44,13 +44,6 @@ const TABLE_COLUMNS = [
   { id: "updatedAt", label: "Updated", sortable: true }
 ] as const satisfies ReadonlyArray<{ id: string; label: string; sortable: boolean }>;
 
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en-GB", {
-    dateStyle: "medium",
-    timeStyle: "short"
-  }).format(new Date(value));
-}
-
 export default function AdminSectionsTable({ sections, total, page, pageSize, statusCounts, filters }: AdminSectionsTableProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -133,17 +126,28 @@ export default function AdminSectionsTable({ sections, total, page, pageSize, st
         <div className={ADMIN_TABLE_FILTERS_CLASS}>
           <TextInput
             aria-label="Search sections"
+            id="admin-sections-search"
             icon={SearchMd}
             placeholder="Search label or slug"
             value={queryInput}
             onChange={setQueryInput}
           />
-          <SelectInput aria-label="Filter by status" value={filters.status} onChange={(event) => updateFilters({ status: event.target.value, page: 1 })}>
+          <SelectInput
+            aria-label="Filter by status"
+            id="admin-sections-status-filter"
+            value={filters.status}
+            onChange={(event) => updateFilters({ status: event.target.value, page: 1 })}
+          >
             <option value="all">All statuses</option>
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
           </SelectInput>
-          <SelectInput aria-label="Rows per page" value={String(pageSize)} onChange={(event) => updateFilters({ pageSize: Number(event.target.value), page: 1 })}>
+          <SelectInput
+            aria-label="Rows per page"
+            id="admin-sections-page-size"
+            value={String(pageSize)}
+            onChange={(event) => updateFilters({ pageSize: Number(event.target.value), page: 1 })}
+          >
             {PAGE_SIZE_OPTIONS.map((option) => (
               <option key={option} value={option}>{`Show ${option}`}</option>
             ))}

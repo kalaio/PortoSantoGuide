@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "next-env.d.ts",
+    "src/**/*.ts",
+    "src/**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules",
+    ".next",
+    "src/components/application/**/*",
+    "src/components/base/**/*",
+    "src/components/foundations/**/*",
+    "src/components/marketing/**/*",
+    "src/components/shared-assets/**/*"
+  ]
+}

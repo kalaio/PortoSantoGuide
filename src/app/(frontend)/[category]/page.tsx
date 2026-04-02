@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
-import DirectoryView from "@/components/DirectoryView";
-import PublicBreadcrumbs from "@/components/frontend/PublicBreadcrumbs";
+import DirectoryBrowse from "@/components/DirectoryBrowse";
 import { getListingsByCategorySlug } from "@/lib/listings";
 
 type CategoryArchivePageProps = {
@@ -16,26 +15,15 @@ export default async function CategoryArchivePage({ params }: CategoryArchivePag
   }
 
   return (
-    <main className="mx-auto w-full max-w-[1280px] px-4 py-6 md:px-5 md:py-10">
-      <section className="mb-8 grid gap-3 max-[640px]:mb-6">
-        <PublicBreadcrumbs
-          items={[
-            { href: `/${archive.category.sectionSlug}`, label: archive.category.sectionLabel },
-            { label: archive.category.label }
-          ]}
-        />
-        <h1 className="m-0 text-display-sm font-semibold tracking-[-0.04em] text-black">
-          {archive.category.label}
-        </h1>
-        <p className="max-w-[46rem] text-lg text-black">
-          Discover curated places in Porto Santo, map-first and easy to explore.
-        </p>
-      </section>
-
-      <DirectoryView
-        listings={archive.listings}
-        categorySchemaFields={archive.category.schema?.fields ?? []}
-      />
-    </main>
+    <DirectoryBrowse
+      breadcrumbs={[
+        { href: `/${archive.category.sectionSlug}`, label: archive.category.sectionLabel },
+        { label: archive.category.label }
+      ]}
+      categorySchemaFields={archive.category.schema?.fields ?? []}
+      description="Discover curated places in Porto Santo, map-first and easy to explore."
+      listings={archive.listings}
+      title={archive.category.label}
+    />
   );
 }

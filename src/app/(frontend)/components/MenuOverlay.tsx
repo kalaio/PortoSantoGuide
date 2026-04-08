@@ -161,7 +161,7 @@ export default function MenuOverlay({ isOpen, onClose, menuLinks }: Props) {
               key={link.href}
               href={link.href}
               className={cn(
-                "flex min-h-[4rem] items-center justify-between rounded-3xl border border-gray-200 bg-white px-5 text-lg font-semibold text-brand-900 transition hover:border-brand-200 hover:bg-gray-25",
+                "flex min-h-[4rem] items-center justify-between rounded-3xl border border-gray-200 bg-white px-5 text-[1.125rem] font-semibold text-brand-900 transition hover:border-brand-200 hover:bg-gray-25",
                 isPending && "pointer-events-none border-gray-200 bg-gray-50"
               )}
               onClick={(event) => handleLinkClick(event, link.href)}

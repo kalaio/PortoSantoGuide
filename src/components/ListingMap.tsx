@@ -1,9 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { RefreshCw05 } from "@untitledui/icons";
 import maplibregl from "maplibre-gl";
-import PublicFilterButton from "@/components/frontend/PublicFilterButton";
 import { getDetailsSummaryByFields, getFoodOpeningState, hasSchemaField } from "@/lib/listing-details";
 import { renderUiIconSvg } from "@/lib/ui-icons";
 import type { Listing } from "@/types/listing";
@@ -70,7 +68,6 @@ function getMarkerOpeningState(listing: Listing): "open" | "closed" | null {
 type ListingMapProps = {
   listings: Listing[];
   hoveredListingId: string | null;
-  onReadyChange?: (isReady: boolean) => void;
   onSearchInArea?: (bounds: MapBounds) => void;
 };
 
@@ -155,7 +152,7 @@ function createMarkerEntry(
   };
 }
 
-export default function ListingMap({ listings, hoveredListingId, onReadyChange, onSearchInArea }: ListingMapProps) {
+export default function ListingMap({ listings, hoveredListingId, onSearchInArea }: ListingMapProps) {
   const listingsWithCoordinates = listings.filter(hasListingCoordinates);
   const mapNodeRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -198,8 +195,6 @@ export default function ListingMap({ listings, hoveredListingId, onReadyChange, 
     if (!mapNodeRef.current || mapRef.current) {
       return;
     }
-
-    onReadyChange?.(false);
 
     const initialListings = initialListingsRef.current ?? [];
     let mapOptions: maplibregl.MapOptions;
@@ -252,7 +247,6 @@ export default function ListingMap({ listings, hoveredListingId, onReadyChange, 
 
     const onMapReady = () => {
       setIsMapReady(true);
-      onReadyChange?.(true);
       if (!didRunInitialMarkerRefreshRef.current && shouldRunInitialMarkerRefresh()) {
         didRunInitialMarkerRefreshRef.current = true;
         markersRef.current.forEach((entry) => {
@@ -316,10 +310,9 @@ export default function ListingMap({ listings, hoveredListingId, onReadyChange, 
       didRunInitialMarkerRefreshRef.current = false;
       previousHoveredListingIdRef.current = null;
       setIsMapReady(false);
-      onReadyChange?.(false);
       setIsSearchInAreaVisible(false);
     };
-  }, [onReadyChange, styleDefinition]);
+  }, [styleDefinition]);
 
   useEffect(() => {
     const handleReset = () => {
@@ -428,10 +421,13 @@ export default function ListingMap({ listings, hoveredListingId, onReadyChange, 
   return (
     <div className="relative h-full w-full bg-white">
       <div ref={mapNodeRef} className={`h-full w-full transition-opacity duration-200 ${isMapReady ? "opacity-100" : "opacity-0"}`} />
+      {!isMapReady ? (
+        <div className="absolute inset-0 grid place-items-center bg-white text-sm text-gray-500">Loading map...</div>
+      ) : null}
       {isMapReady && isSearchInAreaVisible && onSearchInArea ? (
-        <PublicFilterButton
-          className="absolute left-1/2 top-5 z-10 -translate-x-1/2"
-          iconLeading={RefreshCw05}
+        <button
+          className="absolute left-1/2 top-5 z-10 inline-flex -translate-x-1/2 items-center justify-center rounded-full bg-brand-900 px-6 py-3 text-base font-semibold text-white shadow-[0_20px_40px_rgba(10,13,18,0.12)] transition hover:bg-brand-800"
+          type="button"
           onClick={() => {
             if (!pendingBoundsRef.current || !onSearchInArea) {
               return;
@@ -439,11 +435,9 @@ export default function ListingMap({ listings, hoveredListingId, onReadyChange, 
             setIsSearchInAreaVisible(false);
             onSearchInArea(pendingBoundsRef.current);
           }}
-          size="md"
-          variant="primary"
         >
           Search in this area
-        </PublicFilterButton>
+        </button>
       ) : null}
     </div>
   );

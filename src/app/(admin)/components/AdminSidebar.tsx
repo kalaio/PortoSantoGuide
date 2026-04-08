@@ -164,7 +164,7 @@ export default function AdminSidebar({ user }: { user: SidebarUser }) {
 
   function renderContent({ mobile = false }: { mobile?: boolean } = {}) {
     return (
-      <aside className="flex h-full min-h-screen w-full max-w-full flex-col border-secondary bg-primary pt-0 shadow-xs md:border-r lg:h-screen lg:min-h-0 lg:bg-[var(--admin-surface)] lg:backdrop-blur-[18px]">
+      <aside className="flex h-full min-h-screen w-full max-w-full flex-col border-secondary bg-primary pt-0 shadow-xs md:border-r lg:h-screen lg:min-h-0 lg:bg-white/95">
         <div className="flex flex-col gap-4 px-4 lg:px-5">
           <SidebarBrand variant={mobile ? "drawer" : "default"} />
           <Input

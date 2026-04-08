@@ -102,6 +102,9 @@ Admin routes are protected with a signed HttpOnly session cookie.
 Required environment variables:
 - `ADMIN_SESSION_SECRET` (minimum 32 characters)
 
+Optional environment variables:
+- `ALLOWED_ORIGINS` - comma-separated allowlist for state-changing admin/API requests when accessing the app through multiple origins (example: `http://localhost:3000,http://192.168.1.50:3000`)
+
 Login route:
 - `http://localhost:3000/admin/login`
 

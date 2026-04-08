@@ -50,6 +50,7 @@ body {
 
 body {
   margin: 0;
+  background-color: #ffffff;
 }
 
 .publicTheme {
@@ -59,7 +60,7 @@ body {
   --psg-accent-surface: #d9bd9c;
   --psg-accent-surface-soft: #f3e6d8;
   --psg-accent-surface-strong: #ead5bd;
-  --psg-sand-shell: #efe2d3;
+  --psg-sand-shell: #efe0d2;
   --psg-border-subtle: rgb(0 0 0 / 0.12);
   --psg-text-primary: #000000;
   --psg-text-secondary: #616161;

@@ -32,11 +32,13 @@ type AdminListingsTableProps = {
   };
   sectionOptions: string[];
   categoryOptions: string[];
+  ownerOptions: string[];
   filters: {
     query: string;
     status: string;
     section: string;
     category: string;
+    owner: string;
     sort: AdminListingsSortField;
     dir: AdminListingsSortDirection;
   };
@@ -50,6 +52,7 @@ const TABLE_COLUMNS = [
   { id: "section", label: "Section", sortable: false },
   { id: "primaryCategory", label: "Primary Category", sortable: false },
   { id: "moreCategories", label: "More Categories", sortable: false },
+  { id: "ownerUsername", label: "Utilizador", sortable: true },
   { id: "updatedAt", label: "Updated", sortable: true },
 ] as const satisfies ReadonlyArray<{ id: string; label: string; sortable: boolean }>;
 
@@ -83,6 +86,7 @@ export default function AdminListingsTable({
   statusCounts,
   sectionOptions,
   categoryOptions,
+  ownerOptions,
   filters
 }: AdminListingsTableProps) {
   const router = useRouter();
@@ -108,6 +112,7 @@ export default function AdminListingsTable({
       const nextStatus = next.status ?? filters.status;
       const nextSection = next.section ?? filters.section;
       const nextCategory = next.category ?? filters.category;
+      const nextOwner = next.owner ?? filters.owner;
       const nextSort = next.sort ?? filters.sort;
       const nextDir = next.dir ?? filters.dir;
 
@@ -121,6 +126,8 @@ export default function AdminListingsTable({
       else params.delete("section");
       if (nextCategory !== "all") params.set("category", nextCategory);
       else params.delete("category");
+      if (nextOwner !== "all") params.set("owner", nextOwner);
+      else params.delete("owner");
       if (nextSort !== "updatedAt") params.set("sort", nextSort);
       else params.delete("sort");
       if (nextDir !== "descending") params.set("dir", nextDir);
@@ -136,7 +143,7 @@ export default function AdminListingsTable({
         });
       });
     },
-    [filters.category, filters.dir, filters.section, filters.sort, filters.status, pageSize, pathname, queryInput, router, searchParams]
+    [filters.category, filters.dir, filters.owner, filters.section, filters.sort, filters.status, pageSize, pathname, queryInput, router, searchParams]
   );
 
   useEffect(() => {
@@ -224,6 +231,19 @@ export default function AdminListingsTable({
             <option value="ARCHIVED">Archived</option>
           </SelectInput>
           <SelectInput
+            aria-label="Filter by owner"
+            id="admin-listings-owner-filter"
+            value={filters.owner}
+            onChange={(event) => updateFilters({ owner: event.target.value, page: 1 })}
+          >
+            <option value="all">All users</option>
+            {ownerOptions.map((owner) => (
+              <option key={owner} value={owner}>
+                {owner}
+              </option>
+            ))}
+          </SelectInput>
+          <SelectInput
             aria-label="Rows per page"
             id="admin-listings-page-size"
             value={String(pageSize)}
@@ -239,7 +259,7 @@ export default function AdminListingsTable({
       <section className={ADMIN_TABLE_PANEL_CLASS}>
         <Table
           aria-label="Listings"
-          className="min-w-[900px]"
+          className="min-w-[1120px]"
           sortDescriptor={{ column: filters.sort, direction: filters.dir }}
           onSortChange={handleSortChange}
           onRowAction={(key) => router.push(`/admin/listings/${String(key)}/edit`)}
@@ -279,6 +299,7 @@ export default function AdminListingsTable({
                   <Table.Cell>
                     <span className={ADMIN_TABLE_CLAMP_CLASS}>{additionalCategories.length > 0 ? additionalCategories.join(", ") : "-"}</span>
                   </Table.Cell>
+                  <Table.Cell>{listing.ownerUsername}</Table.Cell>
                   <Table.Cell>{listing.updatedAtLabel}</Table.Cell>
                 </Table.Row>
               );

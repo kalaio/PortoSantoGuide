@@ -22,7 +22,7 @@ export const ADMIN_PANEL_CLASS =
 
 export const ADMIN_LAYOUT_GRID_CLASS = "grid gap-4 [grid-template-columns:minmax(240px,320px)_minmax(0,1fr)] max-[960px]:grid-cols-1";
 
-export const ADMIN_TOOLBAR_PANEL_CLASS = `${ADMIN_PANEL_CLASS} grid gap-[18px]`;
+export const ADMIN_TOOLBAR_PANEL_CLASS = joinAdminClassNames(ADMIN_PANEL_CLASS, "grid gap-[18px]", "backdrop-blur-none");
 
 export const ADMIN_SECTION_HEADING_CLASS = "m-0 !text-xl text-primary";
 
@@ -43,7 +43,7 @@ export const ADMIN_TABLE_FILTERS_CLASS =
 export const ADMIN_TABLE_FILTERS_COMPACT_CLASS =
   "grid gap-3 [grid-template-columns:minmax(240px,2fr)_repeat(2,minmax(0,1fr))_minmax(140px,0.7fr)] max-[960px]:grid-cols-1";
 
-export const ADMIN_TABLE_PANEL_CLASS = `${ADMIN_PANEL_CLASS} grid gap-[18px]`;
+export const ADMIN_TABLE_PANEL_CLASS = joinAdminClassNames(ADMIN_PANEL_CLASS, "grid gap-[18px]", "backdrop-blur-none");
 
 export const ADMIN_TABLE_SCROLLER_CLASS = "overflow-x-auto";
 
@@ -305,7 +305,8 @@ export const ADMIN_HOURS_EDITOR_CLASS = "grid gap-4";
 export const ADMIN_HOURS_EDITOR_INVALID_CLASS =
   "rounded-[18px] border border-error_subtle p-[14px]";
 
-export const ADMIN_HOURS_DAY_CLASS = `${ADMIN_PANEL_CLASS} grid gap-4 rounded-[20px] p-4`;
+export const ADMIN_HOURS_DAY_CLASS =
+  "grid gap-4 rounded-[20px] border border-secondary bg-[var(--admin-surface)] p-4";
 
 export const ADMIN_HOURS_DAY_HEADER_CLASS = "flex flex-wrap items-center justify-between gap-3";
 

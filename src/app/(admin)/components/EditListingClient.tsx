@@ -506,7 +506,7 @@ export default function EditListingClient({
         <p className={ADMIN_REQUIRED_LEGEND_CLASS}>Fields marked with * are required.</p>
       </section>
 
-      <section className={ADMIN_PANEL_CLASS}>
+      <section className={joinAdminClassNames(ADMIN_PANEL_CLASS, "backdrop-blur-none")}>
         <form className={ADMIN_FORM_CLASS} onSubmit={onUpdate} noValidate>
             <ListingCoreFields
               form={form}

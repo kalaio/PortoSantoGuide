@@ -111,13 +111,13 @@ export default function PublicSearchInput({
         <button
           aria-label="Clear search"
           className={cx(
-            "absolute top-1/2 inline-flex -translate-y-1/2 items-center justify-center rounded-full bg-[var(--psg-accent-surface-soft)] text-black/55 transition hover:bg-[var(--psg-accent-surface-strong)] hover:text-black/75 cursor-pointer",
+            "absolute top-1/2 inline-flex -translate-y-1/2 items-center justify-center rounded-full bg-transparent text-black transition hover:bg-transparent hover:text-black cursor-pointer",
             styles.clearButton
           )}
           onClick={onClear}
           type="button"
         >
-          <XClose className="h-4 w-4" aria-hidden="true" />
+          <XClose className="h-5 w-5" aria-hidden="true" />
         </button>
       ) : null}
     </div>

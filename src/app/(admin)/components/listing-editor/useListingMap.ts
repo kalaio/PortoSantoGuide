@@ -30,7 +30,11 @@ export function useListingMap({
     formRef.current = form;
   }, [form]);
 
-  const syncMarkerToMap = useCallback((nextForm: ListingFormState, options?: { animate?: boolean }) => {
+  const haveSameCoordinates = useCallback((left: [number, number], right: [number, number]) => {
+    return left[0] === right[0] && left[1] === right[1];
+  }, []);
+
+  const syncMarkerToMap = useCallback((nextCoordinates: [number, number] | null, options?: { animate?: boolean }) => {
     const map = mapRef.current;
     const maplibre = maplibreRef.current;
 
@@ -38,7 +42,7 @@ export function useListingMap({
       return;
     }
 
-    const coordinates = getCoordinatesFromForm(nextForm) ?? [DEFAULT_LONGITUDE, DEFAULT_LATITUDE];
+    const coordinates = nextCoordinates ?? [DEFAULT_LONGITUDE, DEFAULT_LATITUDE];
 
     if (!markerRef.current) {
       const marker = new maplibre.Marker({ color: "var(--primary-v2)", draggable: true })
@@ -56,16 +60,26 @@ export function useListingMap({
 
       markerRef.current = marker;
     } else {
-      markerRef.current.setLngLat(coordinates);
+      const markerPosition = markerRef.current.getLngLat();
+
+      if (!haveSameCoordinates([markerPosition.lng, markerPosition.lat], coordinates)) {
+        markerRef.current.setLngLat(coordinates);
+      }
     }
 
-    if (options?.animate === false) {
-      map.jumpTo({ center: coordinates });
+    const currentCenter = map.getCenter();
+    const isAlreadyCentered = haveSameCoordinates([currentCenter.lng, currentCenter.lat], coordinates);
+
+    if (options?.animate === false || isAlreadyCentered) {
+      if (!isAlreadyCentered) {
+        map.jumpTo({ center: coordinates });
+      }
+
       return;
     }
 
     map.easeTo({ center: coordinates, duration: 500 });
-  }, [setForm]);
+  }, [haveSameCoordinates, setForm]);
 
   useEffect(() => {
     const styleUrl =
@@ -128,7 +142,7 @@ export function useListingMap({
         }));
       }
 
-      syncMarkerToMap(formRef.current, { animate: false });
+      syncMarkerToMap(getCoordinatesFromForm(formRef.current), { animate: false });
 
       requestAnimationFrame(() => {
         map.resize();
@@ -150,8 +164,8 @@ export function useListingMap({
   }, [initializeDefaultCoordinates, isMapEnabled, setForm, syncMarkerToMap]);
 
   useEffect(() => {
-    syncMarkerToMap(form);
-  }, [form, syncMarkerToMap]);
+    syncMarkerToMap(getCoordinatesFromForm({ latitude: form.latitude, longitude: form.longitude }));
+  }, [form.latitude, form.longitude, syncMarkerToMap]);
 
   return { mapNodeRef };
 }

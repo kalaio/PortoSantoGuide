@@ -10,6 +10,7 @@ export type AdminListingRow = {
   id: string;
   slug: string;
   title: string;
+  ownerUsername: string;
   status: ListingStatus;
   hasDraftRevision: boolean;
   updatedAtLabel: string;
@@ -42,13 +43,14 @@ export type AdminListingsQuery = {
   status?: string;
   section?: string;
   category?: string;
+  owner?: string;
   sort?: string;
   dir?: string;
   page?: number;
   pageSize?: number;
 };
 
-export type AdminListingsSortField = "updatedAt" | "title" | "status";
+export type AdminListingsSortField = "updatedAt" | "title" | "status" | "ownerUsername";
 export type AdminListingsSortDirection = "ascending" | "descending";
 
 export type AdminListingsPageData = {
@@ -64,6 +66,7 @@ export type AdminListingsPageData = {
   };
   sectionOptions: string[];
   categoryOptions: string[];
+  ownerOptions: string[];
 };
 
 function hasDatabaseUrl() {
@@ -79,7 +82,7 @@ const DEFAULT_ADMIN_LISTINGS_SORT_FIELD: AdminListingsSortField = "updatedAt";
 const DEFAULT_ADMIN_LISTINGS_SORT_DIRECTION: AdminListingsSortDirection = "descending";
 
 function normalizeAdminListingsSortField(value?: string): AdminListingsSortField {
-  if (value === "title" || value === "status") {
+  if (value === "title" || value === "status" || value === "ownerUsername") {
     return value;
   }
 
@@ -106,6 +109,8 @@ function getAdminListingsOrderBy(
         { updatedAt: "desc" },
         { createdAt: "desc" }
       ];
+    case "ownerUsername":
+      return [{ owner: { username: sortDirection } }, { updatedAt: "desc" }, { createdAt: "desc" }];
     case "status":
       return [{ status: sortDirection }, { updatedAt: "desc" }, { createdAt: "desc" }];
     default:
@@ -209,6 +214,9 @@ function getAdminSourceRevision(item: {
 function toAdminListingRow(
   row: {
     id: string;
+    owner: {
+      username: string;
+    } | null;
     status: ListingStatus;
     currentDraftRevisionId: string | null;
     currentDraftRevision?: AdminListRevisionShape | null;
@@ -225,6 +233,7 @@ function toAdminListingRow(
     id: row.id,
     slug: source.slug,
     title: source.title,
+    ownerUsername: row.owner?.username ?? "-",
     status: row.status,
     hasDraftRevision: Boolean(row.currentDraftRevisionId),
     updatedAtLabel: formatAdminDateTime(source.updatedAt),
@@ -275,6 +284,11 @@ export async function getAdminListings(user: AuthUser): Promise<AdminListingRow[
     const rows = await prisma.listing.findMany({
       select: {
         id: true,
+        owner: {
+          select: {
+            username: true
+          }
+        },
         status: true,
         currentDraftRevisionId: true,
         currentPublishedRevision: {
@@ -319,7 +333,8 @@ export async function getAdminListingsPageData(
         archived: 0
       },
       sectionOptions: [],
-      categoryOptions: []
+      categoryOptions: [],
+      ownerOptions: []
     };
   }
 
@@ -328,6 +343,7 @@ export async function getAdminListingsPageData(
   const normalizedStatus = query.status && query.status !== "all" ? query.status : undefined;
   const normalizedSection = query.section && query.section !== "all" ? query.section : undefined;
   const normalizedCategory = query.category && query.category !== "all" ? query.category : undefined;
+  const normalizedOwner = query.owner && query.owner !== "all" ? query.owner : undefined;
 
   const sourceRevisionFilters: Prisma.ListingWhereInput[] = [];
 
@@ -412,15 +428,21 @@ export async function getAdminListingsPageData(
 
   const where: Prisma.ListingWhereInput = {
     ...ownerWhere,
+    ...(normalizedOwner ? { owner: { is: { username: normalizedOwner } } } : {}),
     ...(normalizedStatus ? { status: normalizedStatus as ListingStatus } : {}),
     ...(sourceRevisionFilters.length > 0 ? { AND: sourceRevisionFilters } : {})
   };
 
   try {
-    const [rows, total, statusGroups, sections, categories] = await Promise.all([
+    const [rows, total, statusGroups, sections, categories, owners] = await Promise.all([
       prisma.listing.findMany({
         select: {
           id: true,
+          owner: {
+            select: {
+              username: true
+            }
+          },
           status: true,
           currentDraftRevisionId: true,
           currentPublishedRevision: {
@@ -481,6 +503,19 @@ export async function getAdminListingsPageData(
         select: {
           label: true
         }
+      }),
+      prisma.user.findMany({
+        where: {
+          listings: {
+            some: ownerWhere
+          }
+        },
+        orderBy: {
+          username: "asc"
+        },
+        select: {
+          username: true
+        }
       })
     ]);
 
@@ -497,7 +532,8 @@ export async function getAdminListingsPageData(
       pageSize,
       statusCounts,
       sectionOptions: sections.map((section) => section.label),
-      categoryOptions: categories.map((category) => category.label)
+      categoryOptions: categories.map((category) => category.label),
+      ownerOptions: owners.map((owner) => owner.username)
     };
   } catch {
     return {
@@ -512,7 +548,8 @@ export async function getAdminListingsPageData(
         archived: 0
       },
       sectionOptions: [],
-      categoryOptions: []
+      categoryOptions: [],
+      ownerOptions: []
     };
   }
 }

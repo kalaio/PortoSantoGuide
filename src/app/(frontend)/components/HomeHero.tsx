@@ -171,11 +171,11 @@ export default function HomeHero({ slides, menuLinks }: HomeHeroProps) {
               />
               <button
                 type="button"
-                className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-white/90 text-gray-700 backdrop-blur-sm transition hover:bg-white cursor-pointer max-[640px]:h-10 max-[640px]:w-10"
+                className="inline-flex h-[52px] w-[53px] items-center justify-center bg-[var(--psg-sand-shell)] text-black transition hover:text-black cursor-pointer max-[640px]:h-10 max-[640px]:w-10"
                 onClick={() => setIsMenuOpen(true)}
                 aria-label="Open menu"
               >
-                <Menu02 className="h-6 w-6" aria-hidden="true" />
+                <Menu02 className="h-7 w-7" aria-hidden="true" />
               </button>
             </div>
 

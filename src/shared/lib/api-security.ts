@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 
 const TRUSTED_ORIGIN_ENV_KEYS = [
+  "ALLOWED_ORIGINS",
+  "TRUSTED_ORIGINS",
   "APP_URL",
   "NEXT_PUBLIC_APP_URL",
   "NEXT_PUBLIC_SITE_URL",
@@ -19,13 +21,56 @@ function normalizeOrigin(value: string | null | undefined) {
   }
 }
 
+function parseOriginList(value: string | null | undefined) {
+  if (!value) {
+    return [];
+  }
+
+  return value
+    .split(",")
+    .map((entry) => normalizeOrigin(entry.trim()))
+    .filter((entry): entry is string => Boolean(entry));
+}
+
+function getHeaderValue(request: Request, headerName: string) {
+  const value = request.headers.get(headerName);
+  if (!value) {
+    return null;
+  }
+
+  return value
+    .split(",")
+    .map((entry) => entry.trim())
+    .find(Boolean) ?? null;
+}
+
+function getRequestHostOrigin(request: Request) {
+  const host = getHeaderValue(request, "x-forwarded-host") ?? getHeaderValue(request, "host");
+  if (!host) {
+    return null;
+  }
+
+  const requestProtocol = (() => {
+    try {
+      return new URL(request.url).protocol.replace(":", "");
+    } catch {
+      return null;
+    }
+  })();
+
+  const protocol = getHeaderValue(request, "x-forwarded-proto") ?? requestProtocol ?? "http";
+
+  return normalizeOrigin(`${protocol}://${host}`);
+}
+
 function getAllowedOrigins(request: Request) {
   const requestOrigin = normalizeOrigin(request.url);
-  const configuredOrigins = TRUSTED_ORIGIN_ENV_KEYS.map((key) => normalizeOrigin(process.env[key])).filter(
-    (value): value is string => Boolean(value)
-  );
+  const requestHostOrigin = getRequestHostOrigin(request);
+  const configuredOrigins = TRUSTED_ORIGIN_ENV_KEYS.flatMap((key) => parseOriginList(process.env[key]));
 
-  return new Set([requestOrigin, ...configuredOrigins].filter((value): value is string => Boolean(value)));
+  return new Set(
+    [requestOrigin, requestHostOrigin, ...configuredOrigins].filter((value): value is string => Boolean(value))
+  );
 }
 
 function getSourceOrigin(request: Request) {

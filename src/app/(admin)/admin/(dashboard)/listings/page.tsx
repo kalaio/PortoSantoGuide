@@ -15,7 +15,7 @@ import {
 } from "@/app/(admin)/lib/admin-listings";
 
 function normalizeSortField(value: string | string[] | undefined): AdminListingsSortField {
-  return value === "title" || value === "status" ? value : "updatedAt";
+  return value === "title" || value === "status" || value === "ownerUsername" ? value : "updatedAt";
 }
 
 function normalizeSortDirection(value: string | string[] | undefined): AdminListingsSortDirection {
@@ -34,6 +34,7 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
   const status = typeof params.status === "string" ? params.status : "all";
   const section = typeof params.section === "string" ? params.section : "all";
   const category = typeof params.category === "string" ? params.category : "all";
+  const owner = typeof params.owner === "string" ? params.owner : "all";
   const sort = normalizeSortField(params.sort);
   const dir = normalizeSortDirection(params.dir);
   const page = typeof params.page === "string" ? Number(params.page) || 1 : 1;
@@ -44,6 +45,7 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
     status,
     section,
     category,
+    owner,
     sort,
     dir,
     page,
@@ -71,7 +73,8 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
         statusCounts={listingsPage.statusCounts}
         sectionOptions={listingsPage.sectionOptions}
         categoryOptions={listingsPage.categoryOptions}
-        filters={{ query, status, section, category, sort, dir }}
+        ownerOptions={listingsPage.ownerOptions}
+        filters={{ query, status, section, category, owner, sort, dir }}
       />
     </main>
   );

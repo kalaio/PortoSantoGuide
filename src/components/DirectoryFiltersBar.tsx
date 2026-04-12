@@ -1,36 +1,52 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { ArrowLeft } from "@untitledui/icons";
 import MultiCheckboxFilterPopover from "@/app/(frontend)/components/MultiCheckboxFilterPopover";
 import PublicFilterButton from "@/components/frontend/PublicFilterButton";
 import { cn } from "@/lib/cn";
 
-type FilterOption = {
+export type DirectoryFilterOption = {
   label: string;
   value: string;
 };
 
+export type DirectoryFrontendFilter =
+  | {
+      key: string;
+      type: "toggle";
+      label: string;
+      isActive: boolean;
+      onToggle: () => void;
+    }
+  | {
+      key: string;
+      type: "multi-select";
+      label: string;
+      options: DirectoryFilterOption[];
+      value: string[];
+      onChange: (next: string[]) => void;
+    };
+
 type DirectoryFiltersBarProps = {
-  cuisineFilterOptions: FilterOption[];
+  filters: DirectoryFrontendFilter[];
   isMobileMapMode: boolean;
-  isOpenNowOnly: boolean;
   onBackToList: () => void;
-  onToggleOpenNowOnly: () => void;
-  selectedCuisines: string[];
-  setSelectedCuisines: (next: string[]) => void;
-  supportsOpenNowFilter: boolean;
 };
 
 export default function DirectoryFiltersBar({
-  cuisineFilterOptions,
+  filters,
   isMobileMapMode,
-  isOpenNowOnly,
-  onBackToList,
-  onToggleOpenNowOnly,
-  selectedCuisines,
-  setSelectedCuisines,
-  supportsOpenNowFilter,
+  onBackToList
 }: DirectoryFiltersBarProps) {
+  const [openFilterKey, setOpenFilterKey] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (openFilterKey !== null && !filters.some((filter) => filter.key === openFilterKey)) {
+      setOpenFilterKey(null);
+    }
+  }, [filters, openFilterKey]);
+
   return (
     <div
       aria-label="Archive filters"
@@ -42,7 +58,10 @@ export default function DirectoryFiltersBar({
           <button
             aria-label="Show list"
             className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-black/10 bg-white text-[color:var(--psg-text-secondary)] transition hover:border-[var(--psg-brand)] hover:text-[var(--psg-brand)] cursor-pointer"
-            onClick={onBackToList}
+            onClick={() => {
+              setOpenFilterKey(null);
+              onBackToList();
+            }}
             type="button"
           >
             <ArrowLeft aria-hidden="true" className="h-5 w-5" />
@@ -50,25 +69,39 @@ export default function DirectoryFiltersBar({
         ) : null}
 
         <div className={cn("flex items-center gap-3 overflow-x-auto whitespace-nowrap scrollbar-hide", isMobileMapMode ? "min-w-0 flex-1" : "w-full") }>
-          {supportsOpenNowFilter ? (
-            <PublicFilterButton
-              aria-pressed={isOpenNowOnly}
-              className="shrink-0"
-              isActive={isOpenNowOnly}
-              onClick={onToggleOpenNowOnly}
-              size="md"
-            >
-              Open now
-            </PublicFilterButton>
-          ) : null}
-          {cuisineFilterOptions.length > 0 ? (
-            <MultiCheckboxFilterPopover
-              label="Cuisine"
-              onChange={setSelectedCuisines}
-              options={cuisineFilterOptions}
-              value={selectedCuisines}
-            />
-          ) : null}
+          {filters.map((filter) => {
+            if (filter.type === "toggle") {
+              return (
+                <PublicFilterButton
+                  key={filter.key}
+                  aria-pressed={filter.isActive}
+                  className="shrink-0"
+                  isActive={filter.isActive}
+                  onClick={() => {
+                    setOpenFilterKey(null);
+                    filter.onToggle();
+                  }}
+                  size="md"
+                >
+                  {filter.label}
+                </PublicFilterButton>
+              );
+            }
+
+            return (
+              <MultiCheckboxFilterPopover
+                key={filter.key}
+                isOpen={openFilterKey === filter.key}
+                label={filter.label}
+                onChange={filter.onChange}
+                onOpenChange={(next) => {
+                  setOpenFilterKey(next ? filter.key : (currentKey) => (currentKey === filter.key ? null : currentKey));
+                }}
+                options={filter.options}
+                value={filter.value}
+              />
+            );
+          })}
         </div>
       </div>
     </div>

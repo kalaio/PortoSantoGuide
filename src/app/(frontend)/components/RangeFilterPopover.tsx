@@ -12,7 +12,9 @@ type RangeFilterPopoverProps = {
   label: string;
   value: NumericRange;
   bounds: NumericRange;
+  isOpen?: boolean;
   onChange: (next: NumericRange) => void;
+  onOpenChange?: (next: boolean) => void;
   step?: number;
   showSlider?: boolean;
   showInputs?: boolean;
@@ -38,7 +40,9 @@ export default function RangeFilterPopover({
   label,
   value,
   bounds,
+  isOpen,
   onChange,
+  onOpenChange,
   step = 1,
   showSlider = true,
   showInputs = true,
@@ -65,7 +69,9 @@ export default function RangeFilterPopover({
       value={normalizedValue}
       clearValue={normalizedBounds}
       isActive={isActive}
+      isOpen={isOpen}
       onApply={onChange}
+      onOpenChange={onOpenChange}
       normalizeDraft={(draft) => normalizeNumericRange(draft, normalizedBounds)}
       areEqual={(left, right) => left.min === right.min && left.max === right.max}
       cloneValue={cloneNumericRange}

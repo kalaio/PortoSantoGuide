@@ -12,7 +12,9 @@ type MultiCheckboxFilterPopoverProps = {
   label: string;
   options: MultiCheckboxFilterOption[];
   value: string[];
+  isOpen?: boolean;
   onChange: (next: string[]) => void;
+  onOpenChange?: (next: boolean) => void;
 };
 
 function normalizeValues(values: string[], options: MultiCheckboxFilterOption[]) {
@@ -43,6 +45,8 @@ export default function MultiCheckboxFilterPopover({
   label,
   options,
   value,
+  isOpen,
+  onOpenChange,
   onChange
 }: MultiCheckboxFilterPopoverProps) {
   const normalizedValue = normalizeValues(value, options);
@@ -56,8 +60,10 @@ export default function MultiCheckboxFilterPopover({
       clearValue={[]}
       cloneValue={cloneValues}
       isActive={normalizedValue.length > 0}
+      isOpen={isOpen}
       normalizeDraft={(draft) => normalizeValues(draft, options)}
       onApply={onChange}
+      onOpenChange={onOpenChange}
       popoverClassName="w-[min(21rem,calc(100vw-1.5rem))]"
       value={normalizedValue}
     >

@@ -16,7 +16,9 @@ type FilterPopoverProps<T> = {
   value: T;
   clearValue: T;
   isActive: boolean;
+  isOpen?: boolean;
   onApply: (next: T) => void;
+  onOpenChange?: (next: boolean) => void;
   children: (args: FilterPopoverRenderArgs<T>) => ReactNode;
   normalizeDraft?: (value: T) => T;
   areEqual?: (left: T, right: T) => boolean;
@@ -31,7 +33,9 @@ export default function FilterPopover<T>({
   value,
   clearValue,
   isActive,
+  isOpen: controlledIsOpen,
   onApply,
+  onOpenChange,
   children,
   normalizeDraft,
   areEqual,
@@ -53,10 +57,41 @@ export default function FilterPopover<T>({
     [areEqual]
   );
 
-  const [isOpen, setIsOpen] = useState(false);
+  const [uncontrolledIsOpen, setUncontrolledIsOpen] = useState(false);
   const [draftValue, setDraftValue] = useState<T>(() => getDraft(value));
   const [popoverPosition, setPopoverPosition] = useState({ left: 12, top: 12 });
   const [isPositionReady, setIsPositionReady] = useState(false);
+  const isOpen = controlledIsOpen ?? uncontrolledIsOpen;
+  const previousIsOpenRef = useRef(isOpen);
+  const closeIntentRef = useRef<"apply" | "discard" | null>(null);
+
+  const setIsOpen = useCallback(
+    (next: boolean) => {
+      if (controlledIsOpen === undefined) {
+        setUncontrolledIsOpen(next);
+      }
+
+      onOpenChange?.(next);
+    },
+    [controlledIsOpen, onOpenChange]
+  );
+
+  const applyDraftValue = useCallback(
+    (source: T) => {
+      const normalized = normalize(source);
+
+      if (!isEqual(normalized, value)) {
+        onApply(normalized);
+      }
+
+      setDraftValue(getDraft(normalized));
+    },
+    [getDraft, isEqual, normalize, onApply, value]
+  );
+
+  const discardDraftValue = useCallback(() => {
+    setDraftValue(getDraft(value));
+  }, [getDraft, value]);
 
   const updatePopoverPosition = useCallback(() => {
     if (!buttonRef.current || !popoverRef.current) {
@@ -82,6 +117,20 @@ export default function FilterPopover<T>({
     }
   }, [getDraft, isOpen, value]);
 
+  useEffect(() => {
+    const previousIsOpen = previousIsOpenRef.current;
+
+    if (previousIsOpen && !isOpen) {
+      if (closeIntentRef.current === null && controlledIsOpen !== undefined) {
+        applyDraftValue(draftValue);
+      }
+
+      closeIntentRef.current = null;
+    }
+
+    previousIsOpenRef.current = isOpen;
+  }, [applyDraftValue, controlledIsOpen, draftValue, isOpen]);
+
   useLayoutEffect(() => {
     if (!isOpen) {
       setIsPositionReady(false);
@@ -102,11 +151,8 @@ export default function FilterPopover<T>({
         return;
       }
 
-      const normalized = normalize(draftValue);
-      if (!isEqual(normalized, value)) {
-        onApply(normalized);
-      }
-      setDraftValue(getDraft(normalized));
+      closeIntentRef.current = "apply";
+      applyDraftValue(draftValue);
       setIsOpen(false);
     };
 
@@ -115,7 +161,8 @@ export default function FilterPopover<T>({
         return;
       }
 
-      setDraftValue(getDraft(value));
+      closeIntentRef.current = "discard";
+      discardDraftValue();
       setIsOpen(false);
     };
 
@@ -130,7 +177,7 @@ export default function FilterPopover<T>({
       window.removeEventListener("resize", updatePopoverPosition);
       window.removeEventListener("scroll", updatePopoverPosition, true);
     };
-  }, [draftValue, getDraft, isEqual, isOpen, normalize, onApply, updatePopoverPosition, value]);
+  }, [applyDraftValue, discardDraftValue, draftValue, isOpen, setIsOpen, updatePopoverPosition]);
 
   return (
     <div className="relative">
@@ -140,12 +187,14 @@ export default function FilterPopover<T>({
           isActive={isOpen || isActive}
           onClick={() => {
             if (isOpen) {
-              setDraftValue(getDraft(value));
+              closeIntentRef.current = "discard";
+              discardDraftValue();
               setIsPositionReady(false);
               setIsOpen(false);
               return;
             }
 
+            closeIntentRef.current = null;
             setDraftValue(getDraft(value));
             setIsPositionReady(false);
             setIsOpen(true);
@@ -185,9 +234,7 @@ export default function FilterPopover<T>({
                 <PublicFilterButton
                   className="cursor-pointer"
                   onClick={() => {
-                    const nextValue = normalize(clearValue);
-                    onApply(nextValue);
-                    setDraftValue(getDraft(nextValue));
+                    applyDraftValue(clearValue);
                   }}
                   size="md"
                   variant="ghost"
@@ -198,9 +245,8 @@ export default function FilterPopover<T>({
                 <PublicFilterButton
                   className="cursor-pointer"
                   onClick={() => {
-                    const nextValue = normalize(draftValue);
-                    onApply(nextValue);
-                    setDraftValue(getDraft(nextValue));
+                    closeIntentRef.current = "apply";
+                    applyDraftValue(draftValue);
                     setIsPositionReady(false);
                     setIsOpen(false);
                   }}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import DirectoryFiltersBar from "@/components/DirectoryFiltersBar";
+import DirectoryFiltersBar, { type DirectoryFilterOption, type DirectoryFrontendFilter } from "@/components/DirectoryFiltersBar";
 import ExpandableDescription from "@/components/ExpandableDescription";
 import DirectoryView from "@/components/DirectoryView";
 import PublicBreadcrumbs from "@/components/frontend/PublicBreadcrumbs";
@@ -11,6 +11,24 @@ import { hasListingSchemaField, isFrontendFilterEnabledListingSchemaField } from
 import { getFoodCuisineValues, getFoodOpeningState, hasSchemaField } from "@/lib/listing-details";
 import type { ListingSchemaFieldSummary } from "@/types/listing";
 import type { Listing } from "@/types/listing";
+
+type PriceLevelValue = "budget" | "mid" | "premium";
+
+const PRICE_LEVEL_OPTIONS: Array<DirectoryFilterOption & { value: PriceLevelValue }> = [
+  { value: "budget", label: "Budget" },
+  { value: "mid", label: "Mid" },
+  { value: "premium", label: "Premium" }
+];
+
+function getPriceLevelValue(listing: Listing) {
+  const priceLevel = listing.details.priceLevel;
+
+  if (priceLevel !== "budget" && priceLevel !== "mid" && priceLevel !== "premium") {
+    return null;
+  }
+
+  return priceLevel;
+}
 
 type DirectoryBrowseBreadcrumbItem = {
   href?: string;
@@ -30,6 +48,7 @@ export default function DirectoryBrowse({ breadcrumbs, categorySchemaFields, des
   const [areaBounds, setAreaBounds] = useState<MapBounds | null>(null);
   const [isOpenNowOnly, setIsOpenNowOnly] = useState(false);
   const [selectedCuisines, setSelectedCuisines] = useState<string[]>([]);
+  const [selectedPriceLevels, setSelectedPriceLevels] = useState<string[]>([]);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
   const [mobileViewMode, setMobileViewMode] = useState<"list" | "map">("list");
   const hasArchiveListings = listings.length > 0;
@@ -46,6 +65,7 @@ export default function DirectoryBrowse({ breadcrumbs, categorySchemaFields, des
       setHoveredListingId(null);
       setIsOpenNowOnly(false);
       setSelectedCuisines([]);
+      setSelectedPriceLevels([]);
       setMobileViewMode("list");
     };
 
@@ -100,6 +120,68 @@ export default function DirectoryBrowse({ breadcrumbs, categorySchemaFields, des
     return CUISINE_OPTIONS.filter((option) => availableCuisineValues.has(option.value));
   }, [categorySchemaFields, listings]);
 
+  const priceLevelFilterOptions = useMemo(() => {
+    if (!isFrontendFilterEnabledListingSchemaField(categorySchemaFields, "priceLevel")) {
+      return [];
+    }
+
+    const availablePriceLevels = new Set<PriceLevelValue>(
+      listings.map((listing) => getPriceLevelValue(listing)).filter((value): value is PriceLevelValue => value !== null)
+    );
+
+    return PRICE_LEVEL_OPTIONS.filter((option) => availablePriceLevels.has(option.value));
+  }, [categorySchemaFields, listings]);
+
+  const frontendFilters = useMemo<DirectoryFrontendFilter[]>(() => {
+    const filterByKey = new Map<string, DirectoryFrontendFilter>();
+
+    if (supportsOpenNowFilter) {
+      filterByKey.set("openingHours", {
+        key: "openingHours",
+        type: "toggle",
+        label: "Open now",
+        isActive: isOpenNowOnly,
+        onToggle: () => setIsOpenNowOnly((currentValue) => !currentValue)
+      });
+    }
+
+    if (cuisineFilterOptions.length > 0) {
+      filterByKey.set("cuisines", {
+        key: "cuisines",
+        type: "multi-select",
+        label: "Cuisine",
+        options: cuisineFilterOptions,
+        value: selectedCuisines,
+        onChange: setSelectedCuisines
+      });
+    }
+
+    if (priceLevelFilterOptions.length > 0) {
+      filterByKey.set("priceLevel", {
+        key: "priceLevel",
+        type: "multi-select",
+        label: "Price level",
+        options: priceLevelFilterOptions,
+        value: selectedPriceLevels,
+        onChange: setSelectedPriceLevels
+      });
+    }
+
+    return categorySchemaFields
+      .filter((field) => field.isFrontendFilterEnabled)
+      .sort((left, right) => left.sortOrder - right.sortOrder)
+      .map((field) => filterByKey.get(field.fieldKey) ?? null)
+      .filter((filter): filter is DirectoryFrontendFilter => filter !== null);
+  }, [
+    categorySchemaFields,
+    cuisineFilterOptions,
+    isOpenNowOnly,
+    priceLevelFilterOptions,
+    selectedCuisines,
+    selectedPriceLevels,
+    supportsOpenNowFilter
+  ]);
+
   const visibleListings = useMemo(
     () =>
       listings.filter((listing) => {
@@ -123,9 +205,13 @@ export default function DirectoryBrowse({ breadcrumbs, categorySchemaFields, des
         const matchesCuisine =
           selectedCuisines.length === 0 || selectedCuisines.some((selectedCuisine) => listingCuisineValues.includes(selectedCuisine));
 
-        return isInsideArea && isOpenNow && matchesCuisine;
+        const listingPriceLevel = getPriceLevelValue(listing);
+        const matchesPriceLevel =
+          selectedPriceLevels.length === 0 || (listingPriceLevel !== null && selectedPriceLevels.includes(listingPriceLevel));
+
+        return isInsideArea && isOpenNow && matchesCuisine && matchesPriceLevel;
       }),
-    [areaBounds, isOpenNowOnly, listings, selectedCuisines]
+    [areaBounds, isOpenNowOnly, listings, selectedCuisines, selectedPriceLevels]
   );
 
   const mappableListings = useMemo(
@@ -137,7 +223,7 @@ export default function DirectoryBrowse({ breadcrumbs, categorySchemaFields, des
     [listings]
   );
   const showMap = hasLocationField && hasAnyMappableListings;
-  const hasVisibleFilters = hasArchiveListings && (supportsOpenNowFilter || cuisineFilterOptions.length > 0);
+  const hasVisibleFilters = hasArchiveListings && frontendFilters.length > 0;
 
   useEffect(() => {
     if (!showMap) {
@@ -159,14 +245,9 @@ export default function DirectoryBrowse({ breadcrumbs, categorySchemaFields, des
     <>
       {hasVisibleFilters ? (
         <DirectoryFiltersBar
-          cuisineFilterOptions={cuisineFilterOptions}
+          filters={frontendFilters}
           isMobileMapMode={isMobileMapMode}
-          isOpenNowOnly={isOpenNowOnly}
           onBackToList={() => setMobileViewMode("list")}
-          onToggleOpenNowOnly={() => setIsOpenNowOnly((currentValue) => !currentValue)}
-          selectedCuisines={selectedCuisines}
-          setSelectedCuisines={setSelectedCuisines}
-          supportsOpenNowFilter={supportsOpenNowFilter}
         />
       ) : null}
 

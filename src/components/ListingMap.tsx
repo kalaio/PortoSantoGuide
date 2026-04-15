@@ -82,6 +82,7 @@ type InitialView = {
 
 type MarkerEntry = {
   element: HTMLButtonElement;
+  isVisible: boolean;
   listing: MappableListing;
   marker: maplibregl.Marker;
 };
@@ -150,9 +151,30 @@ function createMarkerEntry(
 
   return {
     element: markerElement,
+    isVisible: true,
     listing,
     marker
   };
+}
+
+function hideMarkerEntry(entry: MarkerEntry) {
+  if (!entry.isVisible) {
+    return;
+  }
+
+  entry.marker.getPopup()?.remove();
+  entry.element.classList.remove("isHighlighted");
+  entry.marker.remove();
+  entry.isVisible = false;
+}
+
+function showMarkerEntry(map: maplibregl.Map, entry: MarkerEntry) {
+  if (entry.isVisible) {
+    return;
+  }
+
+  entry.marker.addTo(map);
+  entry.isVisible = true;
 }
 
 export default function ListingMap({ listings, hoveredListingId, onReadyChange, onSearchInArea }: ListingMapProps) {
@@ -297,13 +319,13 @@ export default function ListingMap({ listings, hoveredListingId, onReadyChange, 
       setIsSearchInAreaVisible(true);
     };
 
-    map.once("idle", onMapReady);
+    map.once("load", onMapReady);
     map.on("moveend", onMoveEnd);
 
     mapRef.current = map;
 
     return () => {
-      map.off("idle", onMapReady);
+      map.off("load", onMapReady);
       map.off("moveend", onMoveEnd);
       if (ignoreMoveTimeoutRef.current) {
         window.clearTimeout(ignoreMoveTimeoutRef.current);
@@ -374,8 +396,7 @@ export default function ListingMap({ listings, hoveredListingId, onReadyChange, 
 
     markers.forEach((entry, listingId) => {
       if (!nextListingIds.has(listingId)) {
-        entry.marker.remove();
-        markers.delete(listingId);
+        hideMarkerEntry(entry);
       }
     });
 
@@ -383,12 +404,13 @@ export default function ListingMap({ listings, hoveredListingId, onReadyChange, 
       const existingEntry = markers.get(listing.id);
 
       if (existingEntry?.listing === listing) {
+        showMarkerEntry(map, existingEntry);
         return;
       }
 
       if (existingEntry) {
+        hideMarkerEntry(existingEntry);
         existingEntry.marker.remove();
-        markers.delete(listing.id);
       }
 
       const nextEntry = createMarkerEntry(

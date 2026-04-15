@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft } from "@untitledui/icons";
+import { ArrowLeft, SearchMd } from "@untitledui/icons";
 import { usePathname, useRouter } from "next/navigation";
 import {
   type MouseEvent as ReactMouseEvent,
@@ -54,6 +54,7 @@ const SEARCH_DEBOUNCE_MS = 280;
 const SUGGESTIONS_CACHE_TTL_MS = 60 * 1000;
 
 type GlobalSearchProps = {
+  compactOnMobile?: boolean;
   placeholder?: string;
 };
 
@@ -82,7 +83,7 @@ function getSearchResultDetails(result: SearchResult): { summary: string; openin
   };
 }
 
-export default function GlobalSearch({ placeholder = "What are you looking for?" }: GlobalSearchProps) {
+export default function GlobalSearch({ compactOnMobile = false, placeholder = "What are you looking for?" }: GlobalSearchProps) {
   const router = useRouter();
   const pathname = usePathname();
   const isHomeRoute = pathname === "/";
@@ -213,6 +214,18 @@ export default function GlobalSearch({ placeholder = "What are you looking for?"
   }, [isMobileOpen, query, openSuggestionsDropdown]);
 
   useEffect(() => {
+    if (!isMobileOpen) {
+      return;
+    }
+
+    const frameId = window.requestAnimationFrame(() => {
+      inputRef.current?.focus();
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, [isMobileOpen]);
+
+  useEffect(() => {
     return () => {
       searchAbortControllerRef.current?.abort();
     };
@@ -334,6 +347,10 @@ export default function GlobalSearch({ placeholder = "What are you looking for?"
     inputRef.current?.blur();
   };
 
+  const openMobileOverlay = useCallback(() => {
+    setIsMobileOpen(true);
+  }, []);
+
   const isMobileViewport = useCallback(
     () => typeof window !== "undefined" && window.matchMedia("(max-width: 640px)").matches,
     []
@@ -387,15 +404,8 @@ export default function GlobalSearch({ placeholder = "What are you looking for?"
     });
   };
 
-  return (
-    <div
-      className={cn(
-        isMobileOpen
-          ? "fixed inset-0 z-[9999] flex max-w-none flex-col gap-4 bg-white px-4 py-4"
-          : cn("relative w-full", isHomeRoute ? "max-w-[44rem]" : "max-w-[35rem]")
-      )}
-      ref={isMobileOpen ? undefined : rootRef}
-    >
+  const searchContent = (
+    <>
       <div className={cn("flex items-center", isMobileOpen && "gap-3")}>
         {isMobileOpen ? (
           <button
@@ -538,6 +548,33 @@ export default function GlobalSearch({ placeholder = "What are you looking for?"
           </div>
         </div>
       ) : null}
-    </div>
+    </>
+  );
+
+  return (
+    <>
+      {compactOnMobile && !isMobileOpen ? (
+        <button
+          type="button"
+          className="hidden h-11 w-11 items-center justify-center rounded-full bg-white text-black transition hover:bg-white hover:text-[var(--psg-brand)] cursor-pointer max-[640px]:inline-flex"
+          onClick={openMobileOverlay}
+          aria-label="Open search"
+        >
+          <SearchMd className="h-5.5 w-5.5" aria-hidden="true" />
+        </button>
+      ) : null}
+
+      <div
+        className={cn(
+          isMobileOpen
+            ? "fixed inset-0 z-[9999] flex max-w-none flex-col gap-4 bg-white px-4 py-4"
+            : cn("relative w-full", isHomeRoute ? "max-w-[44rem]" : "max-w-[35rem]"),
+          compactOnMobile && !isMobileOpen && "max-[640px]:hidden"
+        )}
+        ref={isMobileOpen ? undefined : rootRef}
+      >
+        {searchContent}
+      </div>
+    </>
   );
 }

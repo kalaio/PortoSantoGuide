@@ -42,7 +42,7 @@ export default function ListingMapLazy(props: ListingMapLazyProps) {
       <ListingMap {...props} onReadyChange={setIsMapReady} />
       {!isMapReady ? (
         <div
-          className="absolute inset-0 grid place-items-center bg-white text-sm text-gray-500"
+          className="pointer-events-none absolute inset-0 grid place-items-center bg-white/78 text-sm text-gray-500"
           role="status"
           aria-live="polite"
           aria-label="Loading map"

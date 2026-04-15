@@ -1,5 +1,6 @@
 "use client";
 
+import { Map01 } from "@untitledui/icons";
 import Link from "next/link";
 import PublicFilterButton from "@/components/frontend/PublicFilterButton";
 import type { MapBounds } from "@/components/ListingMap";
@@ -96,7 +97,8 @@ export default function DirectoryView({
         <PublicFilterButton
           aria-label={mobileViewMode === "map" ? "Show list" : "Show map"}
           aria-pressed={mobileViewMode === "map"}
-          className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-1/2 z-30 hidden min-w-[120px] -translate-x-1/2 justify-center px-8 max-[900px]:inline-flex"
+          className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-1/2 z-30 hidden min-w-[120px] -translate-x-1/2 justify-center border-0 bg-[var(--psg-brand-secondary)] px-8 text-white ring-0 *:data-text:text-white hover:bg-[var(--psg-brand-secondary-hover)] hover:text-white hover:*:data-text:text-white max-[900px]:inline-flex"
+          iconLeading={mobileViewMode === "map" ? undefined : Map01}
           onClick={onToggleMobileViewMode}
           size="md"
         >

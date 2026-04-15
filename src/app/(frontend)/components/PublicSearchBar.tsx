@@ -44,18 +44,24 @@ export default function PublicSearchBar({ menuLinks }: { menuLinks: PublicMenuLi
           />
         </Link>
 
-        <div className="flex justify-center">
+        <div className="flex justify-center max-[640px]:hidden">
           <GlobalSearch />
         </div>
 
-        <button
-          type="button"
-          className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border-0 bg-transparent text-black transition hover:text-[var(--psg-brand)] cursor-pointer max-[900px]:h-11 max-[900px]:w-11"
-          onClick={() => setIsMenuOpen(true)}
-          aria-label="Open menu"
-        >
-          <Menu02 className="h-6 w-6 max-[900px]:h-5.5 max-[900px]:w-5.5" aria-hidden="true" />
-        </button>
+        <div className="flex items-center justify-end gap-1.5 max-[640px]:col-start-3 max-[640px]:gap-0.5">
+          <div className="hidden max-[640px]:flex">
+            <GlobalSearch compactOnMobile />
+          </div>
+
+          <button
+            type="button"
+            className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border-0 bg-transparent text-black transition hover:text-[var(--psg-brand)] cursor-pointer max-[900px]:h-11 max-[900px]:w-11"
+            onClick={() => setIsMenuOpen(true)}
+            aria-label="Open menu"
+          >
+            <Menu02 className="h-6 w-6 max-[900px]:h-5.5 max-[900px]:w-5.5" aria-hidden="true" />
+          </button>
+        </div>
       </div>
 
       <MenuOverlay isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} menuLinks={menuLinks} />

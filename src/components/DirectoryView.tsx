@@ -35,15 +35,10 @@ export default function DirectoryView({
   visibleListings,
 }: DirectoryViewProps) {
   const isMobileMapMode = showMap && isMobileViewport && mobileViewMode === "map";
+  const shouldRenderMobileMap = showMap && isMobileViewport;
 
   return (
-    <section
-      className={cn(
-        "grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(21rem,38rem)]",
-        !showMap && "grid-cols-1",
-        isMobileMapMode && "block"
-      )}
-    >
+    <section className={cn(isMobileMapMode && "block")}>
       <aside className={cn(isMobileMapMode && "hidden")}>
         <div className="grid gap-3">
           {visibleListings.map((listing) => {
@@ -81,20 +76,16 @@ export default function DirectoryView({
         </div>
       </aside>
 
-      {showMap ? (
+      {shouldRenderMobileMap ? (
         <div
           className={cn(
-            "min-h-[44rem] overflow-hidden rounded-[1.75rem] border border-black/10 bg-white lg:self-start",
+            "min-h-[44rem] overflow-hidden bg-white",
             isMobileMapMode
               ? cn(
-                  "max-[900px]:fixed max-[900px]:inset-x-0 max-[900px]:bottom-0 max-[900px]:z-20 max-[900px]:block max-[900px]:min-h-0 max-[900px]:rounded-none max-[900px]:border-x-0 max-[900px]:border-b-0",
+                  "max-[900px]:fixed max-[900px]:inset-x-0 max-[900px]:bottom-0 max-[900px]:z-20 max-[900px]:block max-[900px]:min-h-0 max-[900px]:rounded-none",
                   hasVisibleFilters ? "max-[900px]:top-[60px]" : "max-[900px]:top-0"
                 )
-              : "max-[900px]:hidden",
-            !isMobileMapMode &&
-              (hasVisibleFilters
-                ? "lg:sticky lg:top-16 lg:min-h-0 lg:h-[calc(100svh-4rem-1.25rem)]"
-                : "lg:sticky lg:top-0 lg:min-h-0 lg:h-[calc(100svh-1.25rem)]")
+              : "max-[900px]:hidden"
           )}
         >
           <ListingMapLazy listings={mappableListings} hoveredListingId={hoveredListingId} onSearchInArea={onSearchInArea} />

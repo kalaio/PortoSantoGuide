@@ -86,7 +86,7 @@ export default function MultiCheckboxFilterPopover({
                 }
                 isSelected={checked}
                 label={option.label}
-                size="sm"
+                size="md"
                 onChange={() => {
                   setDraftWith((previous) => {
                     const hasValue = previous.includes(option.value);

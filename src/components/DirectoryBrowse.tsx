@@ -4,8 +4,10 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import DirectoryFiltersBar, { type DirectoryFilterOption, type DirectoryFrontendFilter } from "@/components/DirectoryFiltersBar";
 import ExpandableDescription from "@/components/ExpandableDescription";
 import DirectoryView from "@/components/DirectoryView";
+import ListingMapLazy from "@/components/ListingMapLazy";
 import PublicBreadcrumbs from "@/components/frontend/PublicBreadcrumbs";
 import type { MapBounds } from "@/components/ListingMap";
+import { cn } from "@/lib/cn";
 import { CUISINE_OPTIONS } from "@/lib/cuisines";
 import { hasListingSchemaField, isFrontendFilterEnabledListingSchemaField } from "@/lib/listing-fields";
 import { getFoodCuisineValues, getFoodOpeningState, hasSchemaField } from "@/lib/listing-details";
@@ -241,6 +243,8 @@ export default function DirectoryBrowse({ breadcrumbs, categorySchemaFields, des
     };
   }, [isMobileMapMode]);
 
+  const shouldRenderDesktopMap = showMap && !isMobileViewport;
+
   return (
     <>
       {hasVisibleFilters ? (
@@ -251,28 +255,48 @@ export default function DirectoryBrowse({ breadcrumbs, categorySchemaFields, des
         />
       ) : null}
 
-      <main className="mx-auto w-full max-w-[1280px] px-4 pt-4 pb-6 md:px-5 md:pt-6 md:pb-10">
-        <section className="mb-8 grid gap-3 max-[640px]:mb-6">
-          <PublicBreadcrumbs items={breadcrumbs} />
-          <h1 className="m-0 text-display-sm font-semibold tracking-[-0.04em] text-black">{title}</h1>
-          <ExpandableDescription className="max-w-[46rem]" text={description} />
-        </section>
+      <div
+        className={cn(
+          "mx-auto w-full max-w-[1280px] px-4 md:px-5",
+          shouldRenderDesktopMap && "grid gap-5 [grid-template-columns:minmax(0,1fr)_minmax(21rem,38rem)] max-[900px]:block"
+        )}
+      >
+        <main className={cn("min-w-0 pt-4 pb-6 md:pt-6 md:pb-10", !shouldRenderDesktopMap && "mx-auto w-full") }>
+          <section className="mb-8 grid gap-3 max-[640px]:mb-6">
+            <PublicBreadcrumbs items={breadcrumbs} />
+            <h1 className="m-0 text-display-sm font-semibold tracking-[-0.04em] text-black">{title}</h1>
+            <ExpandableDescription className="max-w-[46rem]" text={description} />
+          </section>
 
-        <DirectoryView
-          hasVisibleFilters={hasVisibleFilters}
-          hoveredListingId={hoveredListingId}
-          isMobileViewport={isMobileViewport}
-          mappableListings={mappableListings}
-          mobileViewMode={mobileViewMode}
-          onHoverListingChange={setHoveredListingId}
-          onSearchInArea={handleSearchInArea}
-          onToggleMobileViewMode={() => {
-            setMobileViewMode((currentMode) => (currentMode === "list" ? "map" : "list"));
-          }}
-          showMap={showMap}
-          visibleListings={visibleListings}
-        />
-      </main>
+          <DirectoryView
+            hasVisibleFilters={hasVisibleFilters}
+            hoveredListingId={hoveredListingId}
+            isMobileViewport={isMobileViewport}
+            mappableListings={mappableListings}
+            mobileViewMode={mobileViewMode}
+            onHoverListingChange={setHoveredListingId}
+            onSearchInArea={handleSearchInArea}
+            onToggleMobileViewMode={() => {
+              setMobileViewMode((currentMode) => (currentMode === "list" ? "map" : "list"));
+            }}
+            showMap={showMap}
+            visibleListings={visibleListings}
+          />
+        </main>
+
+        {shouldRenderDesktopMap ? (
+          <aside className="min-w-0 max-[900px]:hidden">
+            <div
+              className={cn(
+                "overflow-hidden bg-white",
+                hasVisibleFilters ? "sticky top-16 h-[calc(100svh-4rem)]" : "sticky top-0 h-screen"
+              )}
+            >
+              <ListingMapLazy listings={mappableListings} hoveredListingId={hoveredListingId} onSearchInArea={handleSearchInArea} />
+            </div>
+          </aside>
+        ) : null}
+      </div>
     </>
   );
 }

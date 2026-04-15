@@ -6,20 +6,20 @@ import { cx } from "@/utils/cx";
 
 const SIZE_STYLES = {
   sm: {
-    root: "px-3 py-2",
-    label: "text-sm"
+    root: "h-9 px-3",
+    label: "text-sm leading-5"
   },
   md: {
-    root: "px-3.5 py-2.5",
-    label: "text-sm"
+    root: "h-10 px-3.5",
+    label: "text-sm leading-5"
   },
   lg: {
-    root: "px-4 py-2.5",
-    label: "text-md"
+    root: "h-11 px-4",
+    label: "text-md leading-6"
   },
   xl: {
-    root: "px-4.5 py-3",
-    label: "text-md"
+    root: "h-12 px-4.5",
+    label: "text-md leading-6"
   }
 } as const;
 

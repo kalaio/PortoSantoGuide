@@ -1,12 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import DirectoryFiltersBar, { type DirectoryFilterOption, type DirectoryFrontendFilter } from "@/components/DirectoryFiltersBar";
 import ExpandableDescription from "@/components/ExpandableDescription";
 import DirectoryView from "@/components/DirectoryView";
 import ListingMapLazy from "@/components/ListingMapLazy";
 import PublicBreadcrumbs from "@/components/frontend/PublicBreadcrumbs";
-import type { MapBounds } from "@/components/ListingMap";
+import type { ListingMapHandle, MapBounds } from "@/components/ListingMap";
 import { cn } from "@/lib/cn";
 import { CUISINE_OPTIONS } from "@/lib/cuisines";
 import { hasListingSchemaField, isFrontendFilterEnabledListingSchemaField } from "@/lib/listing-fields";
@@ -46,13 +46,13 @@ type DirectoryBrowseProps = {
 };
 
 export default function DirectoryBrowse({ breadcrumbs, categorySchemaFields, description, listings, title }: DirectoryBrowseProps) {
-  const [hoveredListingId, setHoveredListingId] = useState<string | null>(null);
   const [areaBounds, setAreaBounds] = useState<MapBounds | null>(null);
   const [isOpenNowOnly, setIsOpenNowOnly] = useState(false);
   const [selectedCuisines, setSelectedCuisines] = useState<string[]>([]);
   const [selectedPriceLevels, setSelectedPriceLevels] = useState<string[]>([]);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
   const [mobileViewMode, setMobileViewMode] = useState<"list" | "map">("list");
+  const listingMapHandleRef = useRef<ListingMapHandle | null>(null);
   const hasArchiveListings = listings.length > 0;
   const hasLocationField = useMemo(() => hasListingSchemaField(categorySchemaFields, "location"), [categorySchemaFields]);
 
@@ -61,19 +61,23 @@ export default function DirectoryBrowse({ breadcrumbs, categorySchemaFields, des
     [categorySchemaFields, hasArchiveListings]
   );
 
+  const resetFiltersAndArea = useCallback(() => {
+    setAreaBounds(null);
+    listingMapHandleRef.current?.setExternalHoveredListingId(null);
+    setIsOpenNowOnly(false);
+    setSelectedCuisines([]);
+    setSelectedPriceLevels([]);
+  }, []);
+
   useEffect(() => {
     const handleReset = () => {
-      setAreaBounds(null);
-      setHoveredListingId(null);
-      setIsOpenNowOnly(false);
-      setSelectedCuisines([]);
-      setSelectedPriceLevels([]);
+      resetFiltersAndArea();
       setMobileViewMode("list");
     };
 
     window.addEventListener("porto-santo-guide:reset", handleReset);
     return () => window.removeEventListener("porto-santo-guide:reset", handleReset);
-  }, []);
+  }, [resetFiltersAndArea]);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(max-width: 900px)");
@@ -93,23 +97,13 @@ export default function DirectoryBrowse({ breadcrumbs, categorySchemaFields, des
     };
   }, []);
 
-  useEffect(() => {
-    if (!isMobileViewport || mobileViewMode !== "map") {
-      return;
-    }
-
-    const frameId = window.requestAnimationFrame(() => {
-      window.dispatchEvent(new Event("resize"));
-    });
-
-    return () => {
-      window.cancelAnimationFrame(frameId);
-    };
-  }, [isMobileViewport, mobileViewMode]);
-
   const handleSearchInArea = useCallback((bounds: MapBounds) => {
     setAreaBounds(bounds);
-    setHoveredListingId(null);
+    listingMapHandleRef.current?.setExternalHoveredListingId(null);
+  }, []);
+
+  const handleListingHoverChange = useCallback((listingId: string | null) => {
+    listingMapHandleRef.current?.setExternalHoveredListingId(listingId);
   }, []);
 
   const cuisineFilterOptions = useMemo(() => {
@@ -133,6 +127,17 @@ export default function DirectoryBrowse({ breadcrumbs, categorySchemaFields, des
 
     return PRICE_LEVEL_OPTIONS.filter((option) => availablePriceLevels.has(option.value));
   }, [categorySchemaFields, listings]);
+
+  const listingFilterMetadata = useMemo(
+    () =>
+      listings.map((listing) => ({
+        cuisineValues: hasSchemaField(listing.primaryCategory.schema?.fields, "cuisines") ? getFoodCuisineValues(listing.details) : [],
+        listing,
+        openingState: hasSchemaField(listing.primaryCategory.schema?.fields, "openingHours") ? getFoodOpeningState(listing.details) : null,
+        priceLevel: getPriceLevelValue(listing)
+      })),
+    [listings]
+  );
 
   const frontendFilters = useMemo<DirectoryFrontendFilter[]>(() => {
     const filterByKey = new Map<string, DirectoryFrontendFilter>();
@@ -186,7 +191,8 @@ export default function DirectoryBrowse({ breadcrumbs, categorySchemaFields, des
 
   const visibleListings = useMemo(
     () =>
-      listings.filter((listing) => {
+      listingFilterMetadata
+        .filter(({ cuisineValues, listing, openingState, priceLevel }) => {
         const isInsideArea =
           !areaBounds ||
           listing.latitude === null ||
@@ -199,21 +205,18 @@ export default function DirectoryBrowse({ breadcrumbs, categorySchemaFields, des
           );
 
         const isOpenNow =
-          !isOpenNowOnly ||
-          (hasSchemaField(listing.primaryCategory.schema?.fields, "openingHours") && getFoodOpeningState(listing.details) === "open");
+          !isOpenNowOnly || openingState === "open";
 
-        const listingCuisineValues =
-          hasSchemaField(listing.primaryCategory.schema?.fields, "cuisines") ? getFoodCuisineValues(listing.details) : [];
         const matchesCuisine =
-          selectedCuisines.length === 0 || selectedCuisines.some((selectedCuisine) => listingCuisineValues.includes(selectedCuisine));
+          selectedCuisines.length === 0 || selectedCuisines.some((selectedCuisine) => cuisineValues.includes(selectedCuisine));
 
-        const listingPriceLevel = getPriceLevelValue(listing);
         const matchesPriceLevel =
-          selectedPriceLevels.length === 0 || (listingPriceLevel !== null && selectedPriceLevels.includes(listingPriceLevel));
+          selectedPriceLevels.length === 0 || (priceLevel !== null && selectedPriceLevels.includes(priceLevel));
 
         return isInsideArea && isOpenNow && matchesCuisine && matchesPriceLevel;
-      }),
-    [areaBounds, isOpenNowOnly, listings, selectedCuisines, selectedPriceLevels]
+      })
+        .map(({ listing }) => listing),
+    [areaBounds, isOpenNowOnly, listingFilterMetadata, selectedCuisines, selectedPriceLevels]
   );
 
   const mappableListings = useMemo(
@@ -226,6 +229,12 @@ export default function DirectoryBrowse({ breadcrumbs, categorySchemaFields, des
   );
   const showMap = hasLocationField && hasAnyMappableListings;
   const hasVisibleFilters = hasArchiveListings && frontendFilters.length > 0;
+  const hasActiveFilters = areaBounds !== null || isOpenNowOnly || selectedCuisines.length > 0 || selectedPriceLevels.length > 0;
+
+  const handleClearFilters = useCallback(() => {
+    resetFiltersAndArea();
+    window.dispatchEvent(new Event("porto-santo-guide:reset-map"));
+  }, [resetFiltersAndArea]);
 
   useEffect(() => {
     if (!showMap) {
@@ -247,11 +256,21 @@ export default function DirectoryBrowse({ breadcrumbs, categorySchemaFields, des
 
   return (
     <>
+      <div className="w-full border-b border-black/10 bg-white">
+        <section className="mx-auto grid w-full max-w-[1280px] gap-3 px-4 py-4 md:px-5 md:py-6 max-[640px]:py-3.5">
+          <PublicBreadcrumbs items={breadcrumbs} />
+          <h1 className="m-0 text-display-sm font-semibold tracking-[-0.04em] text-black">{title}</h1>
+          <ExpandableDescription className="max-w-[46rem]" text={description} />
+        </section>
+      </div>
+
       {hasVisibleFilters ? (
         <DirectoryFiltersBar
           filters={frontendFilters}
+          hasActiveFilters={hasActiveFilters}
           isMobileMapMode={isMobileMapMode}
           onBackToList={() => setMobileViewMode("list")}
+          onClearFilters={handleClearFilters}
         />
       ) : null}
 
@@ -261,20 +280,14 @@ export default function DirectoryBrowse({ breadcrumbs, categorySchemaFields, des
           shouldRenderDesktopMap && "grid gap-5 [grid-template-columns:minmax(0,1fr)_minmax(21rem,38rem)] max-[900px]:block"
         )}
       >
-        <main className={cn("min-w-0 pt-4 pb-6 md:pt-6 md:pb-10", !shouldRenderDesktopMap && "mx-auto w-full") }>
-          <section className="mb-8 grid gap-3 max-[640px]:mb-6">
-            <PublicBreadcrumbs items={breadcrumbs} />
-            <h1 className="m-0 text-display-sm font-semibold tracking-[-0.04em] text-black">{title}</h1>
-            <ExpandableDescription className="max-w-[46rem]" text={description} />
-          </section>
-
+        <main className={cn("min-w-0 pt-4 pb-6 md:pt-6 md:pb-10", !shouldRenderDesktopMap && "mx-auto w-full")}>
           <DirectoryView
             hasVisibleFilters={hasVisibleFilters}
-            hoveredListingId={hoveredListingId}
             isMobileViewport={isMobileViewport}
+            mapHandleRef={listingMapHandleRef}
             mappableListings={mappableListings}
             mobileViewMode={mobileViewMode}
-            onHoverListingChange={setHoveredListingId}
+            onHoverListingChange={handleListingHoverChange}
             onSearchInArea={handleSearchInArea}
             onToggleMobileViewMode={() => {
               setMobileViewMode((currentMode) => (currentMode === "list" ? "map" : "list"));
@@ -292,7 +305,7 @@ export default function DirectoryBrowse({ breadcrumbs, categorySchemaFields, des
                 hasVisibleFilters ? "sticky top-16 h-[calc(100svh-4rem)]" : "sticky top-0 h-screen"
               )}
             >
-              <ListingMapLazy listings={mappableListings} hoveredListingId={hoveredListingId} onSearchInArea={handleSearchInArea} />
+              <ListingMapLazy isVisible listings={mappableListings} mapHandleRef={listingMapHandleRef} onSearchInArea={handleSearchInArea} />
             </div>
           </aside>
         ) : null}

@@ -1,13 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type Ref } from "react";
 import dynamic from "next/dynamic";
-import type { MapBounds } from "@/components/ListingMap";
+import type { ListingMapHandle, MapBounds } from "@/components/ListingMap";
 import type { Listing } from "@/types/listing";
 
 type ListingMapLazyProps = {
   listings: Listing[];
-  hoveredListingId: string | null;
+  isVisible?: boolean;
+  mapHandleRef?: Ref<ListingMapHandle>;
+  mobileCardMode?: boolean;
   onSearchInArea?: (bounds: MapBounds) => void;
 };
 
@@ -25,10 +27,6 @@ function loadListingMap() {
   return listingMapImportPromise;
 }
 
-if (typeof window !== "undefined") {
-  void loadListingMap();
-}
-
 const ListingMap = dynamic<ListingMapInternalProps>(loadListingMap, {
   ssr: false,
   loading: () => null
@@ -38,7 +36,7 @@ export default function ListingMapLazy(props: ListingMapLazyProps) {
   const [isMapReady, setIsMapReady] = useState(false);
 
   return (
-    <div className="relative h-full w-full bg-white">
+    <div className="relative h-full w-full overflow-hidden bg-white">
       <ListingMap {...props} onReadyChange={setIsMapReady} />
       {!isMapReady ? (
         <div

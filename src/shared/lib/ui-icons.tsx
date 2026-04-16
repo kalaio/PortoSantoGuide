@@ -195,7 +195,7 @@ export function getUiIconOptionsForCategories() {
   return CATEGORY_UI_ICON_OPTIONS;
 }
 
-export function renderUiIconSvg(iconName: string | null | undefined, stroke = "currentColor"): string | null {
+export function renderUiIconSvg(iconName: string | null | undefined, stroke = "currentColor", size = 24): string | null {
   const normalized = normalizeUiIconName(iconName);
   if (!normalized) {
     return null;
@@ -205,5 +205,5 @@ export function renderUiIconSvg(iconName: string | null | undefined, stroke = "c
     .map((path) => `<path d="${path}" />`)
     .join("");
 
-  return `<svg viewBox="0 0 24 24" width="24" height="24" stroke="${stroke}" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="${size}" height="${size}" stroke="${stroke}" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
 }

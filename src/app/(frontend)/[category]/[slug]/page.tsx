@@ -129,7 +129,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
 
         {hasLocationField && listing.latitude !== null && listing.longitude !== null ? (
           <div className="min-h-[60vh] overflow-hidden rounded-[1.75rem] border border-black/10 bg-white max-[640px]:min-h-[55vh] max-[640px]:rounded-[1.5rem]">
-            <ListingMapLazy listings={[listing]} hoveredListingId={null} />
+            <ListingMapLazy listings={[listing]} />
           </div>
         ) : null}
       </section>

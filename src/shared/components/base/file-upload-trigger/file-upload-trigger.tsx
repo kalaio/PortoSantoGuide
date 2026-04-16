@@ -65,7 +65,7 @@ export const FileTrigger = (props: FileTriggerProps) => {
                 onChange={(e) => onSelect?.(e.target.files)}
                 capture={defaultCamera}
                 multiple={allowsMultiple}
-                // @ts-expect-error
+                // @ts-expect-error webkitdirectory is a non-standard attribute used for directory uploads.
                 webkitdirectory={acceptDirectory ? "" : undefined}
             />
         </>

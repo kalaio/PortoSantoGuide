@@ -183,8 +183,12 @@ export default function FilterPopover<T>({
     <div className="relative">
       <div ref={buttonRef}>
         <PublicFilterButton
-          className="cursor-pointer"
-          isActive={isOpen || isActive}
+          className={cn(
+            "cursor-pointer",
+            isOpen && !isActive &&
+              "text-[var(--psg-brand)] ring-1 ring-[var(--psg-brand)] ring-inset *:data-text:text-[var(--psg-brand)] hover:bg-white hover:text-[var(--psg-brand)] hover:*:data-text:text-[var(--psg-brand)]"
+          )}
+          isActive={isActive}
           onClick={() => {
             if (isOpen) {
               closeIntentRef.current = "discard";

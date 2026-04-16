@@ -30,14 +30,18 @@ export type DirectoryFrontendFilter =
 
 type DirectoryFiltersBarProps = {
   filters: DirectoryFrontendFilter[];
+  hasActiveFilters: boolean;
   isMobileMapMode: boolean;
   onBackToList: () => void;
+  onClearFilters: () => void;
 };
 
 export default function DirectoryFiltersBar({
   filters,
+  hasActiveFilters,
   isMobileMapMode,
-  onBackToList
+  onBackToList,
+  onClearFilters
 }: DirectoryFiltersBarProps) {
   const [openFilterKey, setOpenFilterKey] = useState<string | null>(null);
 
@@ -102,6 +106,19 @@ export default function DirectoryFiltersBar({
               />
             );
           })}
+
+          {hasActiveFilters ? (
+            <button
+              className="inline-flex h-10 shrink-0 items-center px-1 text-sm font-medium text-[color:var(--psg-text-secondary)] transition hover:text-black cursor-pointer"
+              onClick={() => {
+                setOpenFilterKey(null);
+                onClearFilters();
+              }}
+              type="button"
+            >
+              Clear filters
+            </button>
+          ) : null}
         </div>
       </div>
     </div>

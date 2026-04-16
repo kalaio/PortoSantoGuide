@@ -48,7 +48,7 @@ export default function PublicSearchBar({ menuLinks }: { menuLinks: PublicMenuLi
           <GlobalSearch />
         </div>
 
-        <div className="flex items-center justify-end gap-1.5 max-[640px]:col-start-3 max-[640px]:gap-0.5">
+        <div className="flex items-center justify-end gap-1.5 max-[640px]:col-start-3 max-[640px]:gap-1">
           <div className="hidden max-[640px]:flex">
             <GlobalSearch compactOnMobile />
           </div>

@@ -10,11 +10,12 @@ import type { PublicMenuLink } from "@/lib/listings";
 import type { SlideMedia } from "@/lib/slides";
 
 type HomeHeroProps = {
+  initialActiveIndex?: number;
   slides: SlideMedia[];
   menuLinks: PublicMenuLink[];
 };
 
-export default function HomeHero({ slides, menuLinks }: HomeHeroProps) {
+export default function HomeHero({ initialActiveIndex = 0, slides, menuLinks }: HomeHeroProps) {
   const usableSlides = useMemo(
     () =>
       slides.filter(
@@ -22,7 +23,8 @@ export default function HomeHero({ slides, menuLinks }: HomeHeroProps) {
       ),
     [slides]
   );
-  const [activeIndex, setActiveIndex] = useState(0);
+  const normalizedInitialActiveIndex = usableSlides.length === 0 ? 0 : Math.min(initialActiveIndex, usableSlides.length - 1);
+  const [activeIndex, setActiveIndex] = useState(normalizedInitialActiveIndex);
   const [previousIndex, setPreviousIndex] = useState<number | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isThumbnailTrayOpen, setIsThumbnailTrayOpen] = useState(false);
@@ -99,7 +101,7 @@ export default function HomeHero({ slides, menuLinks }: HomeHeroProps) {
 
     const desktopSrc = slide.mediaDesktop ?? slide.mediaMobile ?? "";
     const mobileSrc = slide.mediaMobile ?? slide.mediaDesktop ?? "";
-    const isPriority = state === "active" && activeIndex === 0;
+    const isPriority = state === "active" && activeIndex === normalizedInitialActiveIndex;
 
     return (
       <div key={`${slide.id}-${state}`} className={layerClass}>

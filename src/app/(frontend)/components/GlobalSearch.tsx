@@ -556,7 +556,7 @@ export default function GlobalSearch({ compactOnMobile = false, placeholder = "W
       {compactOnMobile && !isMobileOpen ? (
         <button
           type="button"
-          className="hidden h-11 w-11 items-center justify-center rounded-full bg-white text-black transition hover:bg-white hover:text-[var(--psg-brand)] cursor-pointer max-[640px]:inline-flex"
+          className="hidden h-11 w-11 items-center justify-center rounded-full bg-transparent text-black transition hover:text-[var(--psg-brand)] cursor-pointer max-[640px]:inline-flex"
           onClick={openMobileOverlay}
           aria-label="Open search"
         >

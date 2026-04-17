@@ -424,6 +424,14 @@ export default function ListingMap({
           mapTypeControl: false,
           scrollwheel: true,
           streetViewControl: false,
+          styles: [
+            { featureType: "poi.business", stylers: [{ visibility: "off" }] },
+            { featureType: "poi.attraction", stylers: [{ visibility: "off" }] },
+            { featureType: "poi.government", stylers: [{ visibility: "off" }] },
+            { featureType: "poi.school", stylers: [{ visibility: "off" }] },
+            { featureType: "poi.sports_complex", stylers: [{ visibility: "off" }] },
+            { featureType: "transit", elementType: "labels.icon", stylers: [{ visibility: "off" }] }
+          ],
           zoom: initialZoom,
           zoomControl: true
         });
@@ -517,7 +525,6 @@ export default function ListingMap({
         marker = new googleMaps.Marker({
           clickable: true,
           map,
-          optimized: false,
           position: toLatLngLiteral(descriptor.listing)
         });
 

@@ -517,6 +517,7 @@ export default function ListingMap({
         marker = new googleMaps.Marker({
           clickable: true,
           map,
+          optimized: false,
           position: toLatLngLiteral(descriptor.listing)
         });
 

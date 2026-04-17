@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState, type Ref } from "react";
 import { RefreshCw05 } from "@untitledui/icons";
 import PublicFilterButton from "@/components/frontend/PublicFilterButton";
-import { createGoogleMarkerIcon, hasGoogleMapsApiKey, loadGoogleMapsApi } from "@/lib/google-maps";
+import { createGoogleMarkerIcon, createGoogleMarkerIconAsync, hasGoogleMapsApiKey, loadGoogleMapsApi } from "@/lib/google-maps";
 import { getDetailsSummaryByFields, getFoodOpeningState, hasSchemaField } from "@/lib/listing-details";
 import { normalizeUiIconName, type UiIconId } from "@/lib/ui-icons";
 import type { Listing } from "@/types/listing";
@@ -420,7 +420,9 @@ export default function ListingMap({
           center: initialCenter,
           clickableIcons: false,
           fullscreenControl: false,
+          gestureHandling: "greedy",
           mapTypeControl: false,
+          scrollwheel: true,
           streetViewControl: false,
           zoom: initialZoom,
           zoomControl: true
@@ -515,8 +517,32 @@ export default function ListingMap({
         marker = new googleMaps.Marker({
           clickable: true,
           map,
-          optimized: true,
+          optimized: false,
           position: toLatLngLiteral(descriptor.listing)
+        });
+
+        // Set initial icon (SVG for fast loading)
+        marker.setIcon(
+          createGoogleMarkerIcon(googleMaps, {
+            iconId: descriptor.iconId,
+            isActive: false,
+            isVisited: visitedListingIdsRef.current.has(listingId),
+            openingState: descriptor.openingState
+          })
+        );
+
+        // Async update to PNG for better zoom performance
+        createGoogleMarkerIconAsync(googleMaps, {
+          iconId: descriptor.iconId,
+          isActive: false,
+          isVisited: visitedListingIdsRef.current.has(listingId),
+          openingState: descriptor.openingState
+        }).then((icon) => {
+          if (markersRef.current.get(listingId) === marker) {
+            marker?.setIcon(icon);
+          }
+        }).catch(() => {
+          // Keep SVG if PNG fails
         });
 
         marker.addListener("mouseover", () => {
@@ -571,15 +597,31 @@ export default function ListingMap({
       }
 
       const isActive = activeListingIds.has(listingId);
-      marker.setIcon(
-        createGoogleMarkerIcon(googleMaps, {
-          iconId: descriptor.iconId,
-          isActive,
-          isVisited: visitedListingIds.has(listingId),
-          openingState: descriptor.openingState
-        })
-      );
-      marker.setZIndex(isActive ? 20 : visitedListingIds.has(listingId) ? 10 : 1);
+      const isVisited = visitedListingIds.has(listingId);
+
+      // Update icon with PNG for smoother zoom transitions
+      createGoogleMarkerIconAsync(googleMaps, {
+        iconId: descriptor.iconId,
+        isActive,
+        isVisited,
+        openingState: descriptor.openingState
+      }).then((icon) => {
+        if (markersRef.current.get(listingId) === marker) {
+          marker?.setIcon(icon);
+        }
+      }).catch(() => {
+        // Fallback to SVG
+        marker?.setIcon(
+          createGoogleMarkerIcon(googleMaps, {
+            iconId: descriptor.iconId,
+            isActive,
+            isVisited,
+            openingState: descriptor.openingState
+          })
+        );
+      });
+
+      marker.setZIndex(isActive ? 20 : isVisited ? 10 : 1);
     });
   }, [externalHoveredListingId, isMapReady, mapHoveredListingId, markerDescriptorsById, popupListingId, selectedListingId, visitedListingIds]);
 

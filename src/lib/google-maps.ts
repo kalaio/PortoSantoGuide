@@ -74,6 +74,10 @@ export function getGoogleMapsApiKey() {
   return process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY?.trim() ?? "";
 }
 
+export function getGoogleMapsMapId() {
+  return process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID?.trim() ?? "";
+}
+
 export function hasGoogleMapsApiKey() {
   return getGoogleMapsApiKey().length > 0;
 }
@@ -141,6 +145,84 @@ export function loadGoogleMapsApi(): Promise<typeof google.maps> {
   return googleMapsPromise;
 }
 
+// Cache for pre-rendered PNG markers
+const markerPngCache = new Map<string, string>();
+
+async function renderMarkerToPng(state: MarkerIconState): Promise<string> {
+  const cacheKey = buildMarkerIconCacheKey(state) + ":png2x";
+  const cached = markerPngCache.get(cacheKey);
+  if (cached) return cached;
+
+  const size = MARKER_SIZE * 2; // 72px for retina quality
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Canvas not supported");
+
+  const center = size / 2;
+  const circleFill = state.isActive ? MARKER_ACTIVE_FILL : MARKER_DEFAULT_FILL;
+  const circleStroke = state.isActive || state.isVisited ? MARKER_ACTIVE_STROKE : MARKER_DEFAULT_STROKE;
+  const iconStroke = state.isActive ? ICON_ACTIVE_STROKE : ICON_DEFAULT_STROKE;
+
+  // Draw circle background
+  ctx.beginPath();
+  ctx.arc(center, center, 33, 0, 2 * Math.PI);
+  ctx.fillStyle = circleFill;
+  ctx.fill();
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = circleStroke;
+  ctx.stroke();
+
+  // Draw icon
+  const iconSize = 32;
+  const iconSvg = renderUiIconSvg(state.iconId, iconStroke, iconSize) ?? renderUiIconSvg("map-pin", iconStroke, iconSize) ?? "";
+  const iconX = (size - iconSize) / 2;
+  const iconY = (size - iconSize) / 2;
+
+  // Create image from SVG
+  await new Promise<void>((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      ctx.drawImage(img, iconX, iconY, iconSize, iconSize);
+      resolve();
+    };
+    img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(iconSvg)}`;
+  });
+
+  // Draw status dot
+  if (state.openingState !== null) {
+    const dotX = size * 0.81;
+    const dotY = size * 0.19;
+    const dotRadius = STATUS_DOT_RADIUS * 2;
+
+    ctx.beginPath();
+    ctx.arc(dotX, dotY, dotRadius, 0, 2 * Math.PI);
+    ctx.fillStyle = state.openingState === "open" ? "rgb(23 178 106)" : "rgb(163 163 163)";
+    ctx.fill();
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = "#ffffff";
+    ctx.stroke();
+  }
+
+  const pngUrl = canvas.toDataURL("image/png");
+  markerPngCache.set(cacheKey, pngUrl);
+  return pngUrl;
+}
+
+export async function createGoogleMarkerIconAsync(
+  googleMaps: typeof google.maps,
+  state: MarkerIconState
+): Promise<google.maps.Icon> {
+  const pngUrl = await renderMarkerToPng(state);
+  return {
+    anchor: new googleMaps.Point(MARKER_CENTER, MARKER_CENTER),
+    scaledSize: new googleMaps.Size(MARKER_SIZE, MARKER_SIZE),
+    url: pngUrl
+  };
+}
+
+// Synchronous version (uses SVG, for initial render)
 export function createGoogleMarkerIcon(
   googleMaps: typeof google.maps,
   state: MarkerIconState
@@ -150,4 +232,37 @@ export function createGoogleMarkerIcon(
     scaledSize: new googleMaps.Size(MARKER_SIZE, MARKER_SIZE),
     url: buildMarkerIconUrl(state)
   };
+}
+
+// Create HTML element for AdvancedMarkerElement (modern API)
+export function createAdvancedMarkerContent(state: MarkerIconState): HTMLElement {
+  const circleFill = state.isActive ? MARKER_ACTIVE_FILL : MARKER_DEFAULT_FILL;
+  const circleStroke = state.isActive || state.isVisited ? MARKER_ACTIVE_STROKE : MARKER_DEFAULT_STROKE;
+  const iconStroke = state.isActive ? ICON_ACTIVE_STROKE : ICON_DEFAULT_STROKE;
+
+  // Create container
+  const container = document.createElement("div");
+  container.style.width = `${MARKER_SIZE}px`;
+  container.style.height = `${MARKER_SIZE}px`;
+  container.style.position = "relative";
+  container.style.display = "flex";
+  container.style.alignItems = "center";
+  container.style.justifyContent = "center";
+
+  // Create SVG content
+  const iconSvg = renderUiIconSvg(state.iconId, iconStroke, 16) ?? renderUiIconSvg("map-pin", iconStroke, 16) ?? "";
+
+  const statusDot = state.openingState === null
+    ? ""
+    : `<circle cx="${STATUS_DOT_CX}" cy="${STATUS_DOT_CY}" r="${STATUS_DOT_RADIUS}" fill="${state.openingState === "open" ? "rgb(23 178 106)" : "rgb(163 163 163)"}" stroke="#ffffff" stroke-width="1.5" />`;
+
+  container.innerHTML = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="${MARKER_SIZE}" height="${MARKER_SIZE}" viewBox="0 0 ${MARKER_SIZE} ${MARKER_SIZE}" style="display: block;">
+      <circle cx="${MARKER_CENTER}" cy="${MARKER_CENTER}" r="16.5" fill="${circleFill}" stroke="${circleStroke}" stroke-width="1.5" />
+      ${iconSvg.replace("<svg ", `<svg x="10" y="10" width="16" height="16" `)}
+      ${statusDot}
+    </svg>
+  `;
+
+  return container;
 }

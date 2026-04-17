@@ -149,11 +149,13 @@ export function loadGoogleMapsApi(): Promise<typeof google.maps> {
 const markerPngCache = new Map<string, string>();
 
 async function renderMarkerToPng(state: MarkerIconState): Promise<string> {
-  const cacheKey = buildMarkerIconCacheKey(state) + ":png2x";
+  const cacheKey = buildMarkerIconCacheKey(state) + ":png128";
   const cached = markerPngCache.get(cacheKey);
   if (cached) return cached;
 
-  const size = MARKER_SIZE * 2; // 72px for retina quality
+  // Use 128x128 (power of 2) for better pixel alignment and less jitter
+  const size = 128;
+  const scale = size / MARKER_SIZE; // ~3.55x
   const canvas = document.createElement("canvas");
   canvas.width = size;
   canvas.height = size;
@@ -165,17 +167,17 @@ async function renderMarkerToPng(state: MarkerIconState): Promise<string> {
   const circleStroke = state.isActive || state.isVisited ? MARKER_ACTIVE_STROKE : MARKER_DEFAULT_STROKE;
   const iconStroke = state.isActive ? ICON_ACTIVE_STROKE : ICON_DEFAULT_STROKE;
 
-  // Draw circle background
+  // Draw circle background (radius 33 * 3.55 ≈ 117, but use 58 for cleaner look)
   ctx.beginPath();
-  ctx.arc(center, center, 33, 0, 2 * Math.PI);
+  ctx.arc(center, center, 58, 0, 2 * Math.PI);
   ctx.fillStyle = circleFill;
   ctx.fill();
-  ctx.lineWidth = 3;
+  ctx.lineWidth = 5;
   ctx.strokeStyle = circleStroke;
   ctx.stroke();
 
-  // Draw icon
-  const iconSize = 32;
+  // Draw icon (16px * 3.55 ≈ 57)
+  const iconSize = 57;
   const iconSvg = renderUiIconSvg(state.iconId, iconStroke, iconSize) ?? renderUiIconSvg("map-pin", iconStroke, iconSize) ?? "";
   const iconX = (size - iconSize) / 2;
   const iconY = (size - iconSize) / 2;
@@ -192,15 +194,15 @@ async function renderMarkerToPng(state: MarkerIconState): Promise<string> {
 
   // Draw status dot
   if (state.openingState !== null) {
-    const dotX = size * 0.81;
-    const dotY = size * 0.19;
-    const dotRadius = STATUS_DOT_RADIUS * 2;
+    const dotX = size * 0.81; // ~104px
+    const dotY = size * 0.19; // ~24px
+    const dotRadius = STATUS_DOT_RADIUS * scale; // ~18px
 
     ctx.beginPath();
     ctx.arc(dotX, dotY, dotRadius, 0, 2 * Math.PI);
     ctx.fillStyle = state.openingState === "open" ? "rgb(23 178 106)" : "rgb(163 163 163)";
     ctx.fill();
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 5;
     ctx.strokeStyle = "#ffffff";
     ctx.stroke();
   }

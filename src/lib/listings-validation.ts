@@ -10,6 +10,16 @@ export const listQuerySchema = z.object({
 });
 
 const categoryIdSchema = z.string().trim().min(1).max(64);
+const photoAssetIdSchema = z.string().trim().min(1).max(64);
+const photoSectionIdSchema = z.string().trim().min(1).max(64);
+
+export const listingPhotoPayloadSchema = z.object({
+  assetId: photoAssetIdSchema,
+  photoSectionId: photoSectionIdSchema.nullable().optional(),
+  alt: z.string().trim().max(240).nullable().optional(),
+  sortOrder: z.number().int().min(0),
+  isCover: z.boolean().optional()
+});
 
 const listingBaseSchema = z.object({
   slug: z
@@ -25,7 +35,8 @@ const listingBaseSchema = z.object({
   longitude: longitudeSchema.nullable().optional(),
   details: z.record(z.string(), z.unknown()),
   primaryCategoryId: categoryIdSchema,
-  categoryIds: z.array(categoryIdSchema).min(1)
+  categoryIds: z.array(categoryIdSchema).min(1),
+  photos: z.array(listingPhotoPayloadSchema).max(100).optional()
 });
 
 export const createListingSchema = listingBaseSchema.superRefine((data, ctx) => {
@@ -59,7 +70,37 @@ export const updateListingSchema = listingBaseSchema
         message: "Primary category must be included in categoryIds"
       });
     }
+
+    if (data.photos) {
+      const assetIds = new Set<string>();
+      let coverCount = 0;
+
+      data.photos.forEach((photo, index) => {
+        if (assetIds.has(photo.assetId)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["photos", index, "assetId"],
+            message: "Duplicate photo asset"
+          });
+        }
+
+        assetIds.add(photo.assetId);
+
+        if (photo.isCover) {
+          coverCount += 1;
+        }
+      });
+
+      if (coverCount > 1) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["photos"],
+          message: "Only one photo can be marked as cover"
+        });
+      }
+    }
   });
 
 export type CreateListingInput = z.infer<typeof createListingSchema>;
 export type UpdateListingInput = z.infer<typeof updateListingSchema>;
+export type ListingPhotoPayloadInput = z.infer<typeof listingPhotoPayloadSchema>;

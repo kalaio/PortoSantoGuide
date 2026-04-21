@@ -6,7 +6,8 @@ import type {
   Listing,
   ListingCategorySummary,
   ListingCategoryTag,
-  ListingDetail
+  ListingDetail,
+  ListingPhoto
 } from "@/types/listing";
 import { toListingDetails } from "@/lib/listing-details";
 
@@ -28,10 +29,15 @@ export type PublicMenuLink = {
   label: string;
 };
 
-const publishedRevisionFieldOrderBy: Prisma.ListingSchemaFieldOrderByWithRelationInput[] = [
-  { sortOrder: "asc" },
-  { fieldKey: "asc" }
-];
+const publishedRevisionFieldOrderBy = [
+  { sortOrder: "asc" as const },
+  { fieldKey: "asc" as const }
+] satisfies Prisma.ListingSchemaFieldOrderByWithRelationInput[];
+
+const publishedPhotoSectionOrderBy = [
+  { sortOrder: "asc" as const },
+  { label: "asc" as const }
+] satisfies Prisma.ListingSchemaPhotoSectionOrderByWithRelationInput[];
 
 const listingWithRelations = Prisma.validator<Prisma.ListingDefaultArgs>()({
   include: {
@@ -44,6 +50,9 @@ const listingWithRelations = Prisma.validator<Prisma.ListingDefaultArgs>()({
               include: {
                 fields: {
                   orderBy: publishedRevisionFieldOrderBy
+                },
+                photoSections: {
+                  orderBy: publishedPhotoSectionOrderBy
                 }
               }
             }
@@ -52,6 +61,13 @@ const listingWithRelations = Prisma.validator<Prisma.ListingDefaultArgs>()({
         categories: {
           include: {
             category: true
+          }
+        },
+        photos: {
+          orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+          include: {
+            asset: true,
+            photoSection: true
           }
         }
       }
@@ -114,10 +130,44 @@ function toPrimaryCategory(item: ListingWithPublishedRevision): ListingCategoryS
             sortOrder: field.sortOrder,
             isRequired: field.isRequired,
             isFrontendFilterEnabled: field.isFrontendFilterEnabled
+          })),
+          photoSections: revision.primaryCategory.schema.photoSections.map((section) => ({
+            id: section.id,
+            slug: section.slug,
+            label: section.label,
+            sortOrder: section.sortOrder
           }))
         }
       : null
   };
+}
+
+function toListingPhotos(item: ListingWithPublishedRevision): ListingPhoto[] {
+  const revision = getPublishedRevision(item);
+
+  return revision.photos.map((photo) => ({
+    id: photo.id,
+    assetId: photo.assetId,
+    path: photo.asset.originalPath,
+    thumbnailPath: photo.asset.thumbnailPath,
+    alt: photo.alt,
+    width: photo.asset.width,
+    height: photo.asset.height,
+    sortOrder: photo.sortOrder,
+    isCover: photo.isCover,
+    section: photo.photoSection
+      ? {
+          id: photo.photoSection.id,
+          slug: photo.photoSection.slug,
+          label: photo.photoSection.label,
+          sortOrder: photo.photoSection.sortOrder
+        }
+      : null
+  }));
+}
+
+function getListingCoverPhoto(photos: ListingPhoto[]): ListingPhoto | null {
+  return photos.find((photo) => photo.isCover) ?? photos[0] ?? null;
 }
 
 function toCategoryTags(item: ListingWithPublishedRevision): ListingCategoryTag[] {
@@ -134,6 +184,7 @@ function toCategoryTags(item: ListingWithPublishedRevision): ListingCategoryTag[
 
 function toListingCard(item: ListingWithPublishedRevision): Listing {
   const revision = getPublishedRevision(item);
+  const photos = toListingPhotos(item);
 
   return {
     id: item.id,
@@ -145,23 +196,34 @@ function toListingCard(item: ListingWithPublishedRevision): Listing {
     rating: item.rating,
     details: toListingDetails(revision.details),
     primaryCategory: toPrimaryCategory(item),
-    categories: toCategoryTags(item)
+    categories: toCategoryTags(item),
+    coverPhoto: getListingCoverPhoto(photos)
   };
 }
 
 function toListingDetail(item: ListingWithPublishedRevision): ListingDetail {
   const revision = getPublishedRevision(item);
+  const photos = toListingPhotos(item);
 
   return {
     ...toListingCard(item),
-    description: revision.description
+    description: revision.description,
+    photos,
+    photoSections: revision.primaryCategory.schema?.photoSections.map((section) => ({
+      id: section.id,
+      slug: section.slug,
+      label: section.label,
+      sortOrder: section.sortOrder
+    })) ?? []
   };
 }
 
 function toFallbackListingDetail(mock: Listing): ListingDetail {
   return {
     ...mock,
-    description: "A curated Porto Santo spot with practical details and local highlights."
+    description: "A curated Porto Santo spot with practical details and local highlights.",
+    photos: [],
+    photoSections: mock.primaryCategory.schema?.photoSections ?? []
   };
 }
 
@@ -407,6 +469,15 @@ export async function getListingsByCategorySlug(
                 isRequired: true,
                 isFrontendFilterEnabled: true
               }
+            },
+            photoSections: {
+              orderBy: [{ sortOrder: "asc" }, { label: "asc" }],
+              select: {
+                id: true,
+                slug: true,
+                label: true,
+                sortOrder: true
+              }
             }
           }
         },
@@ -464,7 +535,8 @@ export async function getListingsByCategorySlug(
           ? {
               slug: category.schema.slug,
               label: category.schema.label,
-              fields: category.schema.fields
+              fields: category.schema.fields,
+              photoSections: category.schema.photoSections
             }
           : null
       },

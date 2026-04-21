@@ -44,13 +44,15 @@ export const mockListings: Listing[] = [
           { fieldKey: "priceLevel", sortOrder: 5, isRequired: false, isFrontendFilterEnabled: false },
           { fieldKey: "priceFrom", sortOrder: 6, isRequired: false, isFrontendFilterEnabled: false },
           { fieldKey: "takeaway", sortOrder: 7, isRequired: false, isFrontendFilterEnabled: false }
-        ]
+        ],
+        photoSections: []
       }
     },
     categories: [
       { slug: "restaurants", label: "Restaurants" },
       { slug: "snack-bars", label: "Snack-bars" }
-    ]
+    ],
+    coverPhoto: null
   },
   {
     id: "pizzaria-ilheu",
@@ -92,13 +94,15 @@ export const mockListings: Listing[] = [
           { fieldKey: "priceLevel", sortOrder: 5, isRequired: false, isFrontendFilterEnabled: false },
           { fieldKey: "priceFrom", sortOrder: 6, isRequired: false, isFrontendFilterEnabled: false },
           { fieldKey: "takeaway", sortOrder: 7, isRequired: false, isFrontendFilterEnabled: false }
-        ]
+        ],
+        photoSections: []
       }
     },
     categories: [
       { slug: "pizzerias", label: "Pizzerias" },
       { slug: "restaurants", label: "Restaurants" }
-    ]
+    ],
+    coverPhoto: null
   },
   {
     id: "porto-santo-jeep-tour",
@@ -129,9 +133,11 @@ export const mockListings: Listing[] = [
           { fieldKey: "difficulty", sortOrder: 3, isRequired: false, isFrontendFilterEnabled: false },
           { fieldKey: "priceFrom", sortOrder: 4, isRequired: false, isFrontendFilterEnabled: false },
           { fieldKey: "bookingRequired", sortOrder: 5, isRequired: false, isFrontendFilterEnabled: false }
-        ]
+        ],
+        photoSections: []
       }
     },
-    categories: [{ slug: "activities", label: "Activities" }]
+    categories: [{ slug: "activities", label: "Activities" }],
+    coverPhoto: null
   }
 ];

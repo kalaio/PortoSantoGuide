@@ -9,6 +9,26 @@ export type ListingSchemaFieldSummary = {
   isFrontendFilterEnabled: boolean;
 };
 
+export type ListingPhotoSectionSummary = {
+  id: string;
+  slug: string;
+  label: string;
+  sortOrder: number;
+};
+
+export type ListingPhoto = {
+  id: string;
+  assetId: string;
+  path: string;
+  thumbnailPath: string | null;
+  alt: string | null;
+  width: number | null;
+  height: number | null;
+  sortOrder: number;
+  isCover: boolean;
+  section: ListingPhotoSectionSummary | null;
+};
+
 export type ListingCategorySummary = {
   slug: string;
   label: string;
@@ -19,6 +39,7 @@ export type ListingCategorySummary = {
     slug: string;
     label: string;
     fields: ListingSchemaFieldSummary[];
+    photoSections: ListingPhotoSectionSummary[];
   } | null;
 };
 
@@ -38,8 +59,11 @@ export type Listing = {
   details: ListingDetails;
   primaryCategory: ListingCategorySummary;
   categories: ListingCategoryTag[];
+  coverPhoto: ListingPhoto | null;
 };
 
 export type ListingDetail = Listing & {
   description: string | null;
+  photos: ListingPhoto[];
+  photoSections: ListingPhotoSectionSummary[];
 };

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { ListingRevisionStatus, ListingStatus, Prisma } from "@prisma/client";
 import { canManageAdmin, requireRequestAuthUser } from "@/app/(admin)/lib/admin-auth";
 import { requireTrustedMutationOrigin } from "@/lib/api-security";
+import { normalizeListingPhotoPayload, type NormalizedListingPhotoPayload } from "@/lib/listing-photos";
 import { validateListingPayloadAgainstSchemaFields } from "@/lib/listing-schema-validation";
 import { normalizeDetailsIssues, parseDetailsBySchemaFields } from "@/lib/listing-details-validation";
 import { prisma } from "@/lib/prisma";
@@ -40,7 +41,28 @@ type EditableListingSnapshot = {
   details: Prisma.JsonValue | null;
   primaryCategoryId: string;
   categoryIds: string[];
+  photos: NormalizedListingPhotoPayload[];
 };
+
+type SnapshotPhotoRecord = {
+  assetId: string;
+  alt: string | null;
+  sortOrder: number;
+  isCover: boolean;
+  photoSectionId: string | null;
+};
+
+function toSnapshotPhotos(photos: SnapshotPhotoRecord[]): NormalizedListingPhotoPayload[] {
+  return normalizeListingPhotoPayload(
+    photos.map((photo) => ({
+      assetId: photo.assetId,
+      photoSectionId: photo.photoSectionId,
+      alt: photo.alt,
+      sortOrder: photo.sortOrder,
+      isCover: photo.isCover
+    }))
+  );
+}
 
 function getSnapshotFromListing(listing: {
   slug: string;
@@ -52,6 +74,7 @@ function getSnapshotFromListing(listing: {
   details: Prisma.JsonValue | null;
   primaryCategoryId: string;
   categories: Array<{ categoryId: string }>;
+  photos?: SnapshotPhotoRecord[];
 }): EditableListingSnapshot {
   return {
     slug: listing.slug,
@@ -62,7 +85,8 @@ function getSnapshotFromListing(listing: {
     longitude: listing.longitude,
     details: listing.details,
     primaryCategoryId: listing.primaryCategoryId,
-    categoryIds: listing.categories.map((item) => item.categoryId)
+    categoryIds: listing.categories.map((item) => item.categoryId),
+    photos: toSnapshotPhotos(listing.photos ?? [])
   };
 }
 
@@ -76,6 +100,7 @@ function getSnapshotFromRevision(revision: {
   details: Prisma.JsonValue | null;
   primaryCategoryId: string;
   categories: Array<{ categoryId: string }>;
+  photos?: SnapshotPhotoRecord[];
 }): EditableListingSnapshot {
   return {
     slug: revision.slug,
@@ -86,7 +111,8 @@ function getSnapshotFromRevision(revision: {
     longitude: revision.longitude,
     details: revision.details,
     primaryCategoryId: revision.primaryCategoryId,
-    categoryIds: revision.categories.map((item) => item.categoryId)
+    categoryIds: revision.categories.map((item) => item.categoryId),
+    photos: toSnapshotPhotos(revision.photos ?? [])
   };
 }
 
@@ -257,6 +283,16 @@ export async function PATCH(request: Request, context: RouteContext) {
             select: {
               categoryId: true
             }
+          },
+          photos: {
+            orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+            select: {
+              assetId: true,
+              alt: true,
+              sortOrder: true,
+              isCover: true,
+              photoSectionId: true
+            }
           }
         }
       },
@@ -275,6 +311,16 @@ export async function PATCH(request: Request, context: RouteContext) {
           categories: {
             select: {
               categoryId: true
+            }
+          },
+          photos: {
+            orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+            select: {
+              assetId: true,
+              alt: true,
+              sortOrder: true,
+              isCover: true,
+              photoSectionId: true
             }
           }
         }
@@ -320,6 +366,7 @@ export async function PATCH(request: Request, context: RouteContext) {
   const nextCategoryIds = parsed.data.categoryIds
     ? [...new Set(parsed.data.categoryIds)]
     : [...new Set(source.categoryIds)];
+  const nextPhotos = parsed.data.photos ? normalizeListingPhotoPayload(parsed.data.photos) : source.photos;
 
   if (!nextCategoryIds.includes(nextPrimaryCategoryId)) {
     return buildCategoryValidationError("Primary category must be included in categoryIds");
@@ -345,6 +392,11 @@ export async function PATCH(request: Request, context: RouteContext) {
               sortOrder: true,
               isRequired: true
             }
+          },
+          photoSections: {
+            select: {
+              id: true
+            }
           }
         }
       }
@@ -362,6 +414,55 @@ export async function PATCH(request: Request, context: RouteContext) {
 
   if (categories.some((item) => item.sectionId !== primaryCategory.sectionId)) {
     return buildCategoryValidationError("All categories must belong to the same section");
+  }
+
+  const validPhotoSectionIds = new Set(primaryCategory.schema?.photoSections.map((section) => section.id) ?? []);
+  const invalidPhoto = nextPhotos.find(
+    (photo) => photo.photoSectionId !== null && !validPhotoSectionIds.has(photo.photoSectionId)
+  );
+
+  if (invalidPhoto) {
+    return NextResponse.json(
+      {
+        error: "Invalid listing payload",
+        issues: [
+          {
+            path: ["photos"],
+            message: "One or more photos use a section that does not belong to the selected schema"
+          }
+        ]
+      },
+      { status: 400 }
+    );
+  }
+
+  const assetIds = [...new Set(nextPhotos.map((photo) => photo.assetId))];
+  if (assetIds.length > 0) {
+    const existingAssets = await prisma.photoAsset.findMany({
+      where: {
+        id: {
+          in: assetIds
+        }
+      },
+      select: {
+        id: true
+      }
+    });
+
+    if (existingAssets.length !== assetIds.length) {
+      return NextResponse.json(
+        {
+          error: "Invalid listing payload",
+          issues: [
+            {
+              path: ["photos"],
+              message: "One or more photo assets are missing"
+            }
+          ]
+        },
+        { status: 400 }
+      );
+    }
   }
 
   const parsedDetails = parseDetailsBySchemaFields(
@@ -388,7 +489,8 @@ export async function PATCH(request: Request, context: RouteContext) {
     longitude: parsed.data.longitude !== undefined ? parsed.data.longitude : source.longitude,
     details: parsedDetails.data,
     primaryCategoryId: nextPrimaryCategoryId,
-    categoryIds: nextCategoryIds
+    categoryIds: nextCategoryIds,
+    photos: nextPhotos
   };
 
   const schemaIssues = validateListingPayloadAgainstSchemaFields({
@@ -460,6 +562,25 @@ export async function PATCH(request: Request, context: RouteContext) {
             categoryId
           }))
         });
+
+        await tx.listingRevisionPhoto.deleteMany({
+          where: {
+            revisionId
+          }
+        });
+
+        if (nextSnapshot.photos.length > 0) {
+          await tx.listingRevisionPhoto.createMany({
+            data: nextSnapshot.photos.map((photo) => ({
+              revisionId,
+              assetId: photo.assetId,
+              photoSectionId: photo.photoSectionId,
+              alt: photo.alt,
+              sortOrder: photo.sortOrder,
+              isCover: photo.isCover
+            }))
+          });
+        }
 
         if (!existing.currentDraftRevisionId) {
           await tx.listing.update({
@@ -549,6 +670,25 @@ export async function PATCH(request: Request, context: RouteContext) {
           categoryId
         }))
       });
+
+      await tx.listingRevisionPhoto.deleteMany({
+        where: {
+          revisionId
+        }
+      });
+
+      if (nextSnapshot.photos.length > 0) {
+        await tx.listingRevisionPhoto.createMany({
+          data: nextSnapshot.photos.map((photo) => ({
+            revisionId,
+            assetId: photo.assetId,
+            photoSectionId: photo.photoSectionId,
+            alt: photo.alt,
+            sortOrder: photo.sortOrder,
+            isCover: photo.isCover
+          }))
+        });
+      }
 
       if (!existing.currentDraftRevisionId) {
         await tx.listing.update({

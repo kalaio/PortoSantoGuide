@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import ExpandableDescription from "@/components/ExpandableDescription";
 import PublicBreadcrumbs from "@/components/frontend/PublicBreadcrumbs";
+import ListingGalleryExperience from "@/components/ListingGalleryExperience";
 import ListingMapLazy from "@/components/ListingMapLazy";
 import {
   FOOD_OPENING_HOURS_DAY_KEYS,
@@ -55,6 +56,16 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
           {listing.title}
         </h1>
       </section>
+
+      {listing.photos.length > 0 ? (
+        <section className="mb-8 max-[640px]:mb-6">
+          <ListingGalleryExperience
+            title={listing.title}
+            photos={listing.photos}
+            photoSections={listing.photoSections}
+          />
+        </section>
+      ) : null}
 
       <section className="grid gap-5 lg:grid-cols-[minmax(18rem,22rem)_minmax(0,1fr)]">
         <article className="grid gap-5 rounded-[1.75rem] border border-black/10 bg-white p-6 max-[640px]:rounded-[1.5rem] max-[640px]:p-5">

@@ -61,6 +61,7 @@ model ListingSchema {
   isActive    Boolean              @default(true)
   categories  ListingCategory[]
   fields      ListingSchemaField[]
+  photoSections ListingSchemaPhotoSection[]
   createdAt   DateTime             @default(now())
   updatedAt   DateTime             @updatedAt
 
@@ -183,6 +184,7 @@ model ListingRevision {
   primaryCategoryId       String
   primaryCategory         ListingCategory                     @relation(fields: [primaryCategoryId], references: [id], onDelete: Restrict)
   categories              ListingRevisionCategoryAssignment[]
+  photos                  ListingRevisionPhoto[]
   createdById             String?
   createdBy               User?                               @relation("CreatedListingRevisions", fields: [createdById], references: [id], onDelete: SetNull)
   updatedById             String?
@@ -205,6 +207,55 @@ model ListingRevisionCategoryAssignment {
 
   @@id([revisionId, categoryId])
   @@index([categoryId])
+}
+
+model ListingSchemaPhotoSection {
+  id        String                @id @default(cuid())
+  schemaId  String
+  slug      String
+  label     String
+  sortOrder Int                   @default(0)
+  isActive  Boolean               @default(true)
+  schema    ListingSchema         @relation(fields: [schemaId], references: [id], onDelete: Cascade)
+  photos    ListingRevisionPhoto[]
+  createdAt DateTime              @default(now())
+  updatedAt DateTime              @updatedAt
+
+  @@unique([schemaId, slug])
+  @@index([schemaId, isActive, sortOrder])
+}
+
+model PhotoAsset {
+  id            String                @id @default(cuid())
+  originalPath  String
+  thumbnailPath String?
+  mimeType      String
+  byteSize      Int
+  width         Int?
+  height        Int?
+  photos        ListingRevisionPhoto[]
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+}
+
+model ListingRevisionPhoto {
+  id             String                    @id @default(cuid())
+  revisionId     String
+  assetId        String
+  photoSectionId String?
+  alt            String?
+  sortOrder      Int                       @default(0)
+  isCover        Boolean                   @default(false)
+  revision       ListingRevision           @relation(fields: [revisionId], references: [id], onDelete: Cascade)
+  asset          PhotoAsset                @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  photoSection   ListingSchemaPhotoSection? @relation(fields: [photoSectionId], references: [id], onDelete: Restrict)
+  createdAt      DateTime                  @default(now())
+  updatedAt      DateTime                  @updatedAt
+
+  @@unique([revisionId, assetId])
+  @@index([assetId])
+  @@index([photoSectionId])
+  @@index([revisionId, sortOrder])
 }
 
 model ListingCategoryAssignment {

@@ -71,8 +71,8 @@ export default function ListingGalleryExperience({
             });
           }}
         >
-          <div className="relative overflow-hidden bg-black/5 md:overflow-visible md:bg-transparent">
-            <Carousel.Content className="-ml-0 md:grid md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)] md:grid-rows-[13.8rem_13.8rem] md:gap-2">
+          <div className="relative overflow-hidden bg-black/5 md:rounded-[0.75rem] md:bg-transparent">
+            <Carousel.Content className="-ml-0 md:grid md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)] md:grid-rows-[13.8rem_13.8rem] md:gap-2 md:bg-white">
               {photos.map((photo, index) => {
                 const isPrimary = index === 0;
                 const isDesktopHeroTile = index < 5;
@@ -143,7 +143,7 @@ export default function ListingGalleryExperience({
           <Dialog className="!grid !min-h-full !w-full !grid-cols-[minmax(0,1fr)] !items-stretch !justify-start content-start bg-white">
             <div className="grid min-w-0 w-full grid-cols-[minmax(0,1fr)]">
               <div className="sticky top-0 z-30 border-b border-black/10 bg-white">
-                <div className="flex h-20 items-center px-6 md:px-10 xl:px-14">
+                <div className="flex h-16 items-center px-6 md:h-[72px] md:px-10 xl:px-14">
                   <button
                     type="button"
                     className="inline-flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border border-black/10 bg-white text-black"
@@ -195,7 +195,7 @@ export default function ListingGalleryExperience({
                         className="grid min-w-0 gap-5 md:grid-cols-[220px_minmax(0,1fr)] md:gap-8 xl:grid-cols-[240px_minmax(0,1fr)]"
                       >
                         <div className="grid gap-1 self-start md:sticky md:top-28">
-                          <h3 className="m-0 text-3xl font-semibold tracking-[-0.04em] text-black md:text-4xl">
+                          <h3 className="m-0 text-2xl font-semibold tracking-[-0.04em] text-black md:text-3xl">
                             {getListingPhotoSectionLabel(section)}
                           </h3>
                           <p className="m-0 text-sm text-black/55">{sectionPhotos.length} photos</p>
@@ -212,7 +212,7 @@ export default function ListingGalleryExperience({
                                 setIsViewerOpen(true);
                               }}
                             >
-                              <div className="relative overflow-hidden rounded-[1.5rem] bg-black/5">
+                              <div className="relative overflow-hidden rounded-[0.75rem] bg-black/5">
                                 <div className="relative aspect-[4/3] w-full">
                                   <Image
                                     src={photo.path}

@@ -13,6 +13,18 @@ const schemaFieldSchema = z.object({
   isFrontendFilterEnabled: z.boolean().optional()
 });
 
+const schemaPhotoSectionSchema = z.object({
+  slug: z
+    .string()
+    .trim()
+    .min(2)
+    .max(80)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+  label: z.string().trim().min(2).max(80),
+  sortOrder: z.number().int().min(0),
+  isActive: z.boolean().optional()
+});
+
 const createSchemaSchema = z.object({
   slug: z
     .string()
@@ -24,7 +36,8 @@ const createSchemaSchema = z.object({
   description: z.string().trim().max(240).optional().nullable(),
   sortOrder: z.number().int().min(0).optional(),
   isActive: z.boolean().optional(),
-  fields: z.array(schemaFieldSchema).min(1)
+  fields: z.array(schemaFieldSchema).min(1),
+  photoSections: z.array(schemaPhotoSectionSchema).max(50).optional()
 });
 
 function hasDatabaseUrl() {
@@ -40,6 +53,21 @@ function normalizeSchemaFields(fields: Array<z.infer<typeof schemaFieldSchema>>)
       sortOrder: field.sortOrder ?? index,
       isRequired: field.isRequired ?? false,
       isFrontendFilterEnabled: field.isFrontendFilterEnabled ?? false
+    });
+  });
+
+  return [...unique.values()].sort((left, right) => left.sortOrder - right.sortOrder);
+}
+
+function normalizeSchemaPhotoSections(sections: Array<z.infer<typeof schemaPhotoSectionSchema>>) {
+  const unique = new Map<string, { slug: string; label: string; sortOrder: number; isActive: boolean }>();
+
+  sections.forEach((section, index) => {
+    unique.set(section.slug, {
+      slug: section.slug,
+      label: section.label,
+      sortOrder: section.sortOrder ?? index,
+      isActive: section.isActive ?? true
     });
   });
 
@@ -72,6 +100,16 @@ export async function GET(request: Request) {
           sortOrder: true,
           isRequired: true,
           isFrontendFilterEnabled: true
+        }
+      },
+      photoSections: {
+        orderBy: [{ sortOrder: "asc" }, { label: "asc" }],
+        select: {
+          id: true,
+          slug: true,
+          label: true,
+          sortOrder: true,
+          isActive: true
         }
       }
     }
@@ -116,6 +154,7 @@ export async function POST(request: Request) {
   }
 
   const normalizedFields = normalizeSchemaFields(parsed.data.fields);
+  const normalizedPhotoSections = normalizeSchemaPhotoSections(parsed.data.photoSections ?? []);
 
   try {
     const created = await prisma.listingSchema.create({
@@ -127,6 +166,9 @@ export async function POST(request: Request) {
         isActive: parsed.data.isActive ?? true,
         fields: {
           create: normalizedFields
+        },
+        photoSections: {
+          create: normalizedPhotoSections
         }
       },
       select: {
@@ -144,6 +186,16 @@ export async function POST(request: Request) {
             isRequired: true,
             isFrontendFilterEnabled: true
           }
+        },
+        photoSections: {
+          orderBy: [{ sortOrder: "asc" }, { label: "asc" }],
+          select: {
+            id: true,
+            slug: true,
+            label: true,
+            sortOrder: true,
+            isActive: true
+          }
         }
       }
     });
@@ -155,7 +207,8 @@ export async function POST(request: Request) {
           ...field,
           label: getListingFieldByKey(field.fieldKey)?.label ?? field.fieldKey,
           supportsFrontendFilter: getListingFieldByKey(field.fieldKey)?.supportsFrontendFilter ?? false
-        }))
+        })),
+        photoSections: created.photoSections
       }
     }, { status: 201 });
   } catch (error) {

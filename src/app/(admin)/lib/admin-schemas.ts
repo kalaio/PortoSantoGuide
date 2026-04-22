@@ -13,6 +13,14 @@ export type AdminSchemaFieldRecord = {
   supportsFrontendFilter: boolean;
 };
 
+export type AdminSchemaPhotoSectionRecord = {
+  id: string;
+  slug: string;
+  label: string;
+  sortOrder: number;
+  isActive: boolean;
+};
+
 export type AdminSchemaRecord = {
   id: string;
   slug: string;
@@ -21,6 +29,7 @@ export type AdminSchemaRecord = {
   sortOrder: number;
   isActive: boolean;
   fields: AdminSchemaFieldRecord[];
+  photoSections: AdminSchemaPhotoSectionRecord[];
 };
 
 export type AdminSchemaRow = {
@@ -168,6 +177,16 @@ export async function getAdminSchemas(user: AuthUser): Promise<AdminSchemaRecord
             isRequired: true,
             sortOrder: true,
             isFrontendFilterEnabled: true
+          }
+        },
+        photoSections: {
+          orderBy: [{ sortOrder: "asc" }, { label: "asc" }],
+          select: {
+            id: true,
+            slug: true,
+            label: true,
+            sortOrder: true,
+            isActive: true
           }
         }
       }

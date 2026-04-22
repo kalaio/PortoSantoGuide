@@ -26,7 +26,11 @@ import {
 } from "@/app/(admin)/components/admin-tailwind";
 import DeleteConfirmModal from "@/app/(admin)/components/DeleteConfirmModal";
 import { Card, CheckboxField, Field, FormSection, TextArea, TextInput } from "@/components/ui";
-import type { AdminSchemaFieldRecord, AdminSchemaRecord } from "../lib/admin-schemas";
+import type {
+  AdminSchemaFieldRecord,
+  AdminSchemaPhotoSectionRecord,
+  AdminSchemaRecord
+} from "../lib/admin-schemas";
 import { LISTING_FIELDS, type ListingFieldDefinition } from "@/lib/listing-fields";
 
 type ApiIssue = {
@@ -46,6 +50,14 @@ type SchemaFieldState = {
   isFrontendFilterEnabled: boolean;
 };
 
+type SchemaPhotoSectionState = {
+  id?: string;
+  slug: string;
+  label: string;
+  sortOrder: string;
+  isActive: boolean;
+};
+
 type SchemaFormState = {
   slug: string;
   label: string;
@@ -53,6 +65,7 @@ type SchemaFormState = {
   sortOrder: string;
   isActive: boolean;
   fields: SchemaFieldState[];
+  photoSections: SchemaPhotoSectionState[];
 };
 
 type SchemaEditorClientProps = {
@@ -64,6 +77,7 @@ type SchemaValidationErrors = {
   slug?: string;
   label?: string;
   fields?: string;
+  photoSections?: string;
 };
 
 function getIssueMessage(payload: ApiError, fallback: string) {
@@ -86,6 +100,16 @@ function toFieldState(fields: AdminSchemaFieldRecord[]): SchemaFieldState[] {
   }));
 }
 
+function toPhotoSectionState(sections: AdminSchemaPhotoSectionRecord[]): SchemaPhotoSectionState[] {
+  return sections.map((section) => ({
+    id: section.id,
+    slug: section.slug,
+    label: section.label,
+    sortOrder: String(section.sortOrder),
+    isActive: section.isActive
+  }));
+}
+
 function toFormState(schema?: AdminSchemaRecord): SchemaFormState {
   return {
     slug: schema?.slug ?? "",
@@ -93,7 +117,8 @@ function toFormState(schema?: AdminSchemaRecord): SchemaFormState {
     description: schema?.description ?? "",
     sortOrder: String(schema?.sortOrder ?? 0),
     isActive: schema?.isActive ?? true,
-    fields: toFieldState(schema?.fields ?? [])
+    fields: toFieldState(schema?.fields ?? []),
+    photoSections: toPhotoSectionState(schema?.photoSections ?? [])
   };
 }
 
@@ -104,6 +129,18 @@ function normalizeFields(fields: SchemaFieldState[]) {
       sortOrder: Number(field.sortOrder || index),
       isRequired: field.isRequired,
       isFrontendFilterEnabled: field.isFrontendFilterEnabled
+    }))
+    .sort((left, right) => left.sortOrder - right.sortOrder);
+}
+
+function normalizePhotoSections(photoSections: SchemaPhotoSectionState[]) {
+  return photoSections
+    .map((section, index) => ({
+      id: section.id,
+      slug: section.slug.trim(),
+      label: section.label.trim(),
+      sortOrder: Number(section.sortOrder || index),
+      isActive: section.isActive
     }))
     .sort((left, right) => left.sortOrder - right.sortOrder);
 }
@@ -121,6 +158,10 @@ function getValidationErrors(form: SchemaFormState): SchemaValidationErrors {
 
   if (form.fields.length === 0) {
     errors.fields = "Enable at least one schema field.";
+  }
+
+  if (form.photoSections.some((section) => section.slug.trim().length === 0 || section.label.trim().length === 0)) {
+    errors.photoSections = "Every photo section needs a label and slug.";
   }
 
   return errors;
@@ -237,6 +278,21 @@ export default function SchemaEditorClient({ mode, initialSchema }: SchemaEditor
   const validationErrors = getValidationErrors(form);
   const hasValidationErrors = Object.keys(validationErrors).length > 0;
 
+  function addPhotoSection() {
+    setForm((previous) => ({
+      ...previous,
+      photoSections: [
+        ...previous.photoSections,
+        {
+          slug: "",
+          label: "",
+          sortOrder: String(previous.photoSections.length),
+          isActive: true
+        }
+      ]
+    }));
+  }
+
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setActiveAction("save");
@@ -263,7 +319,8 @@ export default function SchemaEditorClient({ mode, initialSchema }: SchemaEditor
           description: form.description,
           sortOrder: Number(form.sortOrder),
           isActive: form.isActive,
-          fields: normalizeFields(form.fields)
+          fields: normalizeFields(form.fields),
+          photoSections: normalizePhotoSections(form.photoSections)
         })
       });
 
@@ -395,6 +452,88 @@ export default function SchemaEditorClient({ mode, initialSchema }: SchemaEditor
                 onChange={(fields) => setForm((previous) => ({ ...previous, fields }))}
                 errorMessage={hasTriedSubmit ? validationErrors.fields : undefined}
               />
+            </FormSection>
+            <FormSection
+              title="Photo sections"
+              className={joinAdminClassNames(ADMIN_FORM_SECTION_SPACED_CLASS, ADMIN_FORM_SECTION_TIGHT_CLASS)}
+            >
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="m-0 text-tertiary">Define the photo groups available for listings that use this schema.</p>
+                <Button color="secondary" size="md" type="button" onClick={addPhotoSection} isDisabled={isLoading}>
+                  Add photo section
+                </Button>
+              </div>
+              {hasTriedSubmit && validationErrors.photoSections ? (
+                <p className={ADMIN_FIELD_ERROR_CLASS}>{validationErrors.photoSections}</p>
+              ) : null}
+              <div className={joinAdminClassNames(ADMIN_FIELD_REGISTRY_LIST_CLASS, hasTriedSubmit && validationErrors.photoSections && ADMIN_FIELD_REGISTRY_LIST_INVALID_CLASS)}>
+                {form.photoSections.length === 0 ? (
+                  <p className="m-0 text-tertiary">No photo sections yet.</p>
+                ) : null}
+                {form.photoSections.map((section, index) => (
+                  <article key={section.id ?? `photo-section-${index}`} className={ADMIN_FIELD_REGISTRY_ITEM_CLASS}>
+                    <div className={ADMIN_FIELD_REGISTRY_META_CLASS}>
+                      <strong>{section.label.trim() || `Photo section ${index + 1}`}</strong>
+                      <p className="muted">Used in the listing photo modal and fullscreen gallery.</p>
+                    </div>
+                    <div className={ADMIN_FIELD_REGISTRY_CONTROLS_CLASS}>
+                      <Field label="Label">
+                        <TextInput
+                          value={section.label}
+                          onChange={(value) =>
+                            setForm((previous) => ({
+                              ...previous,
+                              photoSections: previous.photoSections.map((item, itemIndex) =>
+                                itemIndex === index ? { ...item, label: value } : item
+                              )
+                            }))
+                          }
+                        />
+                      </Field>
+                      <Field label="Slug">
+                        <TextInput
+                          value={section.slug}
+                          onChange={(value) =>
+                            setForm((previous) => ({
+                              ...previous,
+                              photoSections: previous.photoSections.map((item, itemIndex) =>
+                                itemIndex === index ? { ...item, slug: value } : item
+                              )
+                            }))
+                          }
+                        />
+                      </Field>
+                      <Field label="Order">
+                        <TextInput
+                          type="number"
+                          min="0"
+                          value={section.sortOrder}
+                          onChange={(value) =>
+                            setForm((previous) => ({
+                              ...previous,
+                              photoSections: previous.photoSections.map((item, itemIndex) =>
+                                itemIndex === index ? { ...item, sortOrder: value } : item
+                              )
+                            }))
+                          }
+                        />
+                      </Field>
+                      <CheckboxField
+                        label="Active"
+                        checked={section.isActive}
+                        onChange={(checked) =>
+                          setForm((previous) => ({
+                            ...previous,
+                            photoSections: previous.photoSections.map((item, itemIndex) =>
+                              itemIndex === index ? { ...item, isActive: checked } : item
+                            )
+                          }))
+                        }
+                      />
+                    </div>
+                  </article>
+                ))}
+              </div>
             </FormSection>
             <AdminFormActions
               primaryActions={

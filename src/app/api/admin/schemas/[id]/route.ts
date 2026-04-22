@@ -13,6 +13,19 @@ const schemaFieldSchema = z.object({
   isFrontendFilterEnabled: z.boolean().optional()
 });
 
+const schemaPhotoSectionSchema = z.object({
+  id: z.string().trim().min(1).max(64).optional(),
+  slug: z
+    .string()
+    .trim()
+    .min(2)
+    .max(80)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+  label: z.string().trim().min(2).max(80),
+  sortOrder: z.number().int().min(0),
+  isActive: z.boolean().optional()
+});
+
 const updateSchemaSchema = z
   .object({
     slug: z
@@ -26,7 +39,8 @@ const updateSchemaSchema = z
     description: z.string().trim().max(240).nullable().optional(),
     sortOrder: z.number().int().min(0).optional(),
     isActive: z.boolean().optional(),
-    fields: z.array(schemaFieldSchema).min(1).optional()
+    fields: z.array(schemaFieldSchema).min(1).optional(),
+    photoSections: z.array(schemaPhotoSectionSchema).max(50).optional()
   })
   .refine((data) => Object.keys(data).length > 0, {
     message: "At least one field must be provided"
@@ -45,6 +59,22 @@ function normalizeSchemaFields(fields: Array<z.infer<typeof schemaFieldSchema>>)
       sortOrder: field.sortOrder ?? index,
       isRequired: field.isRequired ?? false,
       isFrontendFilterEnabled: field.isFrontendFilterEnabled ?? false
+    });
+  });
+
+  return [...unique.values()].sort((left, right) => left.sortOrder - right.sortOrder);
+}
+
+function normalizeSchemaPhotoSections(sections: Array<z.infer<typeof schemaPhotoSectionSchema>>) {
+  const unique = new Map<string, { id?: string; slug: string; label: string; sortOrder: number; isActive: boolean }>();
+
+  sections.forEach((section, index) => {
+    unique.set(section.slug, {
+      id: section.id,
+      slug: section.slug,
+      label: section.label,
+      sortOrder: section.sortOrder ?? index,
+      isActive: section.isActive ?? true
     });
   });
 
@@ -82,6 +112,9 @@ export async function PATCH(request: Request, context: RouteContext) {
 
   const { id } = await context.params;
   const normalizedFields = parsed.data.fields ? normalizeSchemaFields(parsed.data.fields) : null;
+  const normalizedPhotoSections = parsed.data.photoSections
+    ? normalizeSchemaPhotoSections(parsed.data.photoSections)
+    : null;
 
   try {
     const updated = await prisma.$transaction(async (tx) => {
@@ -117,6 +150,38 @@ export async function PATCH(request: Request, context: RouteContext) {
         });
       }
 
+      if (normalizedPhotoSections) {
+        for (const section of normalizedPhotoSections) {
+          if (section.id) {
+            const result = await tx.listingSchemaPhotoSection.updateMany({
+              where: { id: section.id, schemaId: id },
+              data: {
+                slug: section.slug,
+                label: section.label,
+                sortOrder: section.sortOrder,
+                isActive: section.isActive
+              }
+            });
+
+            if (result.count === 0) {
+              throw new Error("PHOTO_SECTION_NOT_FOUND");
+            }
+
+            continue;
+          }
+
+          await tx.listingSchemaPhotoSection.create({
+            data: {
+              schemaId: id,
+              slug: section.slug,
+              label: section.label,
+              sortOrder: section.sortOrder,
+              isActive: section.isActive
+            }
+          });
+        }
+      }
+
       const fields = await tx.listingSchemaField.findMany({
         where: { schemaId: id },
         orderBy: [{ sortOrder: "asc" }, { fieldKey: "asc" }],
@@ -128,7 +193,19 @@ export async function PATCH(request: Request, context: RouteContext) {
         }
       });
 
-      return { schema, fields };
+      const photoSections = await tx.listingSchemaPhotoSection.findMany({
+        where: { schemaId: id },
+        orderBy: [{ sortOrder: "asc" }, { label: "asc" }],
+        select: {
+          id: true,
+          slug: true,
+          label: true,
+          sortOrder: true,
+          isActive: true
+        }
+      });
+
+      return { schema, fields, photoSections };
     });
 
     return NextResponse.json({
@@ -138,10 +215,15 @@ export async function PATCH(request: Request, context: RouteContext) {
           ...field,
           label: getListingFieldByKey(field.fieldKey)?.label ?? field.fieldKey,
           supportsFrontendFilter: getListingFieldByKey(field.fieldKey)?.supportsFrontendFilter ?? false
-        }))
+        })),
+        photoSections: updated.photoSections
       }
     });
   } catch (error) {
+    if (error instanceof Error && error.message === "PHOTO_SECTION_NOT_FOUND") {
+      return NextResponse.json({ error: "Photo section not found" }, { status: 404 });
+    }
+
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
       return NextResponse.json({ error: "Schema not found" }, { status: 404 });
     }

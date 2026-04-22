@@ -23,19 +23,25 @@ import DeleteConfirmModal from "@/app/(admin)/components/DeleteConfirmModal";
 import ListingCategorySection from "@/app/(admin)/components/listing-editor/ListingCategorySection";
 import ListingCoreFields from "@/app/(admin)/components/listing-editor/ListingCoreFields";
 import ListingDetailsFields from "@/app/(admin)/components/listing-editor/ListingDetailsFields";
+import ListingPhotosSection from "@/app/(admin)/components/listing-editor/ListingPhotosSection";
 import {
   getListingBaseValidationErrors,
   getListingValidationDisplayIssues
 } from "@/app/(admin)/components/listing-editor/helpers";
 import { useListingMap } from "@/app/(admin)/components/listing-editor/useListingMap";
-import type { ApiErrorResponse, ListingFormState } from "@/app/(admin)/components/listing-editor/types";
+import {
+  type ApiErrorResponse,
+  type ListingFormState,
+  type ListingPhotoDraft,
+  toListingPhotoDraft
+} from "@/app/(admin)/components/listing-editor/types";
 import { Badge } from "@/components/ui";
 import type { AdminCategoryOption } from "../lib/admin-categories";
 import { hasListingSchemaField } from "@/lib/listing-fields";
 import { validateListingPayloadAgainstSchemaFields } from "@/lib/listing-schema-validation";
 import type { ListingDetails } from "@/lib/listing-details";
 import { getCategorySchemaFields } from "@/lib/listing-schema-helpers";
-import type { ListingSchemaFieldSummary } from "@/types/listing";
+import type { ListingPhoto, ListingPhotoSectionSummary, ListingSchemaFieldSummary } from "@/types/listing";
 import {
   INITIAL_DETAILS_DRAFT,
   type ListingDetailsDraft,
@@ -57,8 +63,10 @@ type ListingDto = {
   primaryCategoryId: string;
   primarySchema: {
     fields: ListingSchemaFieldSummary[];
+    photoSections: ListingPhotoSectionSummary[];
   } | null;
   categoryIds: string[];
+  photos: ListingPhoto[];
 };
 
 function toFormState(listing: ListingDto): ListingFormState {
@@ -85,6 +93,9 @@ export default function EditListingClient({
   const [form, setForm] = useState<ListingFormState>(toFormState(listing));
   const [detailsDraft, setDetailsDraft] = useState<ListingDetailsDraft>(() =>
     toListingDetailsDraft(listing.details)
+  );
+  const [photosDraft, setPhotosDraft] = useState<ListingPhotoDraft[]>(() =>
+    listing.photos.map(toListingPhotoDraft)
   );
   const [liveStatus, setLiveStatus] = useState<ListingFormState["status"]>(listing.liveStatus);
   const [hasDraftRevision, setHasDraftRevision] = useState(listing.hasDraftRevision);
@@ -121,6 +132,10 @@ export default function EditListingClient({
   const activeSchemaFields = useMemo(
     () => getCategorySchemaFields(primaryCategory ?? listing.primarySchema),
     [listing.primarySchema, primaryCategory]
+  );
+  const activePhotoSections = useMemo(
+    () => primaryCategory?.schema?.photoSections ?? listing.primarySchema?.photoSections ?? [],
+    [listing.primarySchema?.photoSections, primaryCategory?.schema?.photoSections]
   );
   const isMapEnabled = useMemo(() => hasListingSchemaField(activeSchemaFields, "location"), [activeSchemaFields]);
   const { mapNodeRef } = useListingMap({
@@ -227,6 +242,16 @@ export default function EditListingClient({
       ...previous,
       cuisines: hasListingSchemaField(getCategorySchemaFields(nextPrimary), "cuisines") ? previous.cuisines : []
     }));
+
+    setPhotosDraft((previous) => {
+      const validSectionIds = new Set(nextPrimary.schema?.photoSections.map((section) => section.id) ?? []);
+
+      return previous.map((photo, index) => ({
+        ...photo,
+        sortOrder: index,
+        photoSectionId: photo.photoSectionId && validSectionIds.has(photo.photoSectionId) ? photo.photoSectionId : null
+      }));
+    });
   }
 
   function toPayload(currentForm: ListingFormState) {
@@ -239,7 +264,14 @@ export default function EditListingClient({
       longitude: currentForm.longitude.trim().length > 0 ? Number(currentForm.longitude) : null,
       details: detailsPayload,
       primaryCategoryId: currentForm.primaryCategoryId,
-      categoryIds: [...new Set(currentForm.categoryIds)]
+      categoryIds: [...new Set(currentForm.categoryIds)],
+      photos: photosDraft.map((photo, index) => ({
+        assetId: photo.assetId,
+        photoSectionId: photo.photoSectionId,
+        alt: photo.alt.trim().length > 0 ? photo.alt.trim() : null,
+        sortOrder: index,
+        isCover: photo.isCover
+      }))
     };
   }
 
@@ -532,6 +564,12 @@ export default function EditListingClient({
             draft={detailsDraft}
             onChange={setDetailsDraft}
             validationErrors={hasTriedSubmit ? validationErrorMap : {}}
+          />
+          <ListingPhotosSection
+            photos={photosDraft}
+            photoSections={activePhotoSections}
+            isLoading={isLoading}
+            onChange={setPhotosDraft}
           />
           <AdminFormActions
             primaryActions={

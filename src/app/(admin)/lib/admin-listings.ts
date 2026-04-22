@@ -1,7 +1,7 @@
 import { Prisma, type ListingStatus } from "@prisma/client";
 import type { ListingDetails } from "@/lib/listing-details";
 import { formatAdminDateTime } from "./admin-date-format";
-import type { ListingSchemaFieldSummary } from "@/types/listing";
+import type { ListingPhoto, ListingSchemaFieldSummary, ListingPhotoSectionSummary } from "@/types/listing";
 import { toListingDetails } from "@/lib/listing-details";
 import type { AuthUser } from "./admin-auth";
 import { prisma } from "@/lib/prisma";
@@ -34,8 +34,10 @@ export type AdminListingDetail = {
   primaryCategoryId: string;
   primarySchema: {
     fields: ListingSchemaFieldSummary[];
+    photoSections: ListingPhotoSectionSummary[];
   } | null;
   categoryIds: string[];
+  photos: ListingPhoto[];
 };
 
 export type AdminListingsQuery = {
@@ -171,6 +173,15 @@ const adminListingRevisionArgs = Prisma.validator<Prisma.ListingRevisionDefaultA
                 isRequired: true,
                 isFrontendFilterEnabled: true
               }
+            },
+            photoSections: {
+              orderBy: [{ sortOrder: "asc" }, { label: "asc" }],
+              select: {
+                id: true,
+                slug: true,
+                label: true,
+                sortOrder: true
+              }
             }
           }
         },
@@ -187,6 +198,32 @@ const adminListingRevisionArgs = Prisma.validator<Prisma.ListingRevisionDefaultA
         category: {
           select: {
             label: true
+          }
+        }
+      }
+    },
+    photos: {
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+      select: {
+        id: true,
+        assetId: true,
+        alt: true,
+        sortOrder: true,
+        isCover: true,
+        asset: {
+          select: {
+            originalPath: true,
+            thumbnailPath: true,
+            width: true,
+            height: true
+          }
+        },
+        photoSection: {
+          select: {
+            id: true,
+            slug: true,
+            label: true,
+            sortOrder: true
           }
         }
       }
@@ -605,10 +642,30 @@ export async function getAdminListingById(user: AuthUser, id: string): Promise<A
       primaryCategoryId: source.primaryCategoryId,
       primarySchema: source.primaryCategory.schema
         ? {
-            fields: source.primaryCategory.schema.fields
+            fields: source.primaryCategory.schema.fields,
+            photoSections: source.primaryCategory.schema.photoSections
           }
         : null,
-      categoryIds: source.categories.map((item) => item.categoryId)
+      categoryIds: source.categories.map((item) => item.categoryId),
+      photos: source.photos.map((photo) => ({
+        id: photo.id,
+        assetId: photo.assetId,
+        path: photo.asset.originalPath,
+        thumbnailPath: photo.asset.thumbnailPath,
+        alt: photo.alt,
+        width: photo.asset.width,
+        height: photo.asset.height,
+        sortOrder: photo.sortOrder,
+        isCover: photo.isCover,
+        section: photo.photoSection
+          ? {
+              id: photo.photoSection.id,
+              slug: photo.photoSection.slug,
+              label: photo.photoSection.label,
+              sortOrder: photo.photoSection.sortOrder
+            }
+          : null
+      }))
     };
   } catch {
     return null;

@@ -170,6 +170,13 @@ export type AdminCategoryOption = {
       isRequired: boolean;
       isFrontendFilterEnabled: boolean;
     }>;
+    photoSections: Array<{
+      id: string;
+      slug: string;
+      label: string;
+      sortOrder: number;
+      isActive: boolean;
+    }>;
   } | null;
 };
 
@@ -225,6 +232,16 @@ export async function getAdminCategoryOptions(user: AuthUser): Promise<AdminCate
                 sortOrder: true,
                 isRequired: true,
                 isFrontendFilterEnabled: true
+              }
+            },
+            photoSections: {
+              orderBy: [{ sortOrder: "asc" }, { label: "asc" }],
+              select: {
+                id: true,
+                slug: true,
+                label: true,
+                sortOrder: true,
+                isActive: true
               }
             }
           }

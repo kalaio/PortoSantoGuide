@@ -2,10 +2,9 @@
 
 import { useCallback, useEffect, useRef } from "react";
 import type { Dispatch, SetStateAction } from "react";
-import type { Map as MapLibreMap, Marker as MapLibreMarker } from "maplibre-gl";
-import "maplibre-gl/dist/maplibre-gl.css";
 import { DEFAULT_LATITUDE, DEFAULT_LONGITUDE, getCoordinatesFromForm } from "@/app/(admin)/components/listing-editor/helpers";
 import type { ListingFormState } from "@/app/(admin)/components/listing-editor/types";
+import { hasGoogleMapsApiKey, loadGoogleMapsApi } from "@/lib/google-maps";
 
 type UseListingMapParams = {
   form: ListingFormState;
@@ -21,9 +20,8 @@ export function useListingMap({
   isMapEnabled = true
 }: UseListingMapParams) {
   const mapNodeRef = useRef<HTMLDivElement | null>(null);
-  const mapRef = useRef<MapLibreMap | null>(null);
-  const markerRef = useRef<MapLibreMarker | null>(null);
-  const maplibreRef = useRef<typeof import("maplibre-gl") | null>(null);
+  const mapRef = useRef<google.maps.Map | null>(null);
+  const markerRef = useRef<google.maps.Marker | null>(null);
   const formRef = useRef(form);
 
   useEffect(() => {
@@ -36,63 +34,83 @@ export function useListingMap({
 
   const syncMarkerToMap = useCallback((nextCoordinates: [number, number] | null, options?: { animate?: boolean }) => {
     const map = mapRef.current;
-    const maplibre = maplibreRef.current;
 
-    if (!map || !maplibre) {
+    if (!map) {
       return;
     }
 
     const coordinates = nextCoordinates ?? [DEFAULT_LONGITUDE, DEFAULT_LATITUDE];
+    const position = { lat: coordinates[1], lng: coordinates[0] };
 
     if (!markerRef.current) {
-      const marker = new maplibre.Marker({ color: "var(--primary-v2)", draggable: true })
-        .setLngLat(coordinates)
-        .addTo(map);
+      const marker = new google.maps.Marker({
+        draggable: true,
+        map,
+        position
+      });
 
-      marker.on("dragend", () => {
-        const position = marker.getLngLat();
+      marker.addListener("dragend", () => {
+        const nextPosition = marker.getPosition();
+        if (!nextPosition) {
+          return;
+        }
+
         setForm((previous) => ({
           ...previous,
-          latitude: position.lat.toFixed(6),
-          longitude: position.lng.toFixed(6)
+          latitude: nextPosition.lat().toFixed(6),
+          longitude: nextPosition.lng().toFixed(6)
         }));
       });
 
       markerRef.current = marker;
     } else {
-      const markerPosition = markerRef.current.getLngLat();
+      const markerPosition = markerRef.current.getPosition();
+      const currentCoordinates = markerPosition ? ([markerPosition.lng(), markerPosition.lat()] as [number, number]) : null;
 
-      if (!haveSameCoordinates([markerPosition.lng, markerPosition.lat], coordinates)) {
-        markerRef.current.setLngLat(coordinates);
+      if (!currentCoordinates || !haveSameCoordinates(currentCoordinates, coordinates)) {
+        markerRef.current.setPosition(position);
       }
     }
 
     const currentCenter = map.getCenter();
-    const isAlreadyCentered = haveSameCoordinates([currentCenter.lng, currentCenter.lat], coordinates);
+    const currentCoordinates = currentCenter ? ([currentCenter.lng(), currentCenter.lat()] as [number, number]) : null;
+    const isAlreadyCentered = currentCoordinates ? haveSameCoordinates(currentCoordinates, coordinates) : false;
 
     if (options?.animate === false || isAlreadyCentered) {
       if (!isAlreadyCentered) {
-        map.jumpTo({ center: coordinates });
+        map.setCenter(position);
       }
 
       return;
     }
 
-    map.easeTo({ center: coordinates, duration: 500 });
+    map.panTo(position);
   }, [haveSameCoordinates, setForm]);
 
   useEffect(() => {
-    const styleUrl =
-      process.env.NEXT_PUBLIC_MAP_STYLE_URL ?? "https://tiles.stadiamaps.com/styles/outdoors.json";
-
     let isCancelled = false;
 
     if (!isMapEnabled) {
-      markerRef.current?.remove();
+      if (markerRef.current) {
+        if (window.google?.maps) {
+          window.google.maps.event.clearInstanceListeners(markerRef.current);
+        }
+        markerRef.current.setMap(null);
+      }
+
       markerRef.current = null;
-      maplibreRef.current = null;
-      mapRef.current?.remove();
+
+      if (mapRef.current) {
+        if (window.google?.maps) {
+          window.google.maps.event.clearInstanceListeners(mapRef.current);
+        }
+      }
+
       mapRef.current = null;
+      return;
+    }
+
+    if (!hasGoogleMapsApiKey()) {
       return;
     }
 
@@ -101,30 +119,35 @@ export function useListingMap({
         return;
       }
 
-      const maplibre = await import("maplibre-gl");
+      await loadGoogleMapsApi();
 
       if (isCancelled || !mapNodeRef.current || mapRef.current) {
         return;
       }
 
-      maplibreRef.current = maplibre;
-
       const initialCoordinates = getCoordinatesFromForm(formRef.current) ?? [DEFAULT_LONGITUDE, DEFAULT_LATITUDE];
+      const initialCenter = { lat: initialCoordinates[1], lng: initialCoordinates[0] };
 
-      const map = new maplibre.Map({
-        container: mapNodeRef.current,
-        style: styleUrl,
-        center: initialCoordinates,
-        zoom: 10.8
+      const map = new google.maps.Map(mapNodeRef.current, {
+        center: initialCenter,
+        clickableIcons: false,
+        fullscreenControl: false,
+        mapTypeControl: false,
+        streetViewControl: false,
+        zoom: 10.8,
+        zoomControl: true
       });
 
-      map.addControl(new maplibre.NavigationControl(), "top-right");
+      map.addListener("click", (event: google.maps.MapMouseEvent) => {
+        const latLng = event.latLng;
+        if (!latLng) {
+          return;
+        }
 
-      map.on("click", (event) => {
         setForm((previous) => ({
           ...previous,
-          latitude: event.lngLat.lat.toFixed(6),
-          longitude: event.lngLat.lng.toFixed(6)
+          latitude: latLng.lat().toFixed(6),
+          longitude: latLng.lng().toFixed(6)
         }));
       });
 
@@ -143,10 +166,6 @@ export function useListingMap({
       }
 
       syncMarkerToMap(getCoordinatesFromForm(formRef.current), { animate: false });
-
-      requestAnimationFrame(() => {
-        map.resize();
-      });
     }
 
     initializeMap().catch(() => {
@@ -155,10 +174,22 @@ export function useListingMap({
 
     return () => {
       isCancelled = true;
-      markerRef.current?.remove();
+
+      if (markerRef.current) {
+        if (window.google?.maps) {
+          window.google.maps.event.clearInstanceListeners(markerRef.current);
+        }
+        markerRef.current.setMap(null);
+      }
+
       markerRef.current = null;
-      maplibreRef.current = null;
-      mapRef.current?.remove();
+
+      if (mapRef.current) {
+        if (window.google?.maps) {
+          window.google.maps.event.clearInstanceListeners(mapRef.current);
+        }
+      }
+
       mapRef.current = null;
     };
   }, [initializeDefaultCoordinates, isMapEnabled, setForm, syncMarkerToMap]);

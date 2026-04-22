@@ -6,8 +6,8 @@ const __dirname = path.dirname(__filename);
 
 const IS_PRODUCTION = process.env.NODE_ENV === "production";
 const SCRIPT_SRC_POLICY = IS_PRODUCTION
-  ? "script-src 'self' 'unsafe-inline'"
-  : "script-src 'self' 'unsafe-inline' 'unsafe-eval'";
+  ? "script-src 'self' 'unsafe-inline' https://maps.googleapis.com"
+  : "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://maps.googleapis.com";
 
 const CONTENT_SECURITY_POLICY = [
   "default-src 'self'",

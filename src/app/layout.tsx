@@ -11,8 +11,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="dns-prefetch" href="https://tiles.stadiamaps.com" />
-        <link rel="preconnect" href="https://tiles.stadiamaps.com" crossOrigin="anonymous" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+        <link rel="dns-prefetch" href="https://maps.googleapis.com" />
+        <link rel="preconnect" href="https://maps.googleapis.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://maps.gstatic.com" />
+        <link rel="preconnect" href="https://maps.gstatic.com" crossOrigin="anonymous" />
         <link 
           rel="preload" 
           href="/fonts/plus-jakarta-sans/plus-jakarta-sans-latin.woff2" 

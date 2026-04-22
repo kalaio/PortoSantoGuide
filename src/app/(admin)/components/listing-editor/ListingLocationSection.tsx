@@ -9,6 +9,7 @@ import {
   joinAdminClassNames
 } from "@/app/(admin)/components/admin-tailwind";
 import { Field, TextInput } from "@/components/ui";
+import { hasGoogleMapsApiKey } from "@/lib/google-maps";
 
 type ListingLocationSectionProps = {
   latitude: string;
@@ -25,6 +26,8 @@ export default function ListingLocationSection({
   required = false,
   errorMessage
 }: ListingLocationSectionProps) {
+  const hasMapKey = hasGoogleMapsApiKey();
+
   return (
     <>
       <div className={ADMIN_MAP_BLOCK_CLASS}>
@@ -32,6 +35,7 @@ export default function ListingLocationSection({
           Click on the map or drag the marker to set and refine the location.
         </p>
         <div ref={mapNodeRef} className={joinAdminClassNames(ADMIN_MAP_PICKER_CLASS, errorMessage && ADMIN_MAP_INVALID_CLASS)} />
+        {!hasMapKey ? <p className={ADMIN_MAP_NOTE_CLASS}>Google Maps requires `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` to be configured.</p> : null}
       </div>
       <Field label="Latitude">
         <TextInput type="number" step="0.000001" value={latitude} readOnly required={required} />

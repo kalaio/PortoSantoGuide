@@ -41,6 +41,11 @@ type SearchResult = {
 };
 
 type SearchResponse = {
+  correction?: {
+    applied: boolean;
+    correctedQuery: string;
+    originalQuery: string;
+  } | null;
   suggestions: SearchSuggestion[];
   results: SearchResult[];
 };
@@ -178,16 +183,21 @@ export default function GlobalSearch({ autoOpenOnMount = false, compactOnMobile 
   const [error, setError] = useState("");
   const [displayMode, setDisplayMode] = useState<"suggestions" | "results">("suggestions");
   const [lastCompletedQuery, setLastCompletedQuery] = useState("");
+  const [lastCompletedRequestKey, setLastCompletedRequestKey] = useState("");
   const [isResultsLoading, setIsResultsLoading] = useState(false);
   const [searchVersion, setSearchVersion] = useState(0);
   const [resultsOpenVersion, setResultsOpenVersion] = useState(0);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [pendingResultId, setPendingResultId] = useState<string | null>(null);
   const [recentSearches, setRecentSearches] = useState<RecentSearchItem[]>([]);
+  const [correction, setCorrection] = useState<SearchResponse["correction"]>(null);
+  const [correctionDisabledQuery, setCorrectionDisabledQuery] = useState<string | null>(null);
   const [routeAtResultClick, setRouteAtResultClick] = useState(pathname);
   const [isResultNavigationPending, startResultNavigation] = useTransition();
 
   const trimmedQuery = useMemo(() => searchQuery.trim(), [searchQuery]);
+  const isCorrectionDisabledForQuery = correctionDisabledQuery === trimmedQuery;
+  const activeRequestKey = `${trimmedQuery}::${isCorrectionDisabledForQuery ? "exact" : "smart"}`;
   const isShowingResults = displayMode === "results";
   const isDesktopOverlayOpen = isOpen && !isMobileOpen;
   const isDesktopDropdownOpen = isOpen && !isMobileOpen;
@@ -379,18 +389,20 @@ export default function GlobalSearch({ autoOpenOnMount = false, compactOnMobile 
       searchAbortControllerRef.current?.abort();
       setIsResultsLoading(false);
       setDisplayMode("suggestions");
+      setCorrection(null);
 
       if (trimmedQuery.length === 0) {
         searchRequestRef.current += 1;
         setResults([]);
         setLastCompletedQuery("");
+        setLastCompletedRequestKey("");
       } else if (trimmedQuery.length > 0) {
         searchRequestRef.current += 1;
       }
       return;
     }
 
-    if (trimmedQuery === lastCompletedQuery) {
+    if (activeRequestKey === lastCompletedRequestKey) {
       setIsResultsLoading(false);
       return;
     }
@@ -407,9 +419,12 @@ export default function GlobalSearch({ autoOpenOnMount = false, compactOnMobile 
       setError("");
 
       try {
-        const response = await fetch(`/api/search?q=${encodeURIComponent(trimmedQuery)}`, {
+        const response = await fetch(
+          `/api/search?q=${encodeURIComponent(trimmedQuery)}${isCorrectionDisabledForQuery ? "&disableCorrection=1" : ""}`,
+          {
           signal: controller.signal
-        });
+          }
+        );
         const payload = (await response.json()) as SearchResponse & { error?: string };
 
         if (requestId !== searchRequestRef.current) {
@@ -418,6 +433,7 @@ export default function GlobalSearch({ autoOpenOnMount = false, compactOnMobile 
 
         if (!response.ok) {
           setError(payload.error ?? "Could not search.");
+          setCorrection(null);
           setIsResultsLoading(false);
           setSearchVersion((prev) => prev + 1);
           setDisplayMode("results");
@@ -428,7 +444,9 @@ export default function GlobalSearch({ autoOpenOnMount = false, compactOnMobile 
         }
 
         setResults(payload.results ?? []);
+        setCorrection(payload.correction ?? null);
         setLastCompletedQuery(trimmedQuery);
+        setLastCompletedRequestKey(activeRequestKey);
         setIsResultsLoading(false);
         setSearchVersion((prev) => prev + 1);
         setDisplayMode("results");
@@ -441,6 +459,7 @@ export default function GlobalSearch({ autoOpenOnMount = false, compactOnMobile 
         }
 
         setError("Could not search.");
+        setCorrection(null);
         setIsResultsLoading(false);
         setSearchVersion((prev) => prev + 1);
         setDisplayMode("results");
@@ -453,7 +472,7 @@ export default function GlobalSearch({ autoOpenOnMount = false, compactOnMobile 
     return () => {
       window.clearTimeout(timeoutId);
     };
-  }, [trimmedQuery, lastCompletedQuery]);
+  }, [trimmedQuery, lastCompletedQuery, lastCompletedRequestKey, activeRequestKey, isCorrectionDisabledForQuery]);
 
   useEffect(() => {
     if (!wasOpenRef.current && isOpen && isShowingResults) {
@@ -464,11 +483,14 @@ export default function GlobalSearch({ autoOpenOnMount = false, compactOnMobile 
   }, [isOpen, isShowingResults]);
 
   async function runSuggestionQuery(suggestion: SearchSuggestion) {
-    const shouldReuseCurrentResults = suggestion.query.trim() === lastCompletedQuery;
+    const suggestionQuery = suggestion.query.trim();
+    const shouldReuseCurrentResults = suggestionQuery === lastCompletedQuery && lastCompletedRequestKey === `${suggestionQuery}::smart`;
 
     isApplyingSuggestionRef.current = true;
+    setCorrectionDisabledQuery(null);
     setQuery(suggestion.label);
     setSearchQuery(suggestion.query);
+    setCorrection(null);
     setError("");
     setDisplayMode("results");
     if (!shouldReuseCurrentResults) {
@@ -489,9 +511,12 @@ export default function GlobalSearch({ autoOpenOnMount = false, compactOnMobile 
     setSearchQuery("");
     setDisplayMode("suggestions");
     setResults([]);
+    setCorrection(null);
+    setCorrectionDisabledQuery(null);
     setError("");
     setIsResultsLoading(false);
     setLastCompletedQuery("");
+    setLastCompletedRequestKey("");
 
     openSuggestionsDropdown().catch(() => {
       setSuggestions([]);
@@ -568,6 +593,54 @@ export default function GlobalSearch({ autoOpenOnMount = false, compactOnMobile 
       return nextValue;
     });
   }, []);
+
+  const showCorrectedResults = useCallback(() => {
+    if (!correction) {
+      return;
+    }
+
+    const nextQuery = correction.correctedQuery;
+    const nextTrimmedQuery = nextQuery.trim();
+
+    isApplyingSuggestionRef.current = true;
+    setCorrectionDisabledQuery(null);
+    setQuery(nextQuery);
+    setSearchQuery(nextQuery);
+    setCorrection(null);
+    setResults([]);
+    setError("");
+    setIsResultsLoading(true);
+    setDisplayMode("results");
+    setLastCompletedRequestKey(nextTrimmedQuery === lastCompletedQuery ? "" : lastCompletedRequestKey);
+    setIsOpen(true);
+
+    if (document.activeElement !== inputRef.current) {
+      inputRef.current?.focus();
+    }
+  }, [correction, lastCompletedQuery, lastCompletedRequestKey]);
+
+  const showOriginalResultsWithoutCorrection = useCallback(() => {
+    if (!correction) {
+      return;
+    }
+
+    const nextQuery = correction.originalQuery;
+
+    isApplyingSuggestionRef.current = true;
+    setCorrectionDisabledQuery(nextQuery.trim());
+    setQuery(nextQuery);
+    setSearchQuery(nextQuery);
+    setCorrection(null);
+    setResults([]);
+    setError("");
+    setIsResultsLoading(true);
+    setDisplayMode("results");
+    setIsOpen(true);
+
+    if (document.activeElement !== inputRef.current) {
+      inputRef.current?.focus();
+    }
+  }, [correction]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -648,12 +721,17 @@ export default function GlobalSearch({ autoOpenOnMount = false, compactOnMobile 
             setQuery(nextValue);
             setSearchQuery(nextValue);
             const trimmed = nextValue.trim();
+            if (trimmed !== correctionDisabledQuery) {
+              setCorrectionDisabledQuery(null);
+            }
             if (trimmed.length === 0) {
               searchAbortControllerRef.current?.abort();
               searchRequestRef.current += 1;
               setResults([]);
+              setCorrection(null);
               setError("");
               setLastCompletedQuery("");
+              setLastCompletedRequestKey("");
               setDisplayMode("suggestions");
               openSuggestionsDropdown().catch(() => {
                 setSuggestions([]);
@@ -666,6 +744,7 @@ export default function GlobalSearch({ autoOpenOnMount = false, compactOnMobile 
             if (trimmed.length < MIN_SEARCH_CHARACTERS) {
               searchAbortControllerRef.current?.abort();
               searchRequestRef.current += 1;
+              setCorrection(null);
               setError("");
               setDisplayMode("suggestions");
               openSuggestionsDropdown().catch(() => {
@@ -772,6 +851,37 @@ export default function GlobalSearch({ autoOpenOnMount = false, compactOnMobile 
               </div>
             ) : (
               <div className="grid gap-1" aria-busy={isResultNavigationPending}>
+                {correction ? (
+                  <div className="mx-2 mb-2 rounded-[1rem] border border-black/10 bg-black/[0.02] px-3 py-3 text-sm text-[color:var(--psg-text-secondary)]">
+                    {correction.applied ? (
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                        <span>
+                          Showing results for <strong className="font-semibold text-black">{correction.correctedQuery}</strong>
+                        </span>
+                        <button
+                          type="button"
+                          className="cursor-pointer font-semibold text-black underline decoration-black/30 underline-offset-4 transition hover:text-[var(--psg-brand)]"
+                          onClick={showOriginalResultsWithoutCorrection}
+                        >
+                          Search instead for {correction.originalQuery}
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                        <span>Did you mean</span>
+                        <button
+                          type="button"
+                          className="cursor-pointer font-semibold text-black underline decoration-black/30 underline-offset-4 transition hover:text-[var(--psg-brand)]"
+                          onClick={showCorrectedResults}
+                        >
+                          {correction.correctedQuery}
+                        </button>
+                        <span>?</span>
+                      </div>
+                    )}
+                  </div>
+                ) : null}
+
                 {isResultsLoading ? (
                   <>
                     <SearchListingRowSkeleton />

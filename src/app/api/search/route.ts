@@ -6,7 +6,11 @@ import { prisma } from "@/lib/prisma";
 import { consumeRateLimit, getClientIp } from "@/lib/rate-limit";
 
 const searchQuerySchema = z.object({
-  q: z.string().trim().max(120).optional()
+  q: z.string().trim().max(120).optional(),
+  disableCorrection: z
+    .enum(["0", "1"])
+    .optional()
+    .transform((value) => value === "1")
 });
 
 const SEARCH_RATE_LIMIT_WINDOW_MS = 60 * 1000;
@@ -14,6 +18,7 @@ const SEARCH_RATE_LIMIT_MAX_REQUESTS = 60;
 const SEARCH_RESULTS_QUERY_LIMIT = 12;
 const SEARCH_RESULTS_RESPONSE_LIMIT = 8;
 const MIN_ADVANCED_SEARCH_CHARACTERS = 4;
+const MIN_CORRECTION_CHARACTERS = 4;
 
 const listingSearchResultSelect = Prisma.validator<Prisma.ListingSelect>()({
   id: true,
@@ -75,6 +80,17 @@ const listingSearchResultSelect = Prisma.validator<Prisma.ListingSelect>()({
 });
 
 type ListingSearchRecord = Prisma.ListingGetPayload<{ select: typeof listingSearchResultSelect }>;
+
+type SearchCorrection = {
+  originalQuery: string;
+  correctedQuery: string;
+  applied: boolean;
+};
+
+type SearchCorrectionCandidate = {
+  displayTerm: string;
+  normalizedTerm: string;
+};
 
 function normalizeSearchText(value: string) {
   return value
@@ -327,6 +343,88 @@ async function searchListingsWithFallback(q: string, normalizedQuery: string) {
   });
 }
 
+async function findSearchCorrection(normalizedQuery: string): Promise<SearchCorrectionCandidate | null> {
+  if (normalizedQuery.length < MIN_CORRECTION_CHARACTERS || !process.env.DATABASE_URL?.startsWith("postgres")) {
+    return null;
+  }
+
+  const correctionThreshold = normalizedQuery.length >= 8 ? 0.34 : normalizedQuery.length >= 6 ? 0.38 : 0.42;
+
+  const rows = await prisma.$queryRaw<Array<{ display_term: string; normalized_term: string }>>(Prisma.sql`
+    WITH vocabulary AS (
+      SELECT DISTINCT ON (normalized_term)
+        normalized_term,
+        display_term,
+        priority
+      FROM (
+        SELECT
+          public.immutable_unaccent(lower(c.label)) AS normalized_term,
+          c.label AS display_term,
+          120 AS priority
+        FROM "ListingCategory" c
+        JOIN "DirectorySection" section ON section.id = c."sectionId"
+        WHERE c."isActive" = true AND section."isActive" = true
+
+        UNION ALL
+
+        SELECT
+          public.immutable_unaccent(lower(s.query)) AS normalized_term,
+          s.query AS display_term,
+          100 + LEAST(s.priority, 100) AS priority
+        FROM "SearchSuggestion" s
+        WHERE s."isActive" = true
+
+        UNION ALL
+
+        SELECT
+          public.immutable_unaccent(lower(s.label)) AS normalized_term,
+          s.label AS display_term,
+          80 + LEAST(s.priority, 100) AS priority
+        FROM "SearchSuggestion" s
+        WHERE s."isActive" = true
+
+        UNION ALL
+
+        SELECT
+          public.immutable_unaccent(lower(r.title)) AS normalized_term,
+          r.title AS display_term,
+          60 AS priority
+        FROM "Listing" l
+        JOIN "ListingRevision" r ON r.id = l."currentPublishedRevisionId"
+        JOIN "ListingCategory" pc ON pc.id = r."primaryCategoryId"
+        JOIN "DirectorySection" section ON section.id = pc."sectionId"
+        WHERE l."status" = 'PUBLISHED'::"ListingStatus"
+          AND l."currentPublishedRevisionId" IS NOT NULL
+          AND pc."isActive" = true
+          AND section."isActive" = true
+      ) terms
+      WHERE normalized_term <> ''
+      ORDER BY normalized_term, priority DESC, length(display_term) ASC
+    )
+    SELECT display_term, normalized_term
+    FROM vocabulary
+    WHERE normalized_term <> ${normalizedQuery}
+      AND normalized_term NOT LIKE ${`${normalizedQuery}%`}
+      AND ${normalizedQuery} NOT LIKE normalized_term || '%'
+      AND similarity(normalized_term, ${normalizedQuery}) >= ${correctionThreshold}
+    ORDER BY
+      similarity(normalized_term, ${normalizedQuery}) DESC,
+      priority DESC,
+      abs(length(normalized_term) - length(${normalizedQuery})) ASC,
+      length(display_term) ASC
+    LIMIT 1
+  `);
+
+  if (rows.length === 0) {
+    return null;
+  }
+
+  return {
+    displayTerm: rows[0].display_term,
+    normalizedTerm: rows[0].normalized_term
+  };
+}
+
 export async function GET(request: Request) {
   const searchRateLimit = await consumeRateLimit({
     scope: "public-search",
@@ -345,7 +443,8 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
 
   const parsed = searchQuerySchema.safeParse({
-    q: searchParams.get("q") ?? undefined
+    q: searchParams.get("q") ?? undefined,
+    disableCorrection: searchParams.get("disableCorrection") ?? undefined
   });
 
   if (!parsed.success) {
@@ -353,6 +452,7 @@ export async function GET(request: Request) {
   }
 
   const q = parsed.data.q ?? "";
+  const disableCorrection = parsed.data.disableCorrection ?? false;
   const normalizedQuery = normalizeSearchText(q);
 
   const suggestions =
@@ -371,12 +471,50 @@ export async function GET(request: Request) {
         })
       : [];
 
-  const results = q.length >= 2 ? await searchListingsWithFallback(q, normalizedQuery) : [];
+  let correction: SearchCorrection | null = null;
+  let results = q.length >= 2 ? await searchListingsWithFallback(q, normalizedQuery) : [];
+
+  if (!disableCorrection && normalizedQuery.length >= MIN_CORRECTION_CHARACTERS) {
+    try {
+      const correctionCandidate = await findSearchCorrection(normalizedQuery);
+
+      if (correctionCandidate) {
+        if (results.length === 0) {
+          const correctedResults = await searchListingsWithFallback(correctionCandidate.displayTerm, correctionCandidate.normalizedTerm);
+
+          if (correctedResults.length > 0) {
+            results = correctedResults;
+            correction = {
+              originalQuery: q,
+              correctedQuery: correctionCandidate.displayTerm,
+              applied: true
+            };
+          } else {
+            correction = {
+              originalQuery: q,
+              correctedQuery: correctionCandidate.displayTerm,
+              applied: false
+            };
+          }
+        } else {
+          correction = {
+            originalQuery: q,
+            correctedQuery: correctionCandidate.displayTerm,
+            applied: false
+          };
+        }
+      }
+    } catch (error) {
+      console.error("Search correction lookup failed", error);
+    }
+  }
+
   const normalizedResults = mapSearchResults(results, normalizedQuery);
 
   return NextResponse.json({
     query: q,
     suggestions,
-    results: normalizedResults
+    results: normalizedResults,
+    correction
   });
 }

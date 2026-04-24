@@ -26,6 +26,7 @@ type MarkerPopupData = {
 };
 
 type ListingMapProps = {
+  allowScrollWheelZoom?: boolean;
   isVisible?: boolean;
   listings: Listing[];
   mapHandleRef?: Ref<ListingMapHandle>;
@@ -178,6 +179,7 @@ function toBoundsLiteral(bounds: MapBounds): google.maps.LatLngBoundsLiteral {
 }
 
 export default function ListingMap({
+  allowScrollWheelZoom = true,
   isVisible = true,
   listings,
   mapHandleRef,
@@ -420,9 +422,9 @@ export default function ListingMap({
           center: initialCenter,
           clickableIcons: false,
           fullscreenControl: false,
-          gestureHandling: "greedy",
+          gestureHandling: allowScrollWheelZoom ? "greedy" : "cooperative",
           mapTypeControl: false,
-          scrollwheel: true,
+          scrollwheel: allowScrollWheelZoom,
           streetViewControl: false,
           styles: [
             { featureType: "poi.business", stylers: [{ visibility: "off" }] },
@@ -496,7 +498,7 @@ export default function ListingMap({
       isDisposed = true;
       clearMapResources();
     };
-  }, [applyIgnoreIdleWindow, clearMapResources, closeDesktopPopup]);
+  }, [allowScrollWheelZoom, applyIgnoreIdleWindow, clearMapResources, closeDesktopPopup]);
 
   useEffect(() => {
     const map = mapRef.current;

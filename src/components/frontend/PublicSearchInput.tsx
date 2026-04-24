@@ -10,6 +10,7 @@ type PublicSearchInputVariant = "hero" | "header";
 type PublicSearchInputProps = {
   className?: string;
   inputRef?: Ref<HTMLInputElement>;
+  isDesktopOpen?: boolean;
   isMobile?: boolean;
   onChange: (value: string) => void;
   onClear?: () => void;
@@ -46,14 +47,14 @@ const INPUT_VARIANTS = {
     icon: "left-4 h-5 w-5 text-black md:left-5 md:h-6 md:w-6",
     input: "pl-[2.875rem] pr-4 md:pl-14 md:pr-4 text-md leading-none placeholder:text-black/38",
     inputWithClear: "pr-12 md:pr-16",
-    wrapper: "h-14 md:h-16 rounded-full border-[1.5px] border-transparent bg-white"
+    wrapper: "h-14 md:h-16 rounded-full bg-white"
   },
   header: {
     clearButton: "right-3 h-8 w-8",
     icon: "left-4 h-5 w-5 text-black",
     input: "pl-[2.875rem] pr-4 md:pl-12 text-md leading-none placeholder:text-black/36",
     inputWithClear: "pr-12",
-    wrapper: "h-12 rounded-full border-transparent bg-white"
+    wrapper: "h-12 rounded-full bg-white"
   },
   mobile: {
     clearButton: "right-2.5 h-8 w-8",
@@ -67,6 +68,7 @@ const INPUT_VARIANTS = {
 export default function PublicSearchInput({
   className,
   inputRef,
+  isDesktopOpen = false,
   isMobile = false,
   onChange,
   onClear,
@@ -82,8 +84,9 @@ export default function PublicSearchInput({
     <div className={cx("relative", className)}>
       <div
         className={cx(
-          "w-full rounded-full border !bg-white shadow-[inset_0_1px_2px_rgba(10,13,18,0.06)] transition-[border-color,background-color,box-shadow] duration-150 ease-out focus-within:border-[var(--psg-brand)] focus-within:shadow-[inset_0_1px_4px_rgba(10,13,18,0.14)]",
-          styles.wrapper
+          "w-full rounded-full !bg-white transition-[border-color,background-color,box-shadow] duration-150 ease-out",
+          styles.wrapper,
+          isDesktopOpen && !isMobile && "rounded-t-[1.5rem] rounded-b-none shadow-none focus-within:shadow-none"
         )}
       >
         <InputBase
@@ -103,7 +106,10 @@ export default function PublicSearchInput({
           placeholder={placeholder}
           type="search"
           value={value}
-          wrapperClassName="h-full !rounded-full !border-0 !bg-transparent !shadow-none !ring-0 ring-transparent focus-within:!ring-0 focus-within:ring-transparent"
+          wrapperClassName={cx(
+            "h-full !rounded-full !border-0 !bg-transparent !shadow-none !ring-0 ring-transparent focus-within:!ring-0 focus-within:ring-transparent",
+            isDesktopOpen && !isMobile && "!rounded-t-[1.5rem] !rounded-b-none"
+          )}
         />
       </div>
 

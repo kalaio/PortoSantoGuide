@@ -7,6 +7,7 @@ import type { Listing } from "@/types/listing";
 
 type ListingMapLazyProps = {
   listings: Listing[];
+  allowScrollWheelZoom?: boolean;
   isVisible?: boolean;
   mapHandleRef?: Ref<ListingMapHandle>;
   mobileCardMode?: boolean;

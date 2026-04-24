@@ -1,21 +1,25 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { Image01, Menu02, XClose } from "@untitledui/icons";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/cn";
 import GlobalSearch from "@/app/(frontend)/components/GlobalSearch";
-import MenuOverlay from "@/app/(frontend)/components/MenuOverlay";
 import type { PublicMenuLink } from "@/lib/listings";
 import type { SlideMedia } from "@/lib/slides";
 
+const MenuOverlay = dynamic(() => import("@/app/(frontend)/components/MenuOverlay"), {
+  ssr: false,
+  loading: () => null
+});
+
 type HomeHeroProps = {
-  initialActiveIndex?: number;
   slides: SlideMedia[];
   menuLinks: PublicMenuLink[];
 };
 
-export default function HomeHero({ initialActiveIndex = 0, slides, menuLinks }: HomeHeroProps) {
+export default function HomeHero({ slides, menuLinks }: HomeHeroProps) {
   const usableSlides = useMemo(
     () =>
       slides.filter(
@@ -23,8 +27,7 @@ export default function HomeHero({ initialActiveIndex = 0, slides, menuLinks }: 
       ),
     [slides]
   );
-  const normalizedInitialActiveIndex = usableSlides.length === 0 ? 0 : Math.min(initialActiveIndex, usableSlides.length - 1);
-  const [activeIndex, setActiveIndex] = useState(normalizedInitialActiveIndex);
+  const [activeIndex, setActiveIndex] = useState(0);
   const [previousIndex, setPreviousIndex] = useState<number | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isThumbnailTrayOpen, setIsThumbnailTrayOpen] = useState(false);
@@ -101,7 +104,7 @@ export default function HomeHero({ initialActiveIndex = 0, slides, menuLinks }: 
 
     const desktopSrc = slide.mediaDesktop ?? slide.mediaMobile ?? "";
     const mobileSrc = slide.mediaMobile ?? slide.mediaDesktop ?? "";
-    const isPriority = state === "active" && activeIndex === normalizedInitialActiveIndex;
+    const isPriority = state === "active" && activeIndex === 0;
 
     return (
       <div key={`${slide.id}-${state}`} className={layerClass}>
@@ -187,7 +190,7 @@ export default function HomeHero({ initialActiveIndex = 0, slides, menuLinks }: 
               </div>
             </div>
 
-            <div className="homeHeroThumbnailToggle pointer-events-auto absolute right-4 bottom-4 z-20 md:right-5">
+            <div className="homeHeroThumbnailToggle pointer-events-auto absolute right-4 bottom-4 z-10 md:right-5">
               <button
                 type="button"
                 className="inline-flex h-10 items-center gap-2 rounded-full bg-white/88 px-3.5 text-sm font-semibold text-black shadow-[0_16px_40px_-24px_rgba(10,13,18,0.7)] backdrop-blur-md transition hover:bg-white cursor-pointer"

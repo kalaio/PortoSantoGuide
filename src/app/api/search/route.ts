@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { getDetailsSummaryByFields, getFoodOpeningStatus } from "@/lib/listing-details";
 import { prisma } from "@/lib/prisma";
 import { consumeRateLimit, getClientIp } from "@/lib/rate-limit";
 
@@ -14,17 +15,15 @@ function scoreSearchResult(
   result: {
     slug: string;
     title: string;
-    details: unknown;
     primaryCategory: { label: string };
-    categories: Array<{ category: { label: string } }>;
+    categoryLabels: string[];
   },
   normalizedQuery: string
 ) {
   const normalizedSlug = result.slug.toLowerCase();
   const normalizedTitle = result.title.toLowerCase();
   const normalizedPrimaryCategory = result.primaryCategory.label.toLowerCase();
-  const normalizedCategoryLabels = result.categories.map((item) => item.category.label.toLowerCase());
-  const normalizedDetails = JSON.stringify(result.details ?? {}).toLowerCase();
+  const normalizedCategoryLabels = result.categoryLabels;
 
   if (normalizedSlug === normalizedQuery) {
     return 500;
@@ -52,10 +51,6 @@ function scoreSearchResult(
 
   if (normalizedTitle.includes(normalizedQuery)) {
     return 100;
-  }
-
-  if (normalizedDetails.includes(normalizedQuery)) {
-    return 40;
   }
 
   return 0;
@@ -136,7 +131,7 @@ export async function GET(request: Request) {
             ]
           },
           orderBy: [{ updatedAt: "desc" }],
-          take: 20,
+          take: 12,
           select: {
             id: true,
             slug: true,
@@ -158,13 +153,14 @@ export async function GET(request: Request) {
                       select: {
                         fields: {
                           orderBy: [{ sortOrder: "asc" }, { fieldKey: "asc" }],
-                          select: {
-                            fieldKey: true,
-                            sortOrder: true,
-                            isRequired: true
-                          }
-                        }
-                      }
+                           select: {
+                             fieldKey: true,
+                             sortOrder: true,
+                             isRequired: true,
+                             isFrontendFilterEnabled: true
+                           }
+                         }
+                       }
                     }
                   }
                 },
@@ -177,6 +173,19 @@ export async function GET(request: Request) {
                       }
                     }
                   }
+                },
+                photos: {
+                  orderBy: [{ isCover: "desc" }, { sortOrder: "asc" }, { createdAt: "asc" }],
+                  take: 1,
+                  select: {
+                    alt: true,
+                    asset: {
+                      select: {
+                        originalPath: true,
+                        thumbnailPath: true
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -186,26 +195,46 @@ export async function GET(request: Request) {
 
   const normalizedResults = results
     .filter((result) => result.currentPublishedRevision)
-    .map((result) => ({
-      id: result.id,
-      slug: result.currentPublishedRevision?.slug ?? result.slug,
-      title: result.currentPublishedRevision?.title ?? "",
-      details: result.currentPublishedRevision?.details ?? null,
-      primaryCategory: {
-        slug: result.currentPublishedRevision?.primaryCategory.slug ?? "",
-        label: result.currentPublishedRevision?.primaryCategory.label ?? "",
-        schema: result.currentPublishedRevision?.primaryCategory.schema
-        ? {
-            fields: result.currentPublishedRevision.primaryCategory.schema.fields
-          }
-        : null
-      },
-      categories:
-        result.currentPublishedRevision?.categories.map((item) => ({
-          category: item.category
-        })) ?? []
-    }))
-    .sort((left, right) => scoreSearchResult(right, normalizedQuery) - scoreSearchResult(left, normalizedQuery))
+    .map((result) => {
+      const revision = result.currentPublishedRevision;
+      const details = revision?.details ?? null;
+      const fields = revision?.primaryCategory.schema?.fields ?? [];
+
+      return {
+        id: result.id,
+        score: scoreSearchResult(
+          {
+            slug: revision?.slug ?? result.slug,
+            title: revision?.title ?? "",
+            primaryCategory: {
+              label: revision?.primaryCategory.label ?? ""
+            },
+            categoryLabels: (revision?.categories ?? []).map((item) => item.category.label.toLowerCase())
+          },
+          normalizedQuery
+        ),
+        data: {
+          id: result.id,
+          slug: revision?.slug ?? result.slug,
+          title: revision?.title ?? "",
+          primaryCategory: {
+            slug: revision?.primaryCategory.slug ?? "",
+            label: revision?.primaryCategory.label ?? ""
+          },
+          summary: getDetailsSummaryByFields(fields, details),
+          openingStatus: getFoodOpeningStatus(details),
+          coverPhoto: revision?.photos[0]
+            ? {
+                alt: revision.photos[0].alt,
+                path: revision.photos[0].asset.originalPath,
+                thumbnailPath: revision.photos[0].asset.thumbnailPath
+              }
+            : null
+        }
+      };
+    })
+    .sort((left, right) => right.score - left.score)
+    .map((entry) => entry.data)
     .slice(0, 8);
 
   return NextResponse.json({

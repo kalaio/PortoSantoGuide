@@ -69,7 +69,7 @@ const nextConfig = {
   reactStrictMode: true,
   outputFileTracingRoot: __dirname,
   experimental: {
-    optimizePackageImports: ["@heroui/date-input", "@heroui/react", "@heroui/shared-icons"]
+    optimizePackageImports: ["@heroui/date-input", "@heroui/react", "@heroui/shared-icons", "@untitledui/icons"]
   },
   async headers() {
     return [

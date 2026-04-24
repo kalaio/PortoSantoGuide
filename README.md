@@ -45,7 +45,7 @@ src/
 ## Stack
 - Next.js 16 (App Router) + TypeScript
 - Prisma + SQLite (default local dev)
-- MapLibre GL + vector/raster tiles for interactive maps
+- Google Maps JavaScript API for interactive maps
 - Tailwind CSS v4
 
 ## Quick Start
@@ -53,7 +53,7 @@ src/
    `npm install`
 2. Copy environment file:
    `cp .env.example .env.local`
-   (you can keep the default `NEXT_PUBLIC_MAP_STYLE_URL` for local development)
+   and set `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`
 3. Generate Prisma client:
    `npm run db:generate`
 4. Create/update database tables:

@@ -1,20 +1,17 @@
-import { randomInt } from "node:crypto";
 import Link from "next/link";
 import HomeHero from "@/app/(frontend)/components/HomeHero";
 import { getPublicMenuLinks } from "@/lib/listings";
 import { getSliderBySlug } from "@/lib/slides";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export default async function HomePage() {
   const [slider, menuLinks] = await Promise.all([getSliderBySlug("homepage"), getPublicMenuLinks()]);
   const slides = slider?.slides ?? [];
-  const usableSlides = slides.filter((slide) => Boolean(slide.mediaDesktop || slide.mediaMobile || slide.videoUrl));
-  const initialActiveIndex = usableSlides.length > 0 ? randomInt(usableSlides.length) : 0;
 
   return (
     <main className="bg-white">
-      <HomeHero initialActiveIndex={initialActiveIndex} slides={slides} menuLinks={menuLinks} />
+      <HomeHero slides={slides} menuLinks={menuLinks} />
       <section className="mx-auto w-full max-w-[1280px] px-4 py-4 md:px-5 md:py-8">
         <div className="grid gap-4 md:grid-cols-2">
           <Link

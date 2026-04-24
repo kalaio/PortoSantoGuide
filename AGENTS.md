@@ -18,7 +18,7 @@ If two rules conflict, follow the highest-priority rule and mention the tradeoff
 - Framework: Next.js (App Router)
 - Language: TypeScript
 - DB: Prisma ORM (SQLite in local dev, Postgres-ready via `DATABASE_URL`)
-- Map: MapLibre GL
+- Map: Google Maps JavaScript API
 - Auth: DB-backed users + role-based sessions (`ADMINISTRATOR`, `OWNER`, `SUBSCRIBER`)
 
 ## Required Commands

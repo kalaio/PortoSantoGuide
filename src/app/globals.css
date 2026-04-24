@@ -392,6 +392,10 @@ body.mobileSearchOpen .homeHeroThumbnailToggle {
   display: none !important;
 }
 
+body.desktopSearchOverlayOpen .listingDetailStickyNav {
+  z-index: 20 !important;
+}
+
 @media (max-width: 900px) {
   body.mobileMapMode .publicSearchBarRoot {
     display: none !important;

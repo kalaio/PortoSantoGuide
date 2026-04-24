@@ -30,13 +30,16 @@
   },
   "include": [
     "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
+    "src/**/*.ts",
+    "src/**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",
+    ".next",
+    ".opencode",
+    "public/uploads",
     "src/components/application/**/*",
     "src/components/base/**/*",
     "src/components/foundations/**/*",

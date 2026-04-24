@@ -44,7 +44,7 @@ src/
 
 ## Stack
 - Next.js 16 (App Router) + TypeScript
-- Prisma + SQLite (default local dev)
+- Prisma + PostgreSQL
 - Google Maps JavaScript API for interactive maps
 - Tailwind CSS v4
 
@@ -54,13 +54,15 @@ src/
 2. Copy environment file:
    `cp .env.example .env.local`
    and set `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`
-3. Generate Prisma client:
+3. Start local PostgreSQL:
+   `docker compose up -d db`
+4. Generate Prisma client:
    `npm run db:generate`
-4. Create/update database tables:
+5. Create/update database tables:
    `npm run db:migrate`
-5. Seed initial listings:
+6. Seed initial listings:
    `npm run db:seed`
-6. Run app:
+7. Run app:
    `npm run dev`
 
 Open `http://localhost:3000`.
@@ -70,9 +72,12 @@ Open `http://localhost:3000`.
 - `npm run build` - production build
 - `npm run lint` - lint project
 - `npm run typecheck` - TypeScript checks
-- `npm run db:migrate` - sync Prisma schema to local DB
+- `npm run db:migrate` - create/apply local Prisma migrations
+- `npm run db:migrate:deploy` - apply committed migrations
+- `npm run db:push` - push schema without creating a migration
 - `npm run db:studio` - open Prisma Studio
 - `npm run db:seed` - insert/update sample listings
+- `npm run db:import:sqlite` - import data from the legacy SQLite file into PostgreSQL
 
 ## Documentation
 - `docs/architecture.md` - Detailed architecture documentation
@@ -161,15 +166,31 @@ Search suggestions (administrator only):
 - `PATCH /api/admin/search-suggestions/:id`
 - `DELETE /api/admin/search-suggestions/:id`
 
-## Alternative Database (Recommended for production)
+## Supabase Setup
 
-If you want managed cloud DB, use Supabase or Neon (PostgreSQL).
+Recommended environment split:
 
-1. Create a project in Supabase/Neon.
-2. Copy the pooled connection string.
-3. Set in `.env.local`:
-   `DATABASE_URL="postgresql://..."`
-4. Run:
-   `npm run db:generate && npm run db:migrate && npm run db:seed`
+1. One Supabase project for development
+2. A separate Supabase project for production
 
-Note: SQLite is used by default for zero-setup local development.
+Use these URLs in `.env.local` or your deployment environment:
+
+- `DATABASE_URL` = Transaction pooler / pooled connection string
+- `DIRECT_URL` = Direct connection string
+
+Typical Prisma flow:
+
+1. `npm run db:generate`
+2. `npm run db:migrate` for local development
+3. `npm run db:migrate:deploy` in production
+
+## Migrating Existing SQLite Data
+
+If you already have data in `prisma/porto-santo-guide.db`:
+
+1. Point `DATABASE_URL` and `DIRECT_URL` to PostgreSQL
+2. Apply the schema with `npm run db:migrate` or `npm run db:migrate:deploy`
+3. Run `npm run db:import:sqlite`
+4. Run `npm run db:verify-listing-revisions`
+
+The import script intentionally skips `Session` and `RateLimitBucket` so the new environment starts clean.

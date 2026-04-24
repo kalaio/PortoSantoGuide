@@ -1,16 +1,21 @@
 services:
   db:
-    image: postgis/postgis:16-3.4
-    container_name: stayfinder-db
+    image: postgres:16-alpine
+    container_name: porto-santo-guide-db
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: stayfinder
+      POSTGRES_DB: porto_santo_guide
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d porto_santo_guide"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     volumes:
-      - stayfinder_pgdata:/var/lib/postgresql/data
+      - porto_santo_guide_pgdata:/var/lib/postgresql/data
 
 volumes:
-  stayfinder_pgdata:
+  porto_santo_guide_pgdata:

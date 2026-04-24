@@ -17,7 +17,7 @@ If two rules conflict, follow the highest-priority rule and mention the tradeoff
 ## Current Stack
 - Framework: Next.js (App Router)
 - Language: TypeScript
-- DB: Prisma ORM (SQLite in local dev, Postgres-ready via `DATABASE_URL`)
+- DB: Prisma ORM (PostgreSQL in local dev and production)
 - Map: Google Maps JavaScript API
 - Auth: DB-backed users + role-based sessions (`ADMINISTRATOR`, `OWNER`, `SUBSCRIBER`)
 
@@ -30,9 +30,12 @@ Use npm scripts first.
 - Lint: `npm run lint`
 - Type-check: `npm run typecheck`
 - DB generate client: `npm run db:generate`
-- DB schema push: `npm run db:migrate`
+- DB migrate dev: `npm run db:migrate`
+- DB migrate deploy: `npm run db:migrate:deploy`
+- DB schema push (rare/manual): `npm run db:push`
 - Seed data: `npm run db:seed`
 - Prisma Studio: `npm run db:studio`
+- SQLite import: `npm run db:import:sqlite`
 
 ## Test Commands (Present and Future)
 There is no dedicated test runner configured yet. Until one is added:

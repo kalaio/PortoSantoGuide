@@ -52,7 +52,8 @@ export const mockListings: Listing[] = [
       { slug: "restaurants", label: "Restaurants" },
       { slug: "snack-bars", label: "Snack-bars" }
     ],
-    coverPhoto: null
+    coverPhoto: null,
+    photos: []
   },
   {
     id: "pizzaria-ilheu",
@@ -102,7 +103,8 @@ export const mockListings: Listing[] = [
       { slug: "pizzerias", label: "Pizzerias" },
       { slug: "restaurants", label: "Restaurants" }
     ],
-    coverPhoto: null
+    coverPhoto: null,
+    photos: []
   },
   {
     id: "porto-santo-jeep-tour",
@@ -138,6 +140,7 @@ export const mockListings: Listing[] = [
       }
     },
     categories: [{ slug: "activities", label: "Activities" }],
-    coverPhoto: null
+    coverPhoto: null,
+    photos: []
   }
 ];

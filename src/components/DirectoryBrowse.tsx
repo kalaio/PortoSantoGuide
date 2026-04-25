@@ -313,14 +313,14 @@ export default function DirectoryBrowse({ breadcrumbs, categorySchemaFields, lis
         ref={desktopWorkspaceRef}
         className={cn(
           "mx-auto w-full max-w-[1280px] px-4 md:px-5",
-          shouldRenderDesktopMap && "grid min-h-0 gap-5 overflow-hidden [grid-template-columns:minmax(0,3fr)_minmax(0,2fr)] max-[900px]:block"
+          shouldRenderDesktopMap && "grid min-h-0 gap-0 overflow-hidden [grid-template-columns:minmax(0,3fr)_minmax(0,2fr)] max-[900px]:block"
         )}
         style={shouldRenderDesktopMap && desktopWorkspaceHeight !== null ? { height: `${desktopWorkspaceHeight}px` } : undefined}
       >
         <main
           className={cn(
             "min-w-0 pt-4 pb-6 md:pt-5 md:pb-8",
-            shouldRenderDesktopMap ? "min-h-0 overflow-y-auto pr-2" : "mx-auto w-full"
+            shouldRenderDesktopMap ? "min-h-0 overflow-y-auto md:pr-4 lg:pr-5" : "mx-auto w-full"
           )}
         >
           <DirectoryView

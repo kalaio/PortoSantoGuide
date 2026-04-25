@@ -197,7 +197,8 @@ function toListingCard(item: ListingWithPublishedRevision): Listing {
     details: toListingDetails(revision.details),
     primaryCategory: toPrimaryCategory(item),
     categories: toCategoryTags(item),
-    coverPhoto: getListingCoverPhoto(photos)
+    coverPhoto: getListingCoverPhoto(photos),
+    photos
   };
 }
 

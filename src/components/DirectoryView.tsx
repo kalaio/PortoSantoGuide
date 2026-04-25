@@ -1,15 +1,17 @@
 "use client";
 
-import { useEffect, useMemo, useState, type Ref } from "react";
-import { Map01 } from "@untitledui/icons";
+import { useEffect, useMemo, useState, type FocusEvent, type Ref } from "react";
+import { ArrowLeft, ArrowRight, Map01 } from "@untitledui/icons";
+import Image from "next/image";
 import Link from "next/link";
+import { Carousel } from "@/components/application/carousel/carousel-base";
 import PublicFilterButton from "@/components/frontend/PublicFilterButton";
 import type { ListingMapHandle, MapBounds } from "@/components/ListingMap";
 import ListingMapLazy from "@/components/ListingMapLazy";
 import { cn } from "@/lib/cn";
 import { getDetailsSummaryByFields } from "@/lib/listing-details";
 import { getListingPath } from "@/lib/listing-path";
-import type { Listing } from "@/types/listing";
+import type { Listing, ListingPhoto } from "@/types/listing";
 
 type DirectoryViewProps = {
   hasVisibleFilters: boolean;
@@ -23,6 +25,86 @@ type DirectoryViewProps = {
   showMap: boolean;
   visibleListings: Listing[];
 };
+
+function getListingPreviewPhotos(listing: Listing): ListingPhoto[] {
+  if (listing.photos.length > 0) {
+    return listing.photos;
+  }
+
+  return listing.coverPhoto ? [listing.coverPhoto] : [];
+}
+
+type DirectoryListingCardProps = {
+  detailsSummary: string;
+  listing: Listing;
+  onFocusListing: () => void;
+  onBlurListing: (event: FocusEvent<HTMLElement>) => void;
+  onMouseEnter: () => void;
+  onMouseLeave: () => void;
+};
+
+function DirectoryListingCard({ detailsSummary, listing, onBlurListing, onFocusListing, onMouseEnter, onMouseLeave }: DirectoryListingCardProps) {
+  const previewPhotos = getListingPreviewPhotos(listing);
+  const listingPath = getListingPath(listing);
+
+  return (
+    <article
+      className="overflow-hidden rounded-[1rem] border border-black/10 bg-white transition"
+      onFocusCapture={onFocusListing}
+      onBlurCapture={onBlurListing}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
+      <div className="grid min-w-0 grid-cols-1 md:grid-cols-[16rem_minmax(0,1fr)]">
+        {previewPhotos.length > 0 ? (
+          <div className="relative border-b border-black/8 bg-black/[0.02] md:min-h-[13.5rem] md:border-b-0 md:border-r md:border-black/8">
+            <Carousel.Root opts={{ align: "start", loop: false }} className="h-full">
+              <Carousel.Content className="h-full">
+                {previewPhotos.map((photo) => (
+                  <Carousel.Item key={photo.id} className="basis-full">
+                    <div className="relative aspect-[16/9] h-full bg-black/5 sm:aspect-[16/10] md:min-h-[13.5rem] md:aspect-auto">
+                      <Image
+                        src={photo.thumbnailPath ?? photo.path}
+                        alt={photo.alt ?? listing.title}
+                        fill
+                        sizes="(min-width: 768px) 16rem, 100vw"
+                        className="h-full w-full object-cover"
+                      />
+                      <Link href={listingPath} className="absolute inset-0 z-10" aria-label={`Open ${listing.title}`} />
+                    </div>
+                  </Carousel.Item>
+                ))}
+              </Carousel.Content>
+
+              {previewPhotos.length > 1 ? (
+                <>
+                  <Carousel.PrevTrigger className={({ isDisabled }) => cn(
+                    "absolute left-3 top-1/2 z-20 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/55 text-white transition",
+                    isDisabled ? "pointer-events-none opacity-30" : "cursor-pointer hover:bg-black/68"
+                  )}>
+                    <ArrowLeft className="h-5 w-5" aria-hidden="true" />
+                  </Carousel.PrevTrigger>
+                  <Carousel.NextTrigger className={({ isDisabled }) => cn(
+                    "absolute right-3 top-1/2 z-20 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/55 text-white transition",
+                    isDisabled ? "pointer-events-none opacity-30" : "cursor-pointer hover:bg-black/68"
+                  )}>
+                    <ArrowRight className="h-5 w-5" aria-hidden="true" />
+                  </Carousel.NextTrigger>
+                </>
+              ) : null}
+            </Carousel.Root>
+          </div>
+        ) : null}
+
+        <Link href={listingPath} className="grid h-full min-w-0 content-start gap-1 px-5 py-4 text-black no-underline">
+          <h3 className="m-0 truncate text-md font-semibold text-black">{listing.title}</h3>
+          <p className="m-0 text-sm leading-snug text-[color:var(--psg-text-secondary)]">{listing.categories.map((item) => item.label).join(" · ")}</p>
+          {detailsSummary ? <p className="m-0 text-sm leading-snug text-[color:var(--psg-text-secondary)]">{detailsSummary}</p> : null}
+        </Link>
+      </div>
+    </article>
+  );
+}
 
 export default function DirectoryView({
   hasVisibleFilters,
@@ -61,42 +143,34 @@ export default function DirectoryView({
       <aside className={cn(isMobileMapMode && "hidden")}>
         <div className="grid gap-3">
           {visibleListings.map((listing) => {
-            const isActive = hoveredListingId === listing.id;
             const detailsSummary = listingSummariesById.get(listing.id) ?? "";
 
             return (
-              <Link
+              <DirectoryListingCard
                 key={listing.id}
-                className="block"
-                href={getListingPath(listing)}
-                onBlur={() => {
+                detailsSummary={detailsSummary}
+                listing={listing}
+                onBlurListing={(event) => {
+                  if (event.currentTarget.contains(event.relatedTarget as Node | null)) {
+                    return;
+                  }
+
                   setHoveredListingId(null);
                   onHoverListingChange(null);
                 }}
-                onFocus={() => {
+                onFocusListing={() => {
                   setHoveredListingId(listing.id);
                   onHoverListingChange(listing.id);
                 }}
-              >
-                <article
-                  className={cn(
-                    "rounded-[1rem] border bg-white px-5 py-4 transition",
-                    isActive ? "border-[var(--psg-brand)]" : "border-black/10 hover:border-[color:rgb(7_109_112_/_0.28)]"
-                  )}
-                  onMouseEnter={() => {
-                    setHoveredListingId(listing.id);
-                    onHoverListingChange(listing.id);
-                  }}
-                  onMouseLeave={() => {
-                    setHoveredListingId(null);
-                    onHoverListingChange(null);
-                  }}
-                >
-                  <h3 className="m-0 text-md font-semibold text-black">{listing.title}</h3>
-                  <p className="mt-1 text-sm text-[color:var(--psg-text-secondary)]">{listing.categories.map((item) => item.label).join(" · ")}</p>
-                  {detailsSummary ? <p className="mt-1 text-sm text-[color:var(--psg-text-secondary)]">{detailsSummary}</p> : null}
-                </article>
-              </Link>
+                onMouseEnter={() => {
+                  setHoveredListingId(listing.id);
+                  onHoverListingChange(listing.id);
+                }}
+                onMouseLeave={() => {
+                  setHoveredListingId(null);
+                  onHoverListingChange(null);
+                }}
+              />
             );
           })}
           {visibleListings.length === 0 ? (

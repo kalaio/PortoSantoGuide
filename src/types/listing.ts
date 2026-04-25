@@ -60,6 +60,7 @@ export type Listing = {
   primaryCategory: ListingCategorySummary;
   categories: ListingCategoryTag[];
   coverPhoto: ListingPhoto | null;
+  photos: ListingPhoto[];
 };
 
 export type ListingDetail = Listing & {

@@ -326,6 +326,7 @@ export default function ListingMap({
         const initialZoom = initialListings[0] ? LISTING_MAP_ZOOM : DEFAULT_MAP_ZOOM;
 
         const map = new googleMaps.Map(mapNodeRef.current, {
+          cameraControl: false,
           center: initialCenter,
           clickableIcons: false,
           fullscreenControl: false,
@@ -342,7 +343,10 @@ export default function ListingMap({
             { featureType: "transit", elementType: "labels.icon", stylers: [{ visibility: "off" }] }
           ],
           zoom: initialZoom,
-          zoomControl: true
+          zoomControl: true,
+          zoomControlOptions: {
+            position: googleMaps.ControlPosition.RIGHT_TOP
+          }
         });
 
         mapRef.current = map;
@@ -605,7 +609,7 @@ export default function ListingMap({
 
       {selectedListing ? (
         <div
-          className={`pointer-events-none absolute inset-x-4 z-20 ${mobileCardMode ? "bottom-[calc(4.5rem+env(safe-area-inset-bottom)+0.5rem)]" : "bottom-5"}`}
+          className={`pointer-events-none absolute inset-x-4 z-20 ${mobileCardMode ? "bottom-[calc(4.5rem+env(safe-area-inset-bottom)+2.5rem)]" : "bottom-10"}`}
         >
           <div className={`listingMapMobileCard pointer-events-auto ${mobileCardMode ? "" : "max-w-[30rem]"}`}>
             <div className="relative listingMapPopup pr-10">

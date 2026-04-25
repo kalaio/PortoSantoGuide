@@ -75,10 +75,12 @@ const SEARCH_DEBOUNCE_MS = 280;
 const SUGGESTIONS_CACHE_TTL_MS = 60 * 1000;
 const RECENT_SEARCHES_STORAGE_KEY = "porto-santo-guide:recent-searches";
 const RECENT_SEARCHES_LIMIT = 4;
+const OPEN_MOBILE_SEARCH_EVENT = "porto-santo-guide:open-mobile-search";
 
 type GlobalSearchProps = {
   autoOpenOnMount?: boolean;
   compactOnMobile?: boolean;
+  hideCompactMobileTrigger?: boolean;
   placeholder?: string;
 };
 
@@ -162,7 +164,12 @@ function SearchListingRowSkeleton() {
   );
 }
 
-export default function GlobalSearch({ autoOpenOnMount = false, compactOnMobile = false, placeholder = "What are you looking for?" }: GlobalSearchProps) {
+export default function GlobalSearch({
+  autoOpenOnMount = false,
+  compactOnMobile = false,
+  hideCompactMobileTrigger = false,
+  placeholder = "What are you looking for?"
+}: GlobalSearchProps) {
   const router = useRouter();
   const pathname = usePathname();
   const isHomeRoute = pathname === "/";
@@ -557,6 +564,21 @@ export default function GlobalSearch({ autoOpenOnMount = false, compactOnMobile 
     () => typeof window !== "undefined" && window.matchMedia("(max-width: 640px)").matches,
     []
   );
+
+  useEffect(() => {
+    if (!compactOnMobile) {
+      return;
+    }
+
+    const handleOpenMobileSearch = () => {
+      if (isMobileViewport()) {
+        openMobileOverlay();
+      }
+    };
+
+    window.addEventListener(OPEN_MOBILE_SEARCH_EVENT, handleOpenMobileSearch);
+    return () => window.removeEventListener(OPEN_MOBILE_SEARCH_EVENT, handleOpenMobileSearch);
+  }, [compactOnMobile, isMobileViewport, openMobileOverlay]);
 
   useEffect(() => {
     if (!autoOpenOnMount || autoOpenedRef.current) {
@@ -971,7 +993,7 @@ export default function GlobalSearch({ autoOpenOnMount = false, compactOnMobile 
     <>
       {isDesktopOverlayOpen ? <div className="fixed inset-0 z-40 bg-black/40" aria-hidden="true" /> : null}
 
-      {compactOnMobile && !isMobileOpen ? (
+      {compactOnMobile && !hideCompactMobileTrigger && !isMobileOpen ? (
         <button
           type="button"
           className="hidden h-11 w-11 items-center justify-center rounded-full bg-transparent text-black transition hover:text-[var(--psg-brand)] cursor-pointer max-[640px]:inline-flex"

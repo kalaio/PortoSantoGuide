@@ -15,6 +15,9 @@ type ListingGalleryExperienceProps = {
   photoSections: ListingPhotoSectionSummary[];
 };
 
+const LISTING_GALLERY_OVERLAY_CLASS = "listingGalleryOverlayOpen";
+const PUBLIC_THEME_ROOT_SELECTOR = ".publicThemeRoot";
+
 function getPhotoIndexById(photos: ListingPhoto[], photoId: string | null) {
   if (!photoId) {
     return 0;
@@ -35,6 +38,50 @@ export default function ListingGalleryExperience({
   const [mobileHeroIndex, setMobileHeroIndex] = useState(0);
   const groupedPhotos = useMemo(() => groupListingPhotosBySection(photos, photoSections), [photoSections, photos]);
   const sectionRefs = useRef(new Map<string, HTMLElement>());
+  const scrollbarCompensationRef = useRef(0);
+  const isGalleryOverlayOpen = isSectionsOpen || isViewerOpen;
+
+  useEffect(() => {
+    const updateScrollbarCompensation = () => {
+      if (isGalleryOverlayOpen) {
+        return;
+      }
+
+      scrollbarCompensationRef.current = Math.max(0, window.innerWidth - document.documentElement.clientWidth);
+    };
+
+    updateScrollbarCompensation();
+    window.addEventListener("resize", updateScrollbarCompensation);
+
+    return () => {
+      window.removeEventListener("resize", updateScrollbarCompensation);
+    };
+  }, [isGalleryOverlayOpen]);
+
+  useEffect(() => {
+    const html = document.documentElement;
+    const publicThemeRoot = document.querySelector<HTMLElement>(PUBLIC_THEME_ROOT_SELECTOR);
+
+    if (!isGalleryOverlayOpen) {
+      html.classList.remove(LISTING_GALLERY_OVERLAY_CLASS);
+      publicThemeRoot?.classList.remove(LISTING_GALLERY_OVERLAY_CLASS);
+      publicThemeRoot?.style.removeProperty("--gallery-scrollbar-compensation");
+      return;
+    }
+
+    const scrollbarCompensation =
+      scrollbarCompensationRef.current || Math.max(0, window.innerWidth - document.documentElement.clientWidth);
+
+    html.classList.add(LISTING_GALLERY_OVERLAY_CLASS);
+    publicThemeRoot?.classList.add(LISTING_GALLERY_OVERLAY_CLASS);
+    publicThemeRoot?.style.setProperty("--gallery-scrollbar-compensation", `${scrollbarCompensation}px`);
+
+    return () => {
+      html.classList.remove(LISTING_GALLERY_OVERLAY_CLASS);
+      publicThemeRoot?.classList.remove(LISTING_GALLERY_OVERLAY_CLASS);
+      publicThemeRoot?.style.removeProperty("--gallery-scrollbar-compensation");
+    };
+  }, [isGalleryOverlayOpen]);
 
   useEffect(() => {
     if (!selectedPhotoId) {
@@ -137,16 +184,16 @@ export default function ListingGalleryExperience({
         isOpen={isSectionsOpen}
         isDismissable
         onOpenChange={setIsSectionsOpen}
-        className="z-[120] !items-stretch !justify-stretch !p-0 bg-white/92 backdrop-blur-none"
+        className="listingGalleryOverlay z-[120] !items-stretch !justify-stretch !p-0 bg-white/92 backdrop-blur-none"
       >
         <Modal className="!min-h-full !w-full !max-w-none rounded-none bg-white shadow-none">
           <Dialog className="!grid !min-h-full !w-full !grid-cols-[minmax(0,1fr)] !items-stretch !justify-start content-start bg-white">
             <div className="grid min-w-0 w-full grid-cols-[minmax(0,1fr)]">
               <div className="sticky top-0 z-30 border-b border-black/10 bg-white">
-                <div className="flex h-16 items-center gap-3 px-3 md:h-[72px] md:gap-5 md:px-5 xl:px-5">
+                <div className="flex h-16 items-center gap-1 px-3 md:h-[72px] md:gap-2 md:px-5 xl:px-5">
                   <button
                     type="button"
-                    className="inline-flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border border-black/10 bg-white text-black"
+                    className="inline-flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent text-black"
                     onClick={() => setIsSectionsOpen(false)}
                     aria-label="Close photos"
                   >
@@ -158,23 +205,32 @@ export default function ListingGalleryExperience({
                 </div>
               </div>
 
-              <div className="grid min-w-0 gap-8 px-6 pb-10 pt-6 md:px-10 md:pb-14 xl:px-14">
+              <div className="grid min-w-0 gap-10 px-6 pb-10 pt-6 md:gap-12 md:px-10 md:pb-14 xl:px-14">
                 <div className="mx-auto grid w-full max-w-[1120px] gap-3">
                   <div className="flex gap-3 overflow-x-auto pb-1">
                     {groupedPhotos.map(({ section, photos: sectionPhotos }) => {
                       const targetId = section?.id ?? "more-photos";
+                      const previewPhoto = sectionPhotos[0];
 
                       return (
                         <button
                           key={targetId}
                           type="button"
-                          className="shrink-0 cursor-pointer rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-semibold text-black"
+                          className="grid w-28 shrink-0 cursor-pointer gap-2 text-left text-black sm:w-32"
                           onClick={() => {
                             sectionRefs.current.get(targetId)?.scrollIntoView({ behavior: "smooth", block: "start" });
                           }}
                         >
-                          {getListingPhotoSectionLabel(section)}
-                          <span className="ml-2 text-black/55">{sectionPhotos.length}</span>
+                          <div className="relative aspect-[5/4] overflow-hidden rounded-[0.5rem] bg-black/5">
+                            <Image
+                              src={previewPhoto.thumbnailPath ?? previewPhoto.path}
+                              alt={previewPhoto.alt ?? getListingPhotoSectionLabel(section)}
+                              fill
+                              sizes="(min-width: 640px) 8rem, 7rem"
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                          <span className="text-sm font-medium leading-tight">{getListingPhotoSectionLabel(section)}</span>
                         </button>
                       );
                     })}
@@ -201,7 +257,6 @@ export default function ListingGalleryExperience({
                           <h3 className="m-0 text-xl font-semibold tracking-[-0.04em] text-black">
                             {getListingPhotoSectionLabel(section)}
                           </h3>
-                          <p className="m-0 text-sm text-black/55">{sectionPhotos.length} photos</p>
                         </div>
 
                         <div className="grid min-w-0 gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -284,7 +339,7 @@ function PhotoViewerModal({
           onClose(selectedPhoto?.id ?? null);
         }
       }}
-      className="z-[130] !items-stretch !justify-stretch !p-0 bg-black backdrop-blur-none"
+      className="listingGalleryOverlay z-[130] !items-stretch !justify-stretch !p-0 bg-black backdrop-blur-none"
     >
       <Modal className="!h-full !w-full !max-w-none rounded-none bg-black shadow-none">
         <Dialog className="!grid !h-full !w-full !grid-cols-[minmax(0,1fr)] !items-stretch !justify-start bg-black px-4 pb-6 pt-4 text-white md:px-8 md:pb-8 md:pt-6 xl:px-12">

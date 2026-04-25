@@ -255,9 +255,11 @@ export default function DirectoryBrowse({ breadcrumbs, categorySchemaFields, lis
   const shouldRenderDesktopMap = showMap && !isMobileViewport;
 
   useEffect(() => {
+    document.documentElement.classList.toggle("desktopDirectoryWorkspaceMode", shouldRenderDesktopMap);
     document.body.classList.toggle("desktopDirectoryWorkspaceMode", shouldRenderDesktopMap);
 
     return () => {
+      document.documentElement.classList.remove("desktopDirectoryWorkspaceMode");
       document.body.classList.remove("desktopDirectoryWorkspaceMode");
     };
   }, [shouldRenderDesktopMap]);
@@ -311,7 +313,7 @@ export default function DirectoryBrowse({ breadcrumbs, categorySchemaFields, lis
         ref={desktopWorkspaceRef}
         className={cn(
           "mx-auto w-full max-w-[1280px] px-4 md:px-5",
-          shouldRenderDesktopMap && "grid min-h-0 gap-5 overflow-hidden [grid-template-columns:minmax(0,1fr)_minmax(21rem,38rem)] max-[900px]:block"
+          shouldRenderDesktopMap && "grid min-h-0 gap-5 overflow-hidden [grid-template-columns:minmax(0,3fr)_minmax(0,2fr)] max-[900px]:block"
         )}
         style={shouldRenderDesktopMap && desktopWorkspaceHeight !== null ? { height: `${desktopWorkspaceHeight}px` } : undefined}
       >

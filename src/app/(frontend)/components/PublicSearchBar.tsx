@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { Menu02 } from "@untitledui/icons";
+import { Menu02, SearchMd } from "@untitledui/icons";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
@@ -45,10 +45,19 @@ export default function PublicSearchBar({ menuLinks }: { menuLinks: PublicMenuLi
         </Link>
 
         <div className="flex justify-center">
-          <GlobalSearch compactOnMobile />
+          <GlobalSearch compactOnMobile hideCompactMobileTrigger />
         </div>
 
         <div className="flex items-center justify-end gap-1.5 max-[640px]:col-start-3 max-[640px]:gap-1">
+          <button
+            type="button"
+            className="hidden h-11 w-11 items-center justify-center rounded-full bg-transparent text-black transition hover:text-[var(--psg-brand)] cursor-pointer max-[640px]:inline-flex"
+            onClick={() => window.dispatchEvent(new Event("porto-santo-guide:open-mobile-search"))}
+            aria-label="Open search"
+          >
+            <SearchMd className="h-5.5 w-5.5" aria-hidden="true" />
+          </button>
+
           <button
             type="button"
             className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border-0 bg-transparent text-black transition hover:text-[var(--psg-brand)] cursor-pointer max-[900px]:h-11 max-[900px]:w-11"

@@ -126,25 +126,25 @@ function SearchListingRow({
     <Link
       href={href}
       className={cn(
-        "grid grid-cols-[3.5rem_minmax(0,1fr)] items-center gap-3 rounded-[1rem] border border-transparent px-3 py-3 text-left transition hover:border-[color:var(--psg-accent-surface)] hover:bg-[var(--psg-accent-surface-soft)]",
+        "grid grid-cols-[3rem_minmax(0,1fr)] items-center gap-2.5 rounded-[1rem] border border-transparent px-3 py-2.5 text-left transition hover:border-[color:var(--psg-accent-surface)] hover:bg-[var(--psg-accent-surface-soft)]",
         isPending && "pointer-events-none opacity-75"
       )}
       onClick={onClick}
       aria-disabled={isPending}
     >
-      <div className="relative h-14 w-14 overflow-hidden rounded-[0.875rem] bg-black/5">
+      <div className="relative h-12 w-12 overflow-hidden rounded-[0.875rem] bg-black/5">
         {coverPhotoPath ? (
-          <Image src={coverPhotoPath} alt="" fill sizes="56px" className="h-full w-full object-cover" />
+          <Image src={coverPhotoPath} alt="" fill sizes="48px" className="h-full w-full object-cover" />
         ) : (
           <div className="grid h-full w-full place-items-center text-xs font-semibold text-black/40">PS</div>
         )}
       </div>
       <div className="grid min-w-0 gap-0.5">
-        <strong className="inline-flex items-center gap-2 truncate text-md font-semibold text-black">
+        <strong className="inline-flex items-center gap-2 truncate text-sm font-semibold text-black">
           <span className="truncate">{title}</span>
           {isPending ? <span className="routeSpinner" aria-hidden="true" /> : null}
         </strong>
-        <span className="truncate text-sm text-[color:var(--psg-text-secondary)]">{subtitle}</span>
+        <span className="truncate text-xs text-[color:var(--psg-text-secondary)]">{subtitle}</span>
       </div>
     </Link>
   );
@@ -152,11 +152,11 @@ function SearchListingRow({
 
 function SearchListingRowSkeleton() {
   return (
-    <div className="grid grid-cols-[3.5rem_minmax(0,1fr)] items-center gap-3 rounded-[1rem] px-3 py-3">
-      <div className="h-14 w-14 animate-pulse rounded-[0.875rem] bg-black/6" />
-      <div className="grid gap-2">
-        <div className="h-5 w-40 animate-pulse rounded-full bg-black/8" />
-        <div className="h-4 w-56 animate-pulse rounded-full bg-black/6" />
+    <div className="grid grid-cols-[3rem_minmax(0,1fr)] items-center gap-2.5 rounded-[1rem] px-3 py-2.5">
+      <div className="h-12 w-12 animate-pulse rounded-[0.875rem] bg-black/6" />
+      <div className="grid gap-1.5">
+        <div className="h-4 w-36 animate-pulse rounded-full bg-black/8" />
+        <div className="h-3.5 w-52 animate-pulse rounded-full bg-black/6" />
       </div>
     </div>
   );
@@ -172,7 +172,6 @@ export default function GlobalSearch({ autoOpenOnMount = false, compactOnMobile 
   const searchRequestRef = useRef(0);
   const searchAbortControllerRef = useRef<AbortController | null>(null);
   const suggestionsOpenRequestRef = useRef(0);
-  const wasOpenRef = useRef(false);
   const autoOpenedRef = useRef(false);
   const isApplyingSuggestionRef = useRef(false);
   const [query, setQuery] = useState("");
@@ -185,8 +184,6 @@ export default function GlobalSearch({ autoOpenOnMount = false, compactOnMobile 
   const [lastCompletedQuery, setLastCompletedQuery] = useState("");
   const [lastCompletedRequestKey, setLastCompletedRequestKey] = useState("");
   const [isResultsLoading, setIsResultsLoading] = useState(false);
-  const [searchVersion, setSearchVersion] = useState(0);
-  const [resultsOpenVersion, setResultsOpenVersion] = useState(0);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [pendingResultId, setPendingResultId] = useState<string | null>(null);
   const [recentSearches, setRecentSearches] = useState<RecentSearchItem[]>([]);
@@ -198,7 +195,6 @@ export default function GlobalSearch({ autoOpenOnMount = false, compactOnMobile 
   const trimmedQuery = useMemo(() => searchQuery.trim(), [searchQuery]);
   const isCorrectionDisabledForQuery = correctionDisabledQuery === trimmedQuery;
   const activeRequestKey = `${trimmedQuery}::${isCorrectionDisabledForQuery ? "exact" : "smart"}`;
-  const isShowingResults = displayMode === "results";
   const isDesktopOverlayOpen = isOpen && !isMobileOpen;
   const isDesktopDropdownOpen = isOpen && !isMobileOpen;
   const showDesktopRecentSearches =
@@ -278,6 +274,37 @@ export default function GlobalSearch({ autoOpenOnMount = false, compactOnMobile 
       setSuggestions([]);
       setError("Could not load suggestions.");
     }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(async () => {
+      if (suggestionsCacheRef.current) {
+        return;
+      }
+
+      try {
+        const response = await fetch("/api/search");
+        if (!response.ok) {
+          return;
+        }
+
+        const payload = (await response.json()) as SearchResponse;
+        const nextSuggestions = payload.suggestions ?? [];
+
+        suggestionsCacheRef.current = {
+          data: nextSuggestions,
+          loadedAt: Date.now()
+        };
+      } catch {
+        // Ignore warm-up failures; focus-time loading still handles errors.
+      }
+    }, 250);
+
+    return () => window.clearTimeout(timeoutId);
   }, []);
 
   const openSuggestionsDropdown = useCallback(async (force = false) => {
@@ -435,7 +462,6 @@ export default function GlobalSearch({ autoOpenOnMount = false, compactOnMobile 
           setError(payload.error ?? "Could not search.");
           setCorrection(null);
           setIsResultsLoading(false);
-          setSearchVersion((prev) => prev + 1);
           setDisplayMode("results");
           if (document.activeElement === inputRef.current) {
             setIsOpen(true);
@@ -448,7 +474,6 @@ export default function GlobalSearch({ autoOpenOnMount = false, compactOnMobile 
         setLastCompletedQuery(trimmedQuery);
         setLastCompletedRequestKey(activeRequestKey);
         setIsResultsLoading(false);
-        setSearchVersion((prev) => prev + 1);
         setDisplayMode("results");
         if (document.activeElement === inputRef.current) {
           setIsOpen(true);
@@ -461,7 +486,6 @@ export default function GlobalSearch({ autoOpenOnMount = false, compactOnMobile 
         setError("Could not search.");
         setCorrection(null);
         setIsResultsLoading(false);
-        setSearchVersion((prev) => prev + 1);
         setDisplayMode("results");
         if (document.activeElement === inputRef.current) {
           setIsOpen(true);
@@ -473,14 +497,6 @@ export default function GlobalSearch({ autoOpenOnMount = false, compactOnMobile 
       window.clearTimeout(timeoutId);
     };
   }, [trimmedQuery, lastCompletedQuery, lastCompletedRequestKey, activeRequestKey, isCorrectionDisabledForQuery]);
-
-  useEffect(() => {
-    if (!wasOpenRef.current && isOpen && isShowingResults) {
-      setResultsOpenVersion((prev) => prev + 1);
-    }
-
-    wasOpenRef.current = isOpen;
-  }, [isOpen, isShowingResults]);
 
   async function runSuggestionQuery(suggestion: SearchSuggestion) {
     const suggestionQuery = suggestion.query.trim();
@@ -721,6 +737,9 @@ export default function GlobalSearch({ autoOpenOnMount = false, compactOnMobile 
             setQuery(nextValue);
             setSearchQuery(nextValue);
             const trimmed = nextValue.trim();
+            const nextCorrectionDisabledQuery = trimmed === correctionDisabledQuery ? correctionDisabledQuery : null;
+            const nextRequestKey = `${trimmed}::${nextCorrectionDisabledQuery === trimmed ? "exact" : "smart"}`;
+
             if (trimmed !== correctionDisabledQuery) {
               setCorrectionDisabledQuery(null);
             }
@@ -756,10 +775,17 @@ export default function GlobalSearch({ autoOpenOnMount = false, compactOnMobile 
             }
 
             setError("");
-            if (trimmed === lastCompletedQuery) {
-              setDisplayMode("results");
-              setIsOpen(true);
+            setCorrection(null);
+            setDisplayMode("results");
+            setIsOpen(true);
+
+            if (nextRequestKey !== lastCompletedRequestKey) {
+              setResults([]);
+              setIsResultsLoading(true);
+              return;
             }
+
+            setIsResultsLoading(false);
           }}
           onClear={clearQuery}
           onFocus={() => {
@@ -795,7 +821,6 @@ export default function GlobalSearch({ autoOpenOnMount = false, compactOnMobile 
 
       {isOpen ? (
         <div
-          key={isShowingResults ? `results-${searchVersion}-${resultsOpenVersion}` : "suggestions"}
           className={cn(
             "overflow-hidden bg-white",
             isMobileOpen
@@ -807,9 +832,9 @@ export default function GlobalSearch({ autoOpenOnMount = false, compactOnMobile 
             {error ? <p className="px-2 py-2 text-sm text-error-600">{error}</p> : null}
 
             {displayMode === "suggestions" ? (
-              <div className="grid gap-5">
+              <div className="grid gap-4">
                 <section className="grid gap-1">
-                  <p className="px-2 pb-2 pt-1 text-xs font-bold uppercase tracking-[0.14em] text-black">Suggestions</p>
+                  <p className="px-2 pb-1.5 pt-1 text-xs font-bold uppercase tracking-[0.14em] text-black">Suggestions</p>
                   {suggestions.length === 0 ? (
                     <p className="px-2 py-2 text-sm text-[color:var(--psg-text-secondary)]">No suggestions yet.</p>
                   ) : (
@@ -818,12 +843,14 @@ export default function GlobalSearch({ autoOpenOnMount = false, compactOnMobile 
                         key={suggestion.id}
                         className={cn(
                           "cursor-pointer rounded-[1rem] text-left transition hover:bg-[var(--psg-accent-surface-soft)]",
-                          isMobileOpen ? "px-4 py-3 text-md text-black" : "grid grid-cols-[1.75rem_minmax(0,1fr)] items-center gap-3 px-3 py-3.5 text-md font-medium text-black"
+                          isMobileOpen
+                            ? "px-4 py-2.5 text-sm text-black"
+                            : "grid grid-cols-[1.5rem_minmax(0,1fr)] items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-black"
                         )}
                         type="button"
                         onClick={() => runSuggestionQuery(suggestion)}
                       >
-                        {!isMobileOpen ? <SearchMd className="h-5 w-5 text-black/45" aria-hidden="true" /> : null}
+                        {!isMobileOpen ? <SearchMd className="h-4.5 w-4.5 text-black/45" aria-hidden="true" /> : null}
                         <span>{suggestion.label}</span>
                       </button>
                     ))
@@ -831,8 +858,8 @@ export default function GlobalSearch({ autoOpenOnMount = false, compactOnMobile 
                 </section>
 
                 {showDesktopRecentSearches ? (
-                  <section className="grid gap-2 border-t border-black/10 pt-4">
-                    <p className="px-2 pb-1 text-base font-semibold text-black">Recently viewed</p>
+                  <section className="grid gap-1.5 border-t border-black/10 pt-3.5">
+                    <p className="px-2 pb-1 text-md font-semibold text-black">Recently viewed</p>
                     <div className="grid gap-1">
                       {recentSearches.map((item) => (
                         <SearchListingRow
@@ -911,22 +938,22 @@ export default function GlobalSearch({ autoOpenOnMount = false, compactOnMobile 
                         key={result.id}
                         href={result.href}
                         className={cn(
-                          "grid gap-0 rounded-[1rem] border border-transparent px-4 py-3 text-left transition hover:border-[color:var(--psg-accent-surface)] hover:bg-[var(--psg-accent-surface-soft)]",
+                          "grid gap-0 rounded-[1rem] border border-transparent px-4 py-2.5 text-left transition hover:border-[color:var(--psg-accent-surface)] hover:bg-[var(--psg-accent-surface-soft)]",
                           pendingResultId === result.id && "pointer-events-none opacity-75"
                         )}
                         onClick={(event) => handleListingNavigation(event, { href: result.href, id: result.id }, result)}
                         aria-disabled={isResultNavigationPending}
                       >
-                        <strong className="inline-flex items-center gap-2 text-md font-semibold text-black">
+                        <strong className="inline-flex items-center gap-2 text-sm font-semibold text-black">
                           {result.title}
                           {pendingResultId === result.id ? <span className="routeSpinner" aria-hidden="true" /> : null}
                         </strong>
-                        <span className="text-sm text-[color:var(--psg-text-secondary)]">{result.primaryCategoryLabel}</span>
+                        <span className="text-xs text-[color:var(--psg-text-secondary)]">{result.primaryCategoryLabel}</span>
                         {result.openingStatus ? (
-                          <span className="text-sm text-[color:var(--psg-text-secondary)]">{result.openingStatus}</span>
+                          <span className="text-xs text-[color:var(--psg-text-secondary)]">{result.openingStatus}</span>
                         ) : null}
                         {result.summary ? (
-                          <span className="text-sm text-[color:var(--psg-text-secondary)]">{result.summary}</span>
+                          <span className="text-xs text-[color:var(--psg-text-secondary)]">{result.summary}</span>
                         ) : null}
                       </Link>
                     )

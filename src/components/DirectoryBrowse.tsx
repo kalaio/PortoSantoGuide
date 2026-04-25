@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import DirectoryFiltersBar, { type DirectoryFilterOption, type DirectoryFrontendFilter } from "@/components/DirectoryFiltersBar";
-import ExpandableDescription from "@/components/ExpandableDescription";
 import DirectoryView from "@/components/DirectoryView";
 import ListingMapLazy from "@/components/ListingMapLazy";
 import PublicBreadcrumbs from "@/components/frontend/PublicBreadcrumbs";
@@ -40,19 +39,20 @@ type DirectoryBrowseBreadcrumbItem = {
 type DirectoryBrowseProps = {
   breadcrumbs: DirectoryBrowseBreadcrumbItem[];
   categorySchemaFields: ListingSchemaFieldSummary[];
-  description: string;
   listings: Listing[];
   title: string;
 };
 
-export default function DirectoryBrowse({ breadcrumbs, categorySchemaFields, description, listings, title }: DirectoryBrowseProps) {
+export default function DirectoryBrowse({ breadcrumbs, categorySchemaFields, listings, title }: DirectoryBrowseProps) {
   const [areaBounds, setAreaBounds] = useState<MapBounds | null>(null);
   const [isOpenNowOnly, setIsOpenNowOnly] = useState(false);
   const [selectedCuisines, setSelectedCuisines] = useState<string[]>([]);
   const [selectedPriceLevels, setSelectedPriceLevels] = useState<string[]>([]);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
   const [mobileViewMode, setMobileViewMode] = useState<"list" | "map">("list");
+  const [desktopWorkspaceHeight, setDesktopWorkspaceHeight] = useState<number | null>(null);
   const listingMapHandleRef = useRef<ListingMapHandle | null>(null);
+  const desktopWorkspaceRef = useRef<HTMLDivElement | null>(null);
   const hasArchiveListings = listings.length > 0;
   const hasLocationField = useMemo(() => hasListingSchemaField(categorySchemaFields, "location"), [categorySchemaFields]);
 
@@ -254,13 +254,46 @@ export default function DirectoryBrowse({ breadcrumbs, categorySchemaFields, des
 
   const shouldRenderDesktopMap = showMap && !isMobileViewport;
 
+  useEffect(() => {
+    document.body.classList.toggle("desktopDirectoryWorkspaceMode", shouldRenderDesktopMap);
+
+    return () => {
+      document.body.classList.remove("desktopDirectoryWorkspaceMode");
+    };
+  }, [shouldRenderDesktopMap]);
+
+  useEffect(() => {
+    if (!shouldRenderDesktopMap) {
+      setDesktopWorkspaceHeight(null);
+      return;
+    }
+
+    const syncDesktopWorkspaceHeight = () => {
+      if (!desktopWorkspaceRef.current) {
+        return;
+      }
+
+      const { top } = desktopWorkspaceRef.current.getBoundingClientRect();
+      const nextHeight = Math.max(320, Math.floor(window.innerHeight - top));
+
+      setDesktopWorkspaceHeight((currentValue) => (currentValue === nextHeight ? currentValue : nextHeight));
+    };
+
+    const frameId = window.requestAnimationFrame(syncDesktopWorkspaceHeight);
+    window.addEventListener("resize", syncDesktopWorkspaceHeight);
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      window.removeEventListener("resize", syncDesktopWorkspaceHeight);
+    };
+  }, [hasVisibleFilters, shouldRenderDesktopMap]);
+
   return (
     <>
       <div className="w-full border-b border-black/10 bg-white">
-        <section className="mx-auto grid w-full max-w-[1280px] gap-3 px-4 py-4 md:px-5 md:py-6 max-[640px]:py-3.5">
-          <PublicBreadcrumbs items={breadcrumbs} />
+        <section className="mx-auto grid w-full max-w-[1280px] gap-1.5 px-4 py-3 md:px-5 md:py-4 max-[640px]:py-3">
+          <PublicBreadcrumbs className="gap-1 text-xs [&_svg]:h-3 [&_svg]:w-3" items={breadcrumbs} />
           <h1 className="m-0 text-display-sm font-semibold tracking-[-0.04em] text-black">{title}</h1>
-          <ExpandableDescription className="max-w-[46rem]" text={description} />
         </section>
       </div>
 
@@ -275,12 +308,19 @@ export default function DirectoryBrowse({ breadcrumbs, categorySchemaFields, des
       ) : null}
 
       <div
+        ref={desktopWorkspaceRef}
         className={cn(
           "mx-auto w-full max-w-[1280px] px-4 md:px-5",
-          shouldRenderDesktopMap && "grid gap-5 [grid-template-columns:minmax(0,1fr)_minmax(21rem,38rem)] max-[900px]:block"
+          shouldRenderDesktopMap && "grid min-h-0 gap-5 overflow-hidden [grid-template-columns:minmax(0,1fr)_minmax(21rem,38rem)] max-[900px]:block"
         )}
+        style={shouldRenderDesktopMap && desktopWorkspaceHeight !== null ? { height: `${desktopWorkspaceHeight}px` } : undefined}
       >
-        <main className={cn("min-w-0 pt-4 pb-6 md:pt-6 md:pb-10", !shouldRenderDesktopMap && "mx-auto w-full")}>
+        <main
+          className={cn(
+            "min-w-0 pt-4 pb-6 md:pt-5 md:pb-8",
+            shouldRenderDesktopMap ? "min-h-0 overflow-y-auto pr-2" : "mx-auto w-full"
+          )}
+        >
           <DirectoryView
             hasVisibleFilters={hasVisibleFilters}
             isMobileViewport={isMobileViewport}
@@ -298,13 +338,8 @@ export default function DirectoryBrowse({ breadcrumbs, categorySchemaFields, des
         </main>
 
         {shouldRenderDesktopMap ? (
-          <aside className="min-w-0 max-[900px]:hidden">
-            <div
-              className={cn(
-                "overflow-hidden bg-white",
-                hasVisibleFilters ? "sticky top-16 h-[calc(100svh-4rem)]" : "sticky top-0 h-screen"
-              )}
-            >
+          <aside className="min-w-0 h-full max-[900px]:hidden">
+            <div className="h-full overflow-hidden bg-white">
               <ListingMapLazy isVisible listings={mappableListings} mapHandleRef={listingMapHandleRef} onSearchInArea={handleSearchInArea} />
             </div>
           </aside>

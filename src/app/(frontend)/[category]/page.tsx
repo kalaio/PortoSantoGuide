@@ -21,7 +21,6 @@ export default async function CategoryArchivePage({ params }: CategoryArchivePag
         { label: archive.category.label }
       ]}
       categorySchemaFields={archive.category.schema?.fields ?? []}
-      description="Discover curated places in Porto Santo, map-first and easy to explore."
       listings={archive.listings}
       title={archive.category.label}
     />

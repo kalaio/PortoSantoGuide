@@ -396,6 +396,16 @@ body.desktopSearchOverlayOpen .listingDetailStickyNav {
   z-index: 20 !important;
 }
 
+@media (min-width: 901px) {
+  body.desktopDirectoryWorkspaceMode {
+    overflow: hidden;
+  }
+
+  body.desktopDirectoryWorkspaceMode .siteFooter {
+    display: none !important;
+  }
+}
+
 @media (max-width: 900px) {
   body.mobileMapMode .publicSearchBarRoot {
     display: none !important;

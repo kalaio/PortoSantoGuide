@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState, type Ref } from "react";
-import { RefreshCw05 } from "@untitledui/icons";
+import { RefreshCw05, XClose } from "@untitledui/icons";
 import PublicFilterButton from "@/components/frontend/PublicFilterButton";
 import { createGoogleMarkerIcon, createGoogleMarkerIconAsync, hasGoogleMapsApiKey, loadGoogleMapsApi } from "@/lib/google-maps";
 import { getDetailsSummaryByFields, getFoodOpeningState, hasSchemaField } from "@/lib/listing-details";
@@ -17,12 +17,6 @@ export type MapBounds = {
 
 export type ListingMapHandle = {
   setExternalHoveredListingId: (listingId: string | null) => void;
-};
-
-type MarkerPopupData = {
-  categoryLabel: string;
-  summary: string;
-  title: string;
 };
 
 type ListingMapProps = {
@@ -50,7 +44,6 @@ type MarkerDescriptor = {
   iconId: UiIconId;
   listing: MappableListing;
   openingState: "open" | "closed" | null;
-  popupData: MarkerPopupData;
 };
 
 const DEFAULT_MAP_CENTER: google.maps.LatLngLiteral = { lat: 39.5, lng: -8.2 };
@@ -59,30 +52,6 @@ const LISTING_MAP_ZOOM = 12;
 const FIT_BOUNDS_PADDING = 64;
 const IGNORE_IDLE_WINDOW_MS = 200;
 const DEFAULT_MARKER_ICON_ID: UiIconId = "map-pin";
-
-const buildPopupContent = ({ categoryLabel, summary, title }: MarkerPopupData) => {
-  const popup = document.createElement("div");
-  popup.className = "listingMapPopup";
-
-  const titleElement = document.createElement("strong");
-  titleElement.className = "listingMapPopupTitle";
-  titleElement.textContent = title;
-
-  const categoryElement = document.createElement("p");
-  categoryElement.className = "listingMapPopupMeta";
-  categoryElement.textContent = categoryLabel;
-
-  popup.append(titleElement, categoryElement);
-
-  if (summary) {
-    const summaryElement = document.createElement("p");
-    summaryElement.className = "listingMapPopupSummary";
-    summaryElement.textContent = summary;
-    popup.append(summaryElement);
-  }
-
-  return popup;
-};
 
 function toMapBounds(bounds: google.maps.LatLngBounds): MapBounds {
   const northEast = bounds.getNorthEast();
@@ -119,12 +88,10 @@ function getMarkerIconId(iconName: string | null | undefined): UiIconId {
 function buildActiveListingIds({
   externalHoveredListingId,
   mapHoveredListingId,
-  popupListingId,
   selectedListingId,
 }: {
   externalHoveredListingId: string | null;
   mapHoveredListingId: string | null;
-  popupListingId: string | null;
   selectedListingId: string | null;
 }) {
   const ids = new Set<string>();
@@ -135,10 +102,6 @@ function buildActiveListingIds({
 
   if (mapHoveredListingId) {
     ids.add(mapHoveredListingId);
-  }
-
-  if (popupListingId) {
-    ids.add(popupListingId);
   }
 
   if (selectedListingId) {
@@ -191,7 +154,6 @@ export default function ListingMap({
   const mapNodeRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
   const markersRef = useRef<Map<string, google.maps.Marker>>(new Map());
-  const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
   const pendingBoundsRef = useRef<MapBounds | null>(null);
   const ignoreNextIdleRef = useRef(false);
   const ignoreIdleTimeoutRef = useRef<number | null>(null);
@@ -200,15 +162,12 @@ export default function ListingMap({
   const onSearchInAreaRef = useRef(onSearchInArea);
   const initialListingsRef = useRef<MappableListing[] | null>(null);
   const initialViewRef = useRef<InitialView | null>(null);
-  const markerDescriptorsByIdRef = useRef<Map<string, MarkerDescriptor>>(new Map());
-  const mobileCardModeRef = useRef(mobileCardMode);
   const visitedListingIdsRef = useRef<Set<string>>(new Set());
   const [externalHoveredListingId, setExternalHoveredListingId] = useState<string | null>(null);
   const [isMapReady, setIsMapReady] = useState(false);
   const [isSearchInAreaVisible, setIsSearchInAreaVisible] = useState(false);
   const [mapHoveredListingId, setMapHoveredListingId] = useState<string | null>(null);
   const [mapError, setMapError] = useState<string | null>(null);
-  const [popupListingId, setPopupListingId] = useState<string | null>(null);
   const [selectedListingId, setSelectedListingId] = useState<string | null>(null);
   const [visitedListingIdsState, setVisitedListingIdsState] = useState<string[]>([]);
 
@@ -223,10 +182,6 @@ export default function ListingMap({
   useEffect(() => {
     onSearchInAreaRef.current = onSearchInArea;
   }, [onSearchInArea]);
-
-  useEffect(() => {
-    mobileCardModeRef.current = mobileCardMode;
-  }, [mobileCardMode]);
 
   const listingSummariesById = useMemo(() => {
     const summaries = new Map<string, string>();
@@ -243,24 +198,15 @@ export default function ListingMap({
       listingsWithCoordinates.map((listing) => ({
         iconId: getMarkerIconId(listing.primaryCategory.iconName),
         listing,
-        openingState: getMarkerOpeningState(listing),
-        popupData: {
-          categoryLabel: listing.primaryCategory.label,
-          summary: listingSummariesById.get(listing.id) ?? "",
-          title: listing.title
-        }
+        openingState: getMarkerOpeningState(listing)
       })),
-    [listingSummariesById, listingsWithCoordinates]
+    [listingsWithCoordinates]
   );
 
   const markerDescriptorsById = useMemo(
     () => new Map(markerDescriptors.map((descriptor) => [descriptor.listing.id, descriptor])),
     [markerDescriptors]
   );
-
-  useEffect(() => {
-    markerDescriptorsByIdRef.current = markerDescriptorsById;
-  }, [markerDescriptorsById]);
 
   const applyIgnoreIdleWindow = useCallback(() => {
     if (ignoreIdleTimeoutRef.current) {
@@ -274,10 +220,8 @@ export default function ListingMap({
     }, IGNORE_IDLE_WINDOW_MS);
   }, []);
 
-  const closeDesktopPopup = useCallback(() => {
-    infoWindowRef.current?.close();
-    infoWindowRef.current = null;
-    setPopupListingId(null);
+  const clearSelectedListing = useCallback(() => {
+    setSelectedListingId(null);
   }, []);
 
   const clearMapResources = useCallback(() => {
@@ -286,7 +230,7 @@ export default function ListingMap({
       ignoreIdleTimeoutRef.current = null;
     }
 
-    closeDesktopPopup();
+    clearSelectedListing();
 
     if (window.google?.maps) {
       markersRef.current.forEach((marker) => {
@@ -310,7 +254,7 @@ export default function ListingMap({
     setIsMapReady(false);
     setIsSearchInAreaVisible(false);
     onReadyChangeRef.current?.(false);
-  }, [closeDesktopPopup]);
+  }, [clearSelectedListing]);
 
   const markListingVisited = useCallback((listingId: string) => {
     if (visitedListingIdsRef.current.has(listingId)) {
@@ -340,15 +284,11 @@ export default function ListingMap({
       setSelectedListingId(null);
     }
 
-    if (popupListingId && !markerDescriptorsById.has(popupListingId)) {
-      closeDesktopPopup();
-    }
-
     if (mapHoveredListingId && !markerDescriptorsById.has(mapHoveredListingId)) {
       setMapHoveredListingId(null);
     }
 
-  }, [closeDesktopPopup, externalHoveredListingId, mapHoveredListingId, markerDescriptorsById, popupListingId, selectedListingId]);
+  }, [externalHoveredListingId, mapHoveredListingId, markerDescriptorsById, selectedListingId]);
 
   const selectedListing = useMemo(
     () => (selectedListingId ? markerDescriptorsById.get(selectedListingId)?.listing ?? null : null),
@@ -356,39 +296,6 @@ export default function ListingMap({
   );
   const selectedListingSummary = selectedListing ? listingSummariesById.get(selectedListing.id) ?? "" : "";
   const visitedListingIds = useMemo(() => new Set(visitedListingIdsState), [visitedListingIdsState]);
-
-  const openDesktopPopupForListing = useCallback(
-    (listingId: string) => {
-      const map = mapRef.current;
-      const marker = markersRef.current.get(listingId);
-      const descriptor = markerDescriptorsByIdRef.current.get(listingId);
-
-      if (!map || !marker || !descriptor || mobileCardModeRef.current) {
-        return;
-      }
-
-      applyIgnoreIdleWindow();
-
-      closeDesktopPopup();
-
-      const infoWindow = new google.maps.InfoWindow({
-        content: buildPopupContent(descriptor.popupData),
-        maxWidth: 384
-      });
-
-      infoWindow.addListener("closeclick", () => {
-        if (infoWindowRef.current === infoWindow) {
-          infoWindowRef.current = null;
-        }
-        setPopupListingId((currentValue) => (currentValue === listingId ? null : currentValue));
-      });
-
-      infoWindowRef.current = infoWindow;
-      setPopupListingId(listingId);
-      infoWindow.open({ anchor: marker, map, shouldFocus: false });
-    },
-    [applyIgnoreIdleWindow, closeDesktopPopup]
-  );
 
   useEffect(() => {
     if (!mapNodeRef.current || mapRef.current) {
@@ -449,8 +356,7 @@ export default function ListingMap({
         }
 
         map.addListener("click", () => {
-          closeDesktopPopup();
-          setSelectedListingId(null);
+          clearSelectedListing();
         });
 
         map.addListener("idle", () => {
@@ -498,7 +404,7 @@ export default function ListingMap({
       isDisposed = true;
       clearMapResources();
     };
-  }, [allowScrollWheelZoom, applyIgnoreIdleWindow, clearMapResources, closeDesktopPopup]);
+  }, [allowScrollWheelZoom, applyIgnoreIdleWindow, clearMapResources, clearSelectedListing]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -566,13 +472,7 @@ export default function ListingMap({
 
         marker.addListener("click", () => {
           markListingVisited(listingId);
-
-          if (mobileCardModeRef.current) {
-            setSelectedListingId(listingId);
-            return;
-          }
-
-          openDesktopPopupForListing(listingId);
+          setSelectedListingId(listingId);
         });
 
         markersRef.current.set(listingId, marker);
@@ -580,11 +480,7 @@ export default function ListingMap({
 
       marker.setPosition(toLatLngLiteral(descriptor.listing));
     });
-
-    if (popupListingId && !mobileCardModeRef.current && markersRef.current.has(popupListingId)) {
-      openDesktopPopupForListing(popupListingId);
-    }
-  }, [isMapReady, markerDescriptors, markListingVisited, openDesktopPopupForListing, popupListingId]);
+  }, [isMapReady, markerDescriptors, markListingVisited]);
 
   useEffect(() => {
     if (!window.google?.maps) {
@@ -595,7 +491,6 @@ export default function ListingMap({
     const activeListingIds = buildActiveListingIds({
       externalHoveredListingId,
       mapHoveredListingId,
-      popupListingId,
       selectedListingId,
     });
 
@@ -632,16 +527,7 @@ export default function ListingMap({
 
       marker.setZIndex(isActive ? 20 : isVisited ? 10 : 1);
     });
-  }, [externalHoveredListingId, isMapReady, mapHoveredListingId, markerDescriptorsById, popupListingId, selectedListingId, visitedListingIds]);
-
-  useEffect(() => {
-    if (!popupListingId || mobileCardMode) {
-      closeDesktopPopup();
-      return;
-    }
-
-    openDesktopPopupForListing(popupListingId);
-  }, [closeDesktopPopup, mobileCardMode, openDesktopPopupForListing, popupListingId]);
+  }, [externalHoveredListingId, isMapReady, mapHoveredListingId, markerDescriptorsById, selectedListingId, visitedListingIds]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -681,8 +567,7 @@ export default function ListingMap({
       : DEFAULT_MAP_ZOOM;
 
     applyIgnoreIdleWindow();
-    closeDesktopPopup();
-    setSelectedListingId(null);
+    clearSelectedListing();
     setIsSearchInAreaVisible(false);
 
     if (currentBounds) {
@@ -693,7 +578,7 @@ export default function ListingMap({
 
     map.panTo(currentCenter);
     map.setZoom(currentZoom);
-  }, [applyIgnoreIdleWindow, closeDesktopPopup, listingsWithCoordinates]);
+  }, [applyIgnoreIdleWindow, clearSelectedListing, listingsWithCoordinates]);
 
   useEffect(() => {
     window.addEventListener("porto-santo-guide:reset", resetMapView);
@@ -718,10 +603,20 @@ export default function ListingMap({
         </div>
       ) : null}
 
-      {mobileCardMode && selectedListing ? (
-        <div className="pointer-events-none absolute inset-x-4 bottom-[calc(4.5rem+env(safe-area-inset-bottom)+0.5rem)] z-20">
-          <div className="listingMapMobileCard pointer-events-auto">
-            <div className="listingMapPopup">
+      {selectedListing ? (
+        <div
+          className={`pointer-events-none absolute inset-x-4 z-20 ${mobileCardMode ? "bottom-[calc(4.5rem+env(safe-area-inset-bottom)+0.5rem)]" : "bottom-5"}`}
+        >
+          <div className={`listingMapMobileCard pointer-events-auto ${mobileCardMode ? "" : "max-w-[30rem]"}`}>
+            <div className="relative listingMapPopup pr-10">
+              <button
+                type="button"
+                aria-label="Close listing details"
+                className="absolute right-3 top-3 inline-flex h-7 w-7 items-center justify-center rounded-full border-0 bg-transparent text-[color:var(--psg-text-secondary)] transition hover:text-black cursor-pointer"
+                onClick={clearSelectedListing}
+              >
+                <XClose className="h-4 w-4" aria-hidden="true" />
+              </button>
               <strong className="listingMapPopupTitle">{selectedListing.title}</strong>
               <p className="listingMapPopupMeta">{selectedListing.primaryCategory.label}</p>
               {selectedListingSummary ? <p className="listingMapPopupSummary">{selectedListingSummary}</p> : null}
@@ -739,8 +634,7 @@ export default function ListingMap({
               return;
             }
 
-            closeDesktopPopup();
-            setSelectedListingId(null);
+            clearSelectedListing();
             setIsSearchInAreaVisible(false);
             onSearchInArea(pendingBoundsRef.current);
           }}

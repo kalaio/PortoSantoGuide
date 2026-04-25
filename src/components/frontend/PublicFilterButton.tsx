@@ -81,7 +81,7 @@ export default function PublicFilterButton({
         "rounded-full border-0 bg-white text-black !shadow-none before:hidden !font-medium *:data-text:font-medium *:data-text:text-black hover:*:data-text:text-black",
         CONTROL_TEXT_LEADING[size],
         isActive
-          ? "!font-semibold bg-white text-[var(--psg-brand)] ring-2 ring-[var(--psg-brand)] ring-inset *:data-text:font-semibold *:data-text:text-[var(--psg-brand)] hover:bg-white hover:text-[var(--psg-brand)] hover:*:data-text:text-[var(--psg-brand)]"
+          ? "bg-white text-[var(--psg-brand)] ring-2 ring-[var(--psg-brand)] ring-inset *:data-text:text-[var(--psg-brand)] hover:bg-white hover:text-[var(--psg-brand)] hover:*:data-text:text-[var(--psg-brand)]"
           : "ring-1 ring-black/10 ring-inset hover:bg-black/[0.025] hover:text-black",
         className
       )}
